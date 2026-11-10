@@ -22,7 +22,8 @@
     "test:levelup": "node scripts/test-level-up.mjs",
     "test:profile": "node scripts/test-local-player.mjs",
     "test:solo": "node scripts/test-solo-timer.mjs",
-    "test:roster-perf": "node scripts/test-rival-roster-performance.mjs"
+    "test:roster-perf": "node scripts/test-rival-roster-performance.mjs",
+    "test:vercel": "node scripts/test-vercel-deploy.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -42,5 +43,8 @@
     "tailwindcss": "^4.1.0",
     "typescript": "~5.9.0",
     "vite": "^6.3.0"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
