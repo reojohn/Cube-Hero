@@ -7,6 +7,7 @@ import './mobile-bottom-nav.css'
 import './home-premium.css'
 import './ai-personality-portraits.css'
 import './mobile-landscape.css'
+import './mobile-performance.css'
 
 export default function GameEntry() {
   useEffect(() => {

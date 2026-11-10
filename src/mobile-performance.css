@@ -1,0 +1,46 @@
+/* Lightweight rendering for phones, including compact-desktop landscape.
+   Do not disable CFOP computations, the opponent clocks, or the stopwatch.
+   Those remain based on monotonic elapsed milliseconds in JavaScript. */
+@media (max-width: 740px),
+       (orientation: landscape) and (max-height: 620px) and (max-width: 1180px),
+       (pointer: coarse) and (max-width: 1180px) {
+  /* Blur behind sticky navigation is costly during touch scrolling, especially
+     over long lists, and provides little value on small screens. */
+  .app-shell .topbar,
+  .app-shell .ch-ai-hero-level,
+  .app-shell .ch-ai-hero-float {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Keep the verified turn-by-turn 3D cube, but avoid constant float/blur
+     compositing from unrelated decorations on every stopwatch redraw. */
+  .app-shell .ai-physical-cube-camera {
+    animation: none;
+  }
+  .app-shell .ai-css-cube-aura {
+    filter: none;
+    opacity: .68;
+  }
+  .app-shell .ai-css-cube-floor {
+    filter: none;
+    opacity: .38;
+  }
+  .app-shell .rival-preview-halo,
+  .app-shell .rival-preview-art::after {
+    filter: none;
+  }
+  .app-shell .rival-preview-halo,
+  .app-shell .rival-preview-orbit,
+  .app-shell .rival-preview-rune,
+  .app-shell .rival-preview-art .rival-character-img,
+  .app-shell .rival-preview-art .rival-vector-orbit {
+    animation: none;
+  }
+  /* Prefer browser-native momentum scrolling on the roster/history. */
+  .app-shell .main-content,
+  .app-shell .rival-roster-scroll,
+  .app-shell .ch-compact-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}

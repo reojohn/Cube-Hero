@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowRight, Check, CircleHelp, Clock3, Copy, Ghost, Keyboard, LoaderCircle, Medal, RotateCcw, ShieldCheck, Sparkles, Timer, Trophy, Zap } from 'lucide-react'
 import AiCube3D from './AiCube3D'
+import LiveTimerText from './LiveTimerText'
+import { competitionRenderIntervalMs } from '../lib/mobilePerformance'
 import InspectionModal from './InspectionModal'
 import RaceMechanicsModal from './RaceMechanicsModal'
 import { hasSeenMechanics, markMechanicsSeen } from '../lib/mechanicsVisit'
@@ -235,7 +237,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
   },[])
   useEffect(()=>{
     if(!active&&holdStartedAt===null)return
-    const interval=window.setInterval(()=>setTick(msNow()),30)
+    const interval=window.setInterval(()=>setTick(msNow()),competitionRenderIntervalMs())
     return()=>window.clearInterval(interval)
   },[active,holdStartedAt])
   useEffect(()=>{
@@ -486,7 +488,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
       <div className={`ghost-arena ${qualifying?'solo':''}`} ref={arenaRef}>
         <section className="surface ghost-player-card" onPointerDown={stage==='ready'?onPointerDown:stage==='running'?(e)=>{if(e.button===0)stopTimer()}:undefined} onPointerUp={stage==='ready'?onPointerUp:undefined} onPointerCancel={stage==='ready'?onPointerCancel:undefined} onLostPointerCapture={stage==='ready'?onPointerCancel:undefined}>
           <div className="ghost-racer-top"><span><PlayerAvatar className="cube-player-avatar--inline" decorative/> YOU</span><small>Physical cube</small></div>
-          <div className="ghost-racer-center"><span className="ghost-overline">YOUR SOLVE TIME</span><strong className="ghost-player-time">{formatTime(stoppedRaw??(stage==='running'?rawElapsed:0),precision)}</strong>
+          <div className="ghost-racer-center"><span className="ghost-overline">YOUR SOLVE TIME</span><LiveTimerText className="ghost-player-time" timeMs={stoppedRaw??(stage==='running'?rawElapsed:0)} precision={precision} running={stage==='running'} startAt={startRef.current}/>
             <div className={`ghost-timer-help ${armed?'armed':''}`}><Keyboard size={16}/>{stage==='running'?'SPACE / TAP TO STOP':stage==='waiting'?'SOLVE RECORDED':armed?'READY · RELEASE TO START':holdStartedAt!==null?'KEEP HOLDING…':'HOLD SPACE / TOUCH 1.5s, THEN RELEASE'}</div>
             {stage==='ready'&&<div className="ghost-arm-progress"><span style={{width:`${armProgress}%`}}/></div>}
             <p>{stage==='running'?'Stop the timer when your cube is solved.':stage==='waiting'?'You finished. Your ghost is completing its turn sequence.':shortHold?'Hold for the full 1.5 seconds to start.':qualifying?'Record your time to unlock your ghost.':'Can you beat your own fastest solve?'}</p>
@@ -495,7 +497,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
         {qualifying?<section className="surface ghost-locked-card"><div className="ghost-locked-symbol"><img className="ghost-assassin-logo" src="/ghost-assassin-emblem.png" alt="" decoding="async" /></div><h3>Meet your future rival</h3><p>Once you finish three valid solves, your fastest recorded time will power your animated ghost opponent.</p><div className="ghost-locked-progress"><span style={{width:`${qualifiedCount/GHOST_QUALIFYING_SOLVES*100}%`}}/></div><small>{GHOST_QUALIFYING_SOLVES-qualifiedCount} qualifying solve{GHOST_QUALIFYING_SOLVES-qualifiedCount===1?'':'s'} remaining</small></section>
           :<section className="surface ghost-opponent-card"><div className="ghost-racer-top"><span><Ghost size={22}/> YOUR GHOST</span><small>Personal best · {showTime(ghostPlan?.totalMs??baseline,precision)}</small></div>
             {ghostPlan?<AiCube3D scramble={scramble} plan={ghostPlan} elapsedMs={ghostElapsed}/>:<div className="ghost-loading-cube"><LoaderCircle size={31} className="spin-icon"/> Preparing cube…</div>}
-            <strong className="ghost-opponent-time">{formatTime(ghostElapsed,precision)}</strong><span className="ghost-opponent-status">{ghostFinished?'GHOST FINISHED':stage==='running'||stage==='waiting'?'SOLVING THE SCRAMBLE':'WAITING AT THE START'}</span>
+            <LiveTimerText className="ghost-opponent-time" timeMs={ghostElapsed} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={ghostPlan?.totalMs}/><span className="ghost-opponent-status">{ghostFinished?'GHOST FINISHED':stage==='running'||stage==='waiting'?'SOLVING THE SCRAMBLE':'WAITING AT THE START'}</span>
           </section>}
       </div>
       {stage==='inspection'||stage==='ready'||stage==='running'||stage==='waiting'?<section className={`surface ghost-inspection-strip ${inspectionState!=='none'&&stage==='inspection'?'warning':''}`}><div><Clock3 size={18}/><strong>{stage==='inspection'?(holdStartedAt!==null?'Inspection paused':'Inspection'):stage==='ready'?'Ready':'Race live'}</strong></div><div className="ghost-inspection-meter"><span style={{width:`${stage==='inspection'?Math.max(0,100-inspectionMs/170):100}%`}}/></div><strong>{stage==='inspection'?`${Math.max(0,17-inspectionMs/1000).toFixed(1)}s`:stage==='ready'?'READY':'LIVE'}</strong></section>:null}
