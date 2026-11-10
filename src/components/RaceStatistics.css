@@ -1,0 +1,211 @@
+/* Recent Solves remains compact even when many races are recorded.
+   This stylesheet is imported by RaceStatistics so it stays in sync with the UI. */
+.history-scroll-viewport {
+  position: relative;
+  max-height: clamp(300px, 48vh, 440px);
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #8565ce #151c30;
+}
+
+/* Keep the column labels visible while scrolling through recorded solves. */
+.history-scroll-viewport .history-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.history-scroll-viewport .history-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 1px 0 #444168, 0 5px 12px rgba(7, 8, 22, .16);
+}
+.history-scroll-viewport::-webkit-scrollbar { width: 9px; height: 9px; }
+.history-scroll-viewport::-webkit-scrollbar-track { background: #151c30; border-radius: 12px; }
+.history-scroll-viewport::-webkit-scrollbar-thumb {
+  background: #685098;
+  border: 2px solid #151c30;
+  border-radius: 12px;
+}
+.history-scroll-viewport::-webkit-scrollbar-thumb:hover { background: #a17be8; }
+.history-scroll-viewport:focus-visible { outline: 2px solid #aa8dff; outline-offset: 3px; }
+
+@media (max-width: 600px) {
+  .history-scroll-viewport { max-height: min(48vh, 365px); }
+}
+
+.solve-history-surface {
+  padding: 22px;
+}
+.solve-history-head h3 {
+  margin: 0;
+}
+.solve-history-head p {
+  margin: 7px 0 0;
+  color: #aab4d0;
+  font-size: 12px;
+}
+.solve-history-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.solve-history-card {
+  position: relative;
+  min-height: 144px;
+  border: 1px solid #394666;
+  border-radius: 16px;
+  padding: 14px 14px 13px;
+  background:
+    radial-gradient(circle at 88% 15%, rgba(125, 222, 255, 0.1), transparent 30%),
+    linear-gradient(160deg, #1a2138 0%, #12192e 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 10px 28px rgba(5, 8, 22, .18);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+.solve-history-card::after {
+  content: '';
+  position: absolute;
+  inset: auto -8% -30% auto;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(164, 111, 255, 0.13), transparent 70%);
+  pointer-events: none;
+}
+.solve-history-card strong {
+  font-size: clamp(24px, 2.15vw, 34px);
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: #f5f8ff;
+  font-variant-numeric: tabular-nums;
+}
+.solve-history-card p {
+  margin: 0;
+  color: #8ea2c9;
+  font-size: 10px;
+  line-height: 1.45;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.solve-history-top,
+.solve-history-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.solve-history-date,
+.solve-history-meta {
+  color: #91a4c7;
+  font-size: 11px;
+  font-weight: 700;
+}
+.solve-history-meta span:first-child {
+  color: #d8e1ff;
+}
+.solve-history-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.solve-history-badges em {
+  font-style: normal;
+  padding: 4px 7px;
+  border-radius: 999px;
+  border: 1px solid #555f85;
+  background: #232a43;
+  color: #d9e5ff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .7px;
+}
+.solve-card-best {
+  border-color: #6ad3ff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 16px 38px rgba(38, 113, 205, .16);
+}
+.solve-card-best .solve-history-badges em:first-child {
+  border-color: #59dcff;
+  background: rgba(48, 100, 148, .35);
+  color: #c9f6ff;
+}
+.solve-card-dnf {
+  border-color: #7b4c66;
+  background: radial-gradient(circle at 88% 15%, rgba(255, 118, 177, 0.08), transparent 30%), linear-gradient(160deg, #251b2d 0%, #161722 100%);
+}
+.solve-history-empty {
+  min-height: 180px;
+  margin-top: 16px;
+  border: 1px dashed #455274;
+  border-radius: 16px;
+  background: radial-gradient(circle at center, rgba(137, 92, 222, .12), transparent 65%), #13192d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  color: #bfd0ef;
+  padding: 20px;
+}
+.solve-history-empty strong {
+  font-size: 16px;
+  color: #edf2ff;
+}
+.solve-history-empty span {
+  max-width: 420px;
+  line-height: 1.55;
+  color: #95a6c9;
+  font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+  .solve-history-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .solve-history-surface {
+    padding: 16px;
+  }
+  .solve-history-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+    margin-top: 14px;
+  }
+  .solve-history-card {
+    min-height: 126px;
+    border-radius: 14px;
+    padding: 12px;
+    gap: 8px;
+  }
+  .solve-history-card strong {
+    font-size: clamp(22px, 7vw, 32px);
+  }
+  .solve-history-card p {
+    font-size: 9.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .solve-history-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .solve-history-date,
+  .solve-history-meta {
+    font-size: 10px;
+  }
+  .solve-history-badges em {
+    padding: 3px 6px;
+    font-size: 8px;
+  }
+}

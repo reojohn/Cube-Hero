@@ -1,0 +1,35 @@
+body{margin:0}
+.cube-welcome,.cube-welcome *{box-sizing:border-box}
+/* One-time premium, self-contained local player setup — works for / and /app. */
+.cube-welcome{--welcome-accent:#bb91ff;position:relative;isolation:isolate;min-height:100svh;min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:34px 18px;background:radial-gradient(ellipse at 70% 18%,rgba(109,69,178,.26),transparent 45%),radial-gradient(ellipse at 18% 83%,rgba(30,133,219,.21),transparent 43%),#090d1e;color:#f6f3ff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden}
+.cube-welcome-stars{position:absolute;inset:0;z-index:-1;opacity:.48;pointer-events:none;background-image:radial-gradient(circle,#b6a7f9 1px,transparent 1.5px),radial-gradient(circle,#65cef5 1px,transparent 1.5px);background-size:93px 113px,167px 143px;background-position:28px 11px,60px 85px;mask-image:linear-gradient(120deg,#0007,#0004)}
+.cube-welcome-panel{width:min(870px,100%);display:grid;grid-template-columns:minmax(250px,.85fr) minmax(310px,1.15fr);overflow:hidden;border:1px solid #5e528c88;border-radius:28px;background:linear-gradient(138deg,#19203b 0%,#171b34 48%,#15152d 100%);box-shadow:0 28px 100px #0008,inset 0 1px #e9ccff18}
+.cube-welcome-art{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;min-height:440px;padding:28px 14px;background:radial-gradient(ellipse at 50% 38%,#415ba330,transparent 63%),linear-gradient(125deg,#0c1632,#151a3e 75%);border-right:1px solid #745caa40}
+.cube-welcome-art-ring{position:absolute;top:18%;left:50%;width:265px;max-width:80%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;border:1px solid #64cfff44;box-shadow:0 0 0 22px #9f7dff09,0 0 0 49px #9f7dff08,inset 0 0 38px #00c8ff14;pointer-events:none}
+.cube-welcome-art img{width:min(244px,85%);height:auto;position:relative;z-index:1;filter:drop-shadow(0 15px 36px #009ee555)}
+.cube-welcome-art-caption{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:1.6px;font-weight:800;color:#b8cafe;position:relative;z-index:1;text-align:center}
+.cube-welcome-content{padding:54px 48px 40px;display:flex;flex-direction:column;justify-content:center;align-items:stretch}
+.cube-welcome-eyebrow{display:flex;gap:8px;align-items:center;letter-spacing:2px;font-size:10px;color:#cdb2ff;font-weight:800}
+.cube-welcome h1{font-size:clamp(32px,4.2vw,50px);line-height:1.07;letter-spacing:-1.8px;margin:19px 0 13px;font-weight:850;color:#fff}
+.cube-welcome h1 em{font-style:normal;background:linear-gradient(115deg,#e8baff,#a88eff 70%,#75dafa);background-clip:text;-webkit-background-clip:text;color:transparent}
+.cube-welcome-content>p{font-size:13px;line-height:1.75;color:#b5bfde;max-width:380px;margin:0 0 25px}
+.cube-welcome-form{display:flex;flex-direction:column;gap:9px}
+.cube-welcome-form label{display:flex;align-items:center;gap:7px;color:#ded7f3;font-weight:800;font-size:10px;letter-spacing:1.2px}
+.cube-welcome-form input{display:block;width:100%;min-width:0;box-sizing:border-box;background:#0d142b;color:#fff;border:1px solid #65729d80;border-radius:12px;outline:none;padding:15px 16px;font-family:inherit;font-size:16px;font-weight:600;transition:border-color .18s,box-shadow .18s}
+.cube-welcome-form input:focus{border-color:#a68aff;box-shadow:0 0 0 3px #9c73fa25}
+.cube-welcome-form input::placeholder{color:#8e99b9;font-weight:400}
+.cube-welcome-form input[aria-invalid="true"]{border-color:#ff8c9b}
+.cube-welcome-input-help{font-size:11px;min-height:16px;color:#94a3cc}
+.cube-welcome-input-help.has-error{color:#ffadb9}
+.cube-welcome-form button{margin-top:6px;padding:15px 18px;border:1px solid #e2b7ff44;border-radius:12px;background:linear-gradient(105deg,#7041d4,#9b57ee);color:#fff;font-family:inherit;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:11px;cursor:pointer;box-shadow:0 12px 26px #5936b650;transition:filter .2s,transform .2s}
+.cube-welcome-form button:disabled{opacity:.54;cursor:not-allowed;box-shadow:none}
+.cube-welcome-form button:not(:disabled):hover{filter:brightness(1.16);transform:translateY(-1px)}
+.cube-welcome-form button:focus-visible{outline:3px solid #97e3ff;outline-offset:3px}
+.cube-welcome-perks{display:flex;flex-wrap:wrap;gap:9px 15px;margin-top:23px;color:#a9b7d7;font-size:10px}
+.cube-welcome-perks span{display:inline-flex;align-items:center;gap:5px}
+.cube-welcome-perks svg{color:#80dbba;width:14px}
+.cube-welcome-footer{font-size:10px;letter-spacing:2px;font-weight:800;color:#8494b7}
+.cube-welcome-footer span{color:#b99aff;padding:0 8px}
+@media(max-width:680px){.cube-welcome{padding:22px 16px;gap:16px}.cube-welcome-panel{grid-template-columns:1fr;border-radius:22px;max-width:420px}.cube-welcome-art{min-height:168px;gap:0;padding:14px 14px 4px;border-right:0;border-bottom:1px solid #745caa40}.cube-welcome-art-ring{width:132px;top:5%;box-shadow:0 0 0 16px #9f7dff09}.cube-welcome-art img{width:150px}.cube-welcome-art-caption{position:absolute;bottom:8px;font-size:8px;right:0;left:0;justify-content:center}.cube-welcome-content{padding:25px 23px 29px}.cube-welcome h1{font-size:34px;letter-spacing:-1.2px;margin:14px 0 10px}.cube-welcome-content>p{margin-bottom:17px}.cube-welcome-perks{margin-top:16px}}
+@media(max-height:660px) and (max-width:680px){.cube-welcome{justify-content:flex-start}.cube-welcome-art{min-height:110px}.cube-welcome-art img{width:106px}.cube-welcome-art-caption{display:none}.cube-welcome-content{padding:15px 22px 20px}.cube-welcome h1{font-size:30px}.cube-welcome-perks{margin-top:10px}}
+@media(prefers-reduced-motion:reduce){.cube-welcome-form input,.cube-welcome-form button{transition:none}}

@@ -1,0 +1,92 @@
+/* Cube Hero mobile bottom dock, adapted from the HIC mobile navigation pattern.
+   Appears on phones only; the desktop sidebar is unchanged. */
+.cube-mobile-dock { display: none; }
+
+@media (max-width: 720px) {
+  .app-shell .main-wrap {
+    padding-bottom: calc(73px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-shell .cube-mobile-dock {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 45;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    align-items: stretch;
+    height: calc(66px + env(safe-area-inset-bottom, 0px));
+    padding: 5px max(7px, env(safe-area-inset-right, 0px))
+      calc(5px + env(safe-area-inset-bottom, 0px))
+      max(7px, env(safe-area-inset-left, 0px));
+    border-top: 1px solid rgba(167, 145, 224, .35);
+    background: rgba(16, 18, 37, .97);
+    box-shadow: 0 -8px 27px rgba(1, 3, 17, .5), inset 0 1px rgba(229, 213, 255, .06);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    box-sizing: border-box;
+  }
+  .app-shell .cube-dock-link {
+    min-width: 0;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 2px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: #a4afc9;
+    font-family: inherit;
+    font-size: clamp(9px, 2.35vw, 10px);
+    line-height: 1.1;
+    font-weight: 760;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 170ms ease, background-color 170ms ease,
+      border-color 170ms ease, transform 170ms ease;
+  }
+  .app-shell .cube-dock-link svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+  }
+  .app-shell .cube-dock-link span {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .app-shell .cube-dock-link.active,
+  .app-shell .cube-dock-link[aria-current="page"] {
+    background: linear-gradient(160deg, rgba(153, 95, 255, .26), rgba(102, 57, 203, .18));
+    color: #ead9ff;
+    border-color: rgba(188, 141, 255, .3);
+    box-shadow: inset 0 1px rgba(233, 208, 255, .08);
+  }
+  .app-shell .cube-dock-link:active { transform: scale(.94); }
+  .app-shell .cube-dock-link:focus-visible {
+    outline: 2px solid #bc99ff;
+    outline-offset: -2px;
+  }
+  /* Toasts sit above the dock. Existing inspection/guide dialogs remain above both. */
+  .app-shell .toast {
+    bottom: calc(79px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-shell .cube-dock-link { font-size: 9px; gap: 3px; }
+  .app-shell .cube-mobile-dock { padding-left: 4px; padding-right: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .cube-dock-link { transition: none; }
+}

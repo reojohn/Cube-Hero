@@ -1,0 +1,494 @@
+/* Landscape rail toggle is not shown on portrait phones or regular desktop screens. */
+.app-shell .landscape-nav-toggle {display:none;}
+
+/* CubeHero orientation controls: mobile display preference. Screen orientation
+   cannot reliably be forced by a web page; real viewport layout is authoritative. */
+.app-shell .ch-orientation-settings { padding-bottom: 19px; }
+.app-shell .ch-orientation-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:17px; }
+.app-shell .ch-orientation-option {
+  display:flex;align-items:center;gap:12px;position:relative;min-width:0;min-height:77px;
+  padding:13px;border:1px solid #3c4568;border-radius:13px;
+  background:linear-gradient(138deg,#1a233c,#141b32);color:#dde3fa;
+  text-align:left;cursor:pointer;touch-action:manipulation;
+  transition:border-color .16s,background .16s,box-shadow .16s;
+}
+.app-shell .ch-orientation-option>svg:first-child { flex:none;color:#af91ff; }
+.app-shell .ch-orientation-option>span { display:flex;min-width:0;flex-direction:column;gap:5px; }
+.app-shell .ch-orientation-option strong { font-size:12px;line-height:1.2; }
+.app-shell .ch-orientation-option small { font-size:10px;line-height:1.3;color:#a4b1ce; }
+.app-shell .ch-orientation-option:hover { border-color:#8569cb; }
+.app-shell .ch-orientation-option.selected { border-color:#ae83ff;background:linear-gradient(135deg,#312450,#211d3b);box-shadow:0 0 0 1px #9771d330,inset 0 1px #ffffff16; }
+.app-shell .ch-orientation-check { position:absolute;top:7px;right:8px;color:#9effd1; }
+.app-shell .ch-orientation-status { display:flex;align-items:center;gap:10px;min-width:0;padding:12px;margin-top:12px;border-radius:11px;border:1px solid #45476f;background:#171d36;color:#b7c6e1;font-size:11px;line-height:1.5; }
+.app-shell .ch-orientation-status>svg { flex:none;color:#b995ff; }
+.app-shell .ch-orientation-status>span { min-width:0;flex:1; }
+.app-shell .ch-orientation-retry { flex:none;background:#32244f;border:1px solid #8c6bcb;border-radius:8px;color:#f0e9ff;padding:8px 10px;font-size:10px;font-weight:800; }
+.app-shell .ch-orientation-note { margin:12px 2px 0;color:#8999bd;font-size:10.5px;line-height:1.65; }
+@media(max-width:720px) {
+  .app-shell .ch-orientation-grid { gap:6px; }
+  .app-shell .ch-orientation-option { flex-direction:column;justify-content:center;align-items:center;gap:7px;min-height:99px;padding:9px 5px; }
+  .app-shell .ch-orientation-option>span { align-items:center;text-align:center; }
+  .app-shell .ch-orientation-option strong { font-size:11px; }
+  .app-shell .ch-orientation-option small { font-size:9px; }
+  .app-shell .ch-orientation-status { flex-wrap:wrap; }
+}
+
+/* CubeHero compact DESKTOP mode for short landscape screens.
+   Intentional desktop-style rail + toolbar + wide grids; not the tall portrait
+   layout squeezed into a horizontal viewport. No pointer:coarse requirement:
+   several Android webviews/emulators report a fine pointer when rotated.
+   Orientation locking is still best effort and remains in lib/orientation.ts.
+   All overrides live here, last in GameEntry's style import order. */
+@media (orientation:landscape) and (max-height:620px) and (max-width:1180px) {
+  .app-shell {
+    --ch-landscape-rail: clamp(108px, 15.5vw, 142px);
+    display:flex; min-width:0; width:100%; overflow-x:clip;
+  }
+  .app-shell .sidebar {
+    position:fixed; display:flex; visibility:visible;
+    z-index:30; inset:0 auto 0 0;
+    width:var(--ch-landscape-rail); min-width:0;
+    padding:8px 7px 8px;
+    transform:none; transition:none; box-shadow:none;
+    /* Fit the whole navigation on a short display, never show a second rail scrollbar. */
+    overflow:hidden; overscroll-behavior:none; scrollbar-width:none;
+  }
+  .app-shell .sidebar.open { transform:none; }
+  .app-shell .sidebar-close,.app-shell .mobile-menu,
+  .app-shell .mobile-overlay,.app-shell .cube-mobile-dock { display:none!important; }
+  .app-shell .sidebar-brand-row { margin:0 0 7px; min-height:30px; }
+  .app-shell .brand-link { padding:0 1px; margin:0; width:100%; min-width:0; }
+  .app-shell .brand-logo { gap:4px;min-width:0; }
+  .app-shell .brand-mascot-wrap { flex:0 0 32px;width:32px;height:32px;border-radius:10px; }
+  .app-shell .brand-logo>span:last-child { font-size:12px;letter-spacing:-.5px;white-space:nowrap; }
+  .app-shell .sidebar-label { font-size:8px;letter-spacing:1px;padding:0 5px;margin-bottom:5px; }
+  .app-shell .main-nav { gap:1px; flex:0 0 auto; }
+  .app-shell .nav-item {
+    gap:6px;min-height:27px;padding:3px 5px;
+    font-size:10px;border-radius:7px;white-space:nowrap;
+  }
+  .app-shell .nav-item>svg { width:15px;height:15px;flex:none; }
+  .app-shell .nav-item>span:not(.nav-flare) { overflow:hidden;text-overflow:ellipsis; }
+  .app-shell .nav-flare { width:4px;height:4px;flex:none; }
+  .app-shell .sidebar-bottom { margin-top:auto;gap:2px;flex-shrink:0; }
+  .app-shell .guest-profile { gap:5px;padding:5px 0 0;min-width:0; }
+  .app-shell .guest-avatar { flex:none;width:23px;height:23px;border-radius:7px; }
+  .app-shell .guest-profile>div { min-width:0; }
+  .app-shell .guest-profile strong { font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .app-shell .guest-profile small,.app-shell .online-dot { display:none; }
+  .app-shell .main-wrap {
+    margin-left:var(--ch-landscape-rail);
+    width:calc(100% - var(--ch-landscape-rail));
+    min-width:0;min-height:100dvh;padding:0;
+  }
+  .app-shell .topbar {
+    height:39px;min-height:39px;position:sticky;top:0;z-index:24;
+    padding:0 12px;gap:8px;
+  }
+  .app-shell .topbar-left,.app-shell .topbar-right { gap:7px;min-width:0; }
+  .app-shell .topbar-page { font-size:10px;gap:6px;min-width:0; }
+  .app-shell .topbar-page strong { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .app-shell .topbar-page>span,.app-shell .topbar-page>svg { display:none; }
+  .app-shell .build-status { gap:4px;font-size:8px;letter-spacing:.25px;white-space:nowrap; }
+  .app-shell .build-status small,.app-shell .topbar-rule { display:none; }
+  .app-shell .build-status>span { width:5px;height:5px; }
+  .app-shell .cube-topbar-player>span { font-size:9px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .app-shell .topbar-avatar { width:22px;height:22px; }
+  .app-shell .main-content {
+    width:100%;max-width:100%;min-width:0;
+    padding:10px 12px 15px;margin:0 auto;
+  }
+  .app-shell .main-content>* { min-width:0; }
+  .app-shell .page-stack,.app-shell .narrow-stack {
+    width:100%;max-width:100%;min-width:0;gap:12px;
+  }
+  .app-shell .app-footer { display:none; }
+  .app-shell .toast { bottom:12px; }
+  .app-shell .surface { border-radius:12px; }
+  .app-shell .btn { min-height:36px;padding:6px 12px;font-size:10px;gap:7px; }
+  .app-shell .btn-lg { min-height:42px; }
+  .app-shell .page-heading { gap:9px;margin-bottom:0; }
+  .app-shell .page-heading h1,.app-shell .section-row h2 { font-size:20px;line-height:1.15; }
+  .app-shell .page-heading p,.app-shell .section-row p { font-size:10px;line-height:1.4; }
+  .app-shell .eyebrow { font-size:9px;letter-spacing:1px; }
+  .app-shell .label-badge { font-size:8px;padding:5px 7px; }
+  /* Home: real wide columns, shorter cards, no portrait-only tall stacking. */
+  .app-shell .hero { display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);min-height:190px;gap:8px;padding:17px; }
+  .app-shell .hero-kicker {font-size:9px;margin-bottom:7px;}
+  .app-shell .hero-content h1 {font-size:clamp(23px,3vw,33px);line-height:1.15;white-space:normal;}
+  .app-shell .hero-content>p {font-size:10px;line-height:1.4;margin:9px 0 12px;}
+  .app-shell .hero-actions {gap:6px;}
+  .app-shell .hero-cube {height:155px;width:100%;opacity:1;position:relative;right:auto;bottom:auto;}
+  .app-shell .hero-trust,.app-shell .floating-note {font-size:8px;}
+  .app-shell .hero-trust {margin-top:7px;}
+  .app-shell .ch-home-section-head {gap:9px;}
+  /* Phone in landscape still has four columns, like the desktop Home page. */
+  .app-shell .ch-home-feature-grid,.app-shell .feature-grid {grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+  .app-shell .ch-home-feature-card,.app-shell .feature-card {min-height:128px;padding:11px;}
+  .app-shell .ch-home-feature-card .feature-icon {width:29px;height:29px;margin:0;}
+  .app-shell .ch-home-feature-card .feature-icon svg {width:17px;height:17px;}
+  .app-shell .ch-home-feature-content {padding-top:8px;}
+  .app-shell .ch-home-feature-title {font-size:12px;}
+  .app-shell .ch-home-feature-desc {font-size:10px;line-height:1.35;}
+  .app-shell .ch-home-feature-foot {margin-top:5px;}
+  .app-shell .ch-home-feature-card {min-height:145px;padding:10px 8px;}
+  .app-shell .ch-home-feature-card .feature-icon {width:27px;height:27px;}
+  .app-shell .ch-home-feature-head {gap:4px;}
+  .app-shell .ch-home-feature-index {font-size:8px;letter-spacing:.25px;}
+  .app-shell .ch-home-feature-content {padding-top:7px;}
+  .app-shell .ch-home-feature-category {font-size:8px;letter-spacing:.25px;margin-bottom:4px;}
+  .app-shell .ch-home-feature-title {font-size:11px;line-height:1.2;margin-bottom:4px;}
+  .app-shell .ch-home-feature-desc {font-size:9px;line-height:1.3;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;}
+  .app-shell .ch-home-feature-foot {font-size:9px;padding-top:6px;}
+  .app-shell .ch-home-feature-arrow {width:23px;height:23px;border-radius:6px;}
+  .app-shell .ch-home-journey,.app-shell .ch-home-challenge {min-height:0;padding:12px;gap:9px;}
+  .app-shell .ch-home-journey-emblem,.app-shell .ch-home-challenge-emblem {width:38px;height:38px;flex-basis:38px;}
+  .app-shell .ch-home-journey h3,.app-shell .ch-home-challenge h3 {font-size:15px;}
+  .app-shell .ch-home-journey p,.app-shell .ch-home-challenge p {font-size:10px;}
+  /* Race hero and controls: horizontal visual, multi-column pickers. */
+  .app-shell .ch-mode-hero,.app-shell .ch-ghost-mode-hero {display:grid;grid-template-columns:minmax(0,1.25fr) minmax(160px,.75fr);align-items:center;min-height:185px;padding:13px 16px;gap:9px;}
+  .app-shell .ch-mode-hero-copy {min-width:0;}
+  .app-shell .ch-mode-hero h1 {font-size:clamp(22px,3vw,31px);line-height:1.14;margin:7px 0;letter-spacing:-.8px;}
+  .app-shell .ch-mode-hero-copy>p {font-size:10px;line-height:1.45;}
+  .app-shell .ch-mode-hero-pills {gap:5px;margin-top:9px;}
+  .app-shell .ch-mode-hero-pills>span {font-size:8px;padding:4px 6px;}
+  .app-shell .ch-mode-hero-actions {margin-top:10px;}
+  .app-shell .ch-mode-hero-button {min-height:35px;}
+  .app-shell .ch-ai-hero-art {height:180px;min-height:180px;width:100%;}
+  .app-shell .ch-ai-hero-core {width:min(210px,85%);max-height:189px;transform:none;}
+  .app-shell .ch-ai-hero-orbit {width:163px;}
+  .app-shell .ch-ai-hero-float {font-size:7px;padding:5px;right:0;top:3px;}
+  .app-shell .ch-ai-hero-level {padding:5px 8px;left:0;bottom:0;}
+  .app-shell .ch-ai-hero-level strong {font-size:17px;}
+  .app-shell .ch-ghost-hero-art {min-height:174px;height:174px;width:100%;}
+  .app-shell .ch-ghost-hero-ring-outer {width:148px;height:148px;}
+  .app-shell .ch-ghost-hero-ring-inner {width:120px;height:120px;}
+  .app-shell .ch-ghost-hero-avatar {width:78px;height:78px;}
+  .app-shell .ch-ghost-hero-score {min-width:118px;padding:6px;}
+  .app-shell .ch-mechanics-spotlight {padding:9px 11px;gap:8px;}
+  .app-shell .ch-mechanics-spotlight-copy h2 {font-size:13px;}
+  .app-shell .ch-mechanics-spotlight-copy p {font-size:10px;}
+  .app-shell .ch-mechanics-spotlight-button {min-height:36px;padding:6px;}
+  .app-shell .race-setup {min-width:0;padding:12px;}
+  .app-shell .setup-divider {margin:9px 0;}
+  .app-shell .select-grid,.app-shell .option-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .app-shell .option-card:last-child {grid-column:auto;}
+  .app-shell .option-card {min-height:64px;padding:10px;}
+  .app-shell .rival-select {margin:7px 0 13px;padding:10px;}
+  .app-shell .rival-select-heading {margin-bottom:9px;}
+  .app-shell .rival-select-heading h3 {font-size:17px;margin:5px 0;}
+  /* Both columns size to their content; don't stretch the roster and push Quick Picks down. */
+  .app-shell .rival-select-stage {display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:8px;align-items:start;}
+  .app-shell .rival-roster-panel,.app-shell .rival-preview {padding:8px;min-width:0;align-self:start;}
+  .app-shell .rival-roster-panel {min-height:0;}
+  .app-shell .rival-quick-picks {margin-top:5px;padding-top:5px;}
+  /* Override portrait mode's 62dvh scroll height on short landscape phones. */
+  .app-shell .rival-roster-scroll {height:166px;min-height:128px;max-height:166px;flex:0 1 auto;overflow-y:auto;}
+  .app-shell .rival-roster-grid {grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;}
+  .app-shell .rival-roster-card {padding:3px 2px 5px;}
+  .app-shell .rival-roster-portrait {height:47px;}
+  .app-shell .rival-roster-name {font-size:9px;margin-top:3px;}
+  .app-shell .rival-quick-picks {padding-top:7px;}
+  .app-shell .rival-quick-picks>div {grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:5px;}
+  .app-shell .rival-quick-picks button {padding:5px 2px;font-size:9px;}
+  .app-shell .rival-preview-art {min-height:96px;height:96px;flex:0 0 96px;margin:0;}
+  .app-shell .rival-preview-art .rival-png-avatar.rival-emblem-large,
+  .app-shell .rival-preview-art .rival-code-avatar.rival-emblem-large {height:109px;max-height:109px;width:119px;}
+  .app-shell .rival-preview-orbit {width:91px;height:91px;}
+  .app-shell .rival-preview-details h3 {font-size:20px;}
+  .app-shell .rival-preview-motto {font-size:9px;margin:5px 0;}
+  .app-shell .rival-stats>div {padding:5px 4px;}
+  .app-shell .rival-preview-hint {font-size:9px;line-height:1.35;margin:6px 0;}
+  .app-shell .rival-preview-bottom {margin-top:6px;}
+  /* Portrait at left; identity at right; stats and description use the FULL card width.
+     display:contents keeps existing React markup and selection behavior unchanged. */
+  .app-shell .rival-preview {
+    display:grid;grid-template-columns:minmax(90px,.77fr) minmax(0,1.23fr);
+    order:0; /* Portrait CSS places preview first: restore desktop roster-first order. */
+    align-content:start;grid-auto-rows:min-content;gap:3px 8px;
+  }
+  .app-shell .rival-preview-top {grid-column:1 / -1;min-width:0;margin-bottom:3px;}
+  .app-shell .rival-preview-art {
+    grid-column:1;grid-row:2 / span 5;
+    align-self:center;justify-self:center;
+    min-width:0;width:100%;height:114px;min-height:114px;max-height:114px;
+    margin:0;flex:none;
+  }
+  .app-shell .rival-preview-art .rival-png-avatar.rival-emblem-large,
+  .app-shell .rival-preview-art .rival-code-avatar.rival-emblem-large {
+    width:min(100%,116px);height:116px;max-height:116px;
+    object-fit:contain;object-position:center;
+  }
+  .app-shell .rival-preview-art .rival-png-decor--featured {width:100%;height:114px;}
+  .app-shell .rival-preview-details {display:contents;}
+  .app-shell .rival-preview-eyebrow,
+  .app-shell .rival-preview-details h3,
+  .app-shell .rival-preview-title,
+  .app-shell .rival-preview-traits,
+  .app-shell .rival-preview-motto {grid-column:2;min-width:0;}
+  .app-shell .rival-preview-eyebrow {font-size:8px;line-height:1.2;letter-spacing:.5px;}
+  .app-shell .rival-preview-details h3 {font-size:18px;line-height:1.1;margin:0;overflow-wrap:normal;}
+  .app-shell .rival-preview-title {font-size:10px;margin:0;}
+  .app-shell .rival-preview-traits {margin:0;gap:3px;}
+  .app-shell .rival-preview-traits span {font-size:7px;line-height:1.2;padding:3px 5px;}
+  .app-shell .rival-preview-motto {font-size:9px;line-height:1.3;margin:2px 0;}
+  .app-shell .rival-stats,
+  .app-shell .rival-preview-hint,
+  .app-shell .rival-preview-bottom {grid-column:1 / -1;min-width:0;}
+  .app-shell .rival-stats {grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:5px;}
+  .app-shell .rival-stats>div {padding:5px 6px;gap:3px;}
+  .app-shell .rival-stats strong {font-size:10px;overflow-wrap:normal;word-break:normal;}
+  .app-shell .rival-stats small {font-size:7px;}
+  .app-shell .rival-preview-hint {display:flex;margin:5px 0 0;font-size:9px;line-height:1.3;}
+  .app-shell .rival-preview-bottom {margin-top:4px;min-height:25px;}
+  .app-shell .personality-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+  .app-shell .personality-option.ch-personality-card {min-height:78px;display:flex;flex-direction:row;align-items:center;gap:5px;padding:5px;text-align:left;}
+  .app-shell .personality-option .ch-personality-portrait {flex:0 0 56px;width:56px;height:56px;}
+  .app-shell .personality-option.ch-personality-card .personality-copy {align-items:flex-start;text-align:left;min-width:0;}
+  .app-shell .personality-option.ch-personality-card .personality-copy>strong {font-size:10px;justify-content:flex-start;flex-wrap:wrap;}
+  .app-shell .personality-option.ch-personality-card .personality-copy small {font-size:9px;}
+  .app-shell .multi-ai-picker {padding:10px;}
+  .app-shell .multi-ai-picker-heading {gap:8px;}
+  .app-shell .multi-ai-choices {display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;}
+  .app-shell .multi-ai-choice {min-width:0;min-height:35px;}
+  /* Race room and Ghost duel. Do not shrink the active timing touch target. */
+  .app-shell .racer-grid,.app-shell .ghost-arena {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .app-shell .room-heading h1 {font-size:19px;}
+  .app-shell .racer-panel {min-width:0;min-height:230px;padding:10px;}
+  .app-shell .racer-timer {font-size:clamp(38px,5.2vw,56px);}
+  .app-shell .phase3-room .ai-panel {min-height:240px;}
+  .app-shell .ai-panel .ai-3d-cube-shell {height:125px;}
+  .app-shell .ai-css-cube-stage {--cube-size:91px;--cube-half:45.5px;min-height:111px;}
+  .app-shell .multi-ai-live-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .app-shell .ghost-banner {flex-direction:row;align-items:center;gap:8px;padding:11px;}
+  .app-shell .ghost-banner-stat {min-width:95px;padding:5px 9px;}
+  .app-shell .ghost-player-card,.app-shell .ghost-opponent-card,.app-shell .ghost-locked-card {min-width:0;min-height:225px;padding:12px;}
+  .app-shell .ghost-racer-center {gap:7px;}
+  .app-shell .ghost-player-time {font-size:clamp(38px,6vw,58px);}
+  .app-shell .ghost-opponent-card .ai-3d-cube-shell {height:130px;}
+  .app-shell .ghost-scramble-panel {padding:12px;}
+  .app-shell .ghost-scramble-line {padding:9px;margin:8px 0;}
+  .app-shell .ghost-history-panel {padding:12px;}
+  /* Solo Timer: preserve portrait's foldable statistics/history on landscape.
+     Desktop-style four-column metrics appear only when expanded. */
+  .app-shell .main-content:has(.solo-page) {padding:7px 11px 14px;}
+  .app-shell .solo-page {gap:7px;padding-top:0;margin:0 auto 8px;}
+  .app-shell .solo-heading {padding:0 2px;}
+  .app-shell .solo-heading .solo-eyebrow,.app-shell .solo-heading p,.app-shell .solo-heading-pill {display:none;}
+  .app-shell .solo-heading h1 {margin:0;font-size:20px;line-height:1.2;}
+  .app-shell .solo-main-surface {display:flex;flex-direction:column;width:100%;min-height:0;max-width:100%;padding:9px 11px;border-radius:13px;}
+  .app-shell .solo-scramble-top {gap:7px;}
+  .app-shell .solo-scramble-top small {display:none;}
+  .app-shell .solo-scramble-text {margin:7px auto;gap:3px 7px;font-size:clamp(10px,1.3vw,12px);line-height:1.35;}
+  .app-shell .solo-timer-meta {margin:5px auto 0;}
+  .app-shell .solo-timer-pad {width:100%;min-height:125px;max-height:none;padding:9px 8px;gap:5px;margin:3px auto;touch-action:none;}
+  .app-shell .solo-time {font-size:clamp(49px,8vw,75px);line-height:1.12;}
+  .app-shell .solo-time-long {font-size:clamp(36px,6.2vw,57px);}
+  .app-shell .solo-timer-prompt {font-size:9px;}
+  .app-shell .solo-below-timer {gap:5px;padding:5px 0 0;}
+  .app-shell .solo-input-hint {font-size:9px;}
+  .app-shell .solo-help-desktop {display:none;}
+  .app-shell .solo-help-mobile {display:inline;}
+  .app-shell .solo-stats-section {display:block;min-width:0;}
+  .app-shell .solo-section-toggle {display:flex;width:100%;min-height:42px;align-items:center;justify-content:space-between;gap:9px;padding:6px 10px;text-align:left;border:1px solid #414866;background:#1a223b;color:#e9edff;border-radius:11px;cursor:pointer;}
+  .app-shell .solo-history {padding:0;overflow:hidden;}
+  .app-shell .solo-history .solo-section-toggle {border:0;background:transparent;}
+  .app-shell .solo-disclosure-label {display:flex;align-items:center;gap:8px;min-width:0;}
+  .app-shell .solo-disclosure-label>span:last-child {display:flex;flex-direction:column;gap:3px;}
+  .app-shell .solo-disclosure-icon {display:grid;place-items:center;flex:none;width:29px;height:29px;border-radius:8px;color:#ccafff;background:#362753;}
+  .app-shell .solo-disclosure-label strong {font-size:11px;}
+  .app-shell .solo-disclosure-label small {font-size:9px;color:#a7b4cd;}
+  .app-shell .solo-disclosure-action {display:flex;align-items:center;gap:4px;font-size:9px;color:#c6a8ff;}
+  .app-shell .solo-stats-section:not(.solo-expanded) .solo-metrics,
+  .app-shell .solo-history:not(.solo-expanded) .solo-history-panel {display:none;}
+  .app-shell .solo-stats-section.solo-expanded .solo-metrics {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:7px;}
+  .app-shell .solo-metric {min-width:0;padding:7px;}
+  .app-shell .solo-metric strong {font-size:19px;}
+  .app-shell .solo-history-panel {padding:8px 11px 12px;}
+  .app-shell .solo-solves-grid {grid-template-columns:repeat(auto-fill,minmax(106px,1fr));gap:6px;}
+  .app-shell .solo-solve-card-time {font-size:18px;}
+  .app-shell .solo-solve-card-open {grid-row:auto;}
+  /* Learn: show step-by-step + cube demo side by side, rather than a tall stack. */
+  .app-shell .academy-page {gap:10px!important;}
+  .app-shell .academy-hero {display:grid;grid-template-columns:minmax(0,1.3fr) minmax(135px,.7fr);min-height:0;padding:13px;gap:8px;}
+  .app-shell .academy-hero h1 {font-size:22px;margin:7px 0;}
+  .app-shell .academy-hero-content>p {font-size:10px;line-height:1.4;}
+  .app-shell .academy-hero-visual {min-height:120px;display:grid;}
+  .app-shell .academy-halo {width:102px;height:102px;}
+  .app-shell .academy-overview-metrics {grid-template-columns:minmax(0,1.2fr) repeat(2,minmax(0,1fr));gap:6px;}
+  .app-shell .academy-progress-card,.app-shell .academy-mini-metric {padding:10px;}
+  .app-shell .academy-progress-card {grid-column:auto;}
+  .app-shell .academy-progress-ring {width:54px;height:54px;flex-basis:54px;padding:6px;}
+  .app-shell .academy-tabs {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;}
+  .app-shell .academy-tab,.app-shell .academy-tab:first-child {grid-column:auto;min-height:35px;padding:5px;gap:4px;font-size:10px;}
+  .app-shell .academy-content-panel,.app-shell .academy-overview-content {padding:10px;}
+  .app-shell .academy-lesson-layout {display:grid;grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);gap:8px;align-items:start;}
+  .app-shell .academy-notation-layout,.app-shell .academy-library-layout {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .app-shell .academy-drills-layout {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .app-shell .academy-course-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .app-shell .academy-course-card {min-height:127px;height:auto;padding:10px;gap:5px;}
+  .app-shell .academy-course-card>strong {font-size:12px;}
+  .app-shell .academy-course-card p {font-size:9px;}
+  .app-shell .academy-quick-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+  /* The four CFOP overview tiles belong on ONE desktop-style row. */
+  .app-shell .academy-case-counts {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+  .app-shell .academy-case-counts>div {min-width:0;padding:9px 8px;gap:3px;border-radius:9px;}
+  .app-shell .academy-case-counts span {font-size:8px;letter-spacing:.5px;}
+  .app-shell .academy-case-counts strong {font-size:clamp(11px,1.55vw,16px);line-height:1.15;overflow-wrap:break-word;}
+  .app-shell .academy-case-counts small {font-size:9px;line-height:1.3;}
+  .app-shell .academy-algorithm-list {max-height:230px;grid-template-columns:repeat(2,minmax(0,1fr));}
+  .app-shell .academy-player-stage {min-height:160px;}
+  .app-shell .academy-stage-select {grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+  .app-shell .academy-stage-select button {min-height:36px;font-size:10px;}
+  .app-shell .academy-alg-sequence {padding:8px;font-size:11px;}
+  /* Journey: desktop grid proportions, compact cards and challenge lists. */
+  .app-shell .journey-page {gap:10px;}
+  .app-shell .journey-hero {min-height:0;padding:15px;gap:10px;}
+  .app-shell .journey-hero h1 {font-size:23px;margin:5px 0;}
+  .app-shell .journey-hero-copy p {font-size:10px;line-height:1.35;}
+  .app-shell .journey-hero-emblem {display:none;}
+  .app-shell .journey-hero-actions {display:flex;gap:6px;margin-top:10px;}
+  .app-shell .journey-hero-actions .btn {min-height:34px;white-space:nowrap;}
+  .app-shell .journey-stats-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;}
+  .app-shell .journey-stat-card {min-height:92px;padding:10px;}
+  .app-shell .journey-stat-card>strong {font-size:21px;}
+  .app-shell .journey-tab-bar {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
+  .app-shell .journey-tab-bar button {min-height:34px;padding:5px;white-space:nowrap;font-size:9px;}
+  .app-shell .journey-columns,.app-shell .journey-tourney-columns,.app-shell .journey-challenge-columns {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;align-items:start;}
+  .app-shell .journey-surface,.app-shell .journey-challenge-panel {min-width:0;padding:11px;}
+  .app-shell .journey-section-title {margin-bottom:9px;}
+  .app-shell .journey-mission {padding:9px;}
+  .app-shell .journey-mission-top strong {font-size:10px;}
+  .app-shell .journey-shortcuts {grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .app-shell .journey-shortcuts button {padding:9px;}
+  .app-shell .journey-badge-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+  .app-shell .journey-challenges-intro {padding:10px;gap:7px;}
+  .app-shell .journey-challenge-filters {width:auto;}
+  .app-shell .journey-challenge-filters button {padding:7px;}
+  /* Other grids + Settings: tablet-sized horizontal cards. */
+  .app-shell .stat-grid {grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;}
+  .app-shell .stat-tile {padding:10px;}
+  .app-shell .stat-tile>strong {font-size:24px;}
+  .app-shell .stats-layout {grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .app-shell .settings-surface {padding:11px;}
+  .app-shell .settings-row {padding:8px 4px;gap:9px;}
+  .app-shell .settings-row strong {font-size:11px;}
+  .app-shell .settings-row p {font-size:10px;}
+  .app-shell .ch-orientation-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+  .app-shell .ch-orientation-option {min-height:60px;padding:8px;flex-direction:row;gap:6px;}
+  .app-shell .ch-orientation-option>span {align-items:flex-start;text-align:left;}
+  .app-shell .ch-orientation-option strong {font-size:10px;}
+  .app-shell .ch-orientation-option small {font-size:9px;}
+  .app-shell .ch-orientation-status {padding:9px;}
+}
+
+/* Narrowest 667×375 class of landscape phones: icon-plus-label rail remains
+   visible, but wide content grids use two columns, not cramped desktop fours. */
+@media (orientation:landscape) and (max-height:620px) and (max-width:760px) {
+  .app-shell {--ch-landscape-rail:104px;}
+  .app-shell .sidebar {padding-inline:4px;}
+  .app-shell .brand-logo>span:last-child {font-size:11px;}
+  .app-shell .brand-mascot-wrap {width:28px;height:28px;flex-basis:28px;}
+  .app-shell .nav-item {font-size:9px;gap:4px;padding-inline:5px;}
+  .app-shell .main-content {padding-inline:9px;}
+  .app-shell .topbar {padding-inline:9px;}
+  .app-shell .topbar-right .cube-topbar-player>span {display:none;}
+  .app-shell .ch-mode-hero,.app-shell .ch-ghost-mode-hero {grid-template-columns:minmax(0,1.2fr) minmax(125px,.8fr);padding:10px;}
+  .app-shell .ch-ai-hero-art {height:151px;min-height:151px;}
+  .app-shell .ch-ai-hero-core {width:min(173px,90%);max-height:157px;}
+  .app-shell .ch-ai-hero-orbit {width:135px;}
+  .app-shell .rival-select-stage {grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  .app-shell .rival-roster-grid {grid-template-columns:repeat(3,minmax(0,1fr));}
+  .app-shell .rival-quick-picks>div {grid-template-columns:repeat(3,minmax(0,1fr));}
+  .app-shell .personality-option.ch-personality-card {min-height:75px;flex-direction:column;}
+  .app-shell .personality-option .ch-personality-portrait {width:42px;height:42px;flex:0 0 42px;}
+  .app-shell .personality-option.ch-personality-card .personality-copy {align-items:center;text-align:center;}
+  .app-shell .personality-option.ch-personality-card .personality-copy>strong {justify-content:center;}
+  .app-shell .academy-tabs {grid-template-columns:repeat(3,minmax(0,1fr));}
+  .app-shell .academy-stage-select {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .app-shell .journey-stats-grid,.app-shell .stat-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .app-shell .journey-tab-bar {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .app-shell .journey-shortcuts {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .app-shell .solo-stats-section.solo-expanded .solo-metrics {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .app-shell .ch-orientation-option {transition:none;}
+}
+.reduce-motion .app-shell .ch-orientation-option {transition:none;}
+
+/* Very short landscape devices: preserve every navigation destination without a
+   vertical scrollbar. Only the decorative rail caption can disappear. */
+@media (orientation:landscape) and (max-width:1180px) and (max-height:365px) {
+  .app-shell .sidebar-label {display:none;}
+  .app-shell .sidebar {padding-top:4px;padding-bottom:4px;}
+  .app-shell .sidebar-brand-row {margin-bottom:4px;}
+  .app-shell .nav-item {min-height:25px;}
+}
+
+/* Landscape navigation: comfortable touch spacing and a collapsible desktop rail.
+   Only applies to real short landscape viewports; portrait/desktop remain unchanged. */
+@media (orientation:landscape) and (max-height:620px) and (max-width:1180px) {
+  .app-shell .sidebar {
+    padding:6px 7px;
+    overflow:hidden;
+    transition:transform 200ms ease, visibility 200ms ease;
+  }
+  .app-shell .sidebar-brand-row {min-height:26px;height:26px;margin:0 0 6px;flex-shrink:0;}
+  .app-shell .brand-mascot-wrap {width:27px;height:27px;flex-basis:27px;}
+  .app-shell .sidebar-label {display:none;}
+  .app-shell .main-nav {gap:3px;flex:0 0 auto;}
+  .app-shell .nav-item {
+    min-height:37px;min-width:0;gap:7px;padding:6px 7px;
+    font-size:10px;line-height:1.2;border-radius:9px;
+    touch-action:manipulation;
+  }
+  .app-shell .nav-item>svg {width:17px;height:17px;flex:none;}
+  .app-shell .sidebar-bottom {margin-top:5px;gap:0;flex:0 0 auto;}
+  .app-shell .sidebar-bottom .settings-nav {min-height:37px;}
+  /* The player avatar remains in the topbar; free height for larger tap targets. */
+  .app-shell .guest-profile {display:none;}
+  .app-shell .landscape-nav-toggle {
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    flex:0 0 auto;height:33px;min-width:36px;padding:0 9px;
+    color:#e5d8ff;background:#201b3d;
+    border:1px solid #6c559b;border-radius:9px;
+    font-size:10px;font-weight:750;white-space:nowrap;
+    touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  }
+  .app-shell .landscape-nav-toggle:active {background:#332459;}
+  .app-shell .landscape-nav-toggle:focus-visible {outline:2px solid #bd9bff;outline-offset:2px;}
+  .app-shell .main-wrap {transition:margin-left 200ms ease,width 200ms ease;}
+  .app-shell.landscape-nav-collapsed .sidebar {
+    transform:translateX(-105%);visibility:hidden;pointer-events:none;
+  }
+  .app-shell.landscape-nav-collapsed .main-wrap {
+    margin-left:0;width:100%;
+  }
+  .app-shell.landscape-nav-collapsed .main-content {
+    width:100%;max-width:1100px;margin-inline:auto;
+    padding-inline:clamp(12px,2.4vw,25px);
+  }
+  .app-shell.landscape-nav-collapsed .page-stack,
+  .app-shell.landscape-nav-collapsed .narrow-stack {width:100%;max-width:100%;margin-inline:auto;}
+}
+@media (orientation:landscape) and (max-height:365px) and (max-width:1180px) {
+  .app-shell .sidebar {padding-block:4px;}
+  .app-shell .sidebar-brand-row {min-height:24px;height:24px;margin-bottom:4px;}
+  .app-shell .main-nav {gap:2px;}
+  .app-shell .nav-item,.app-shell .sidebar-bottom .settings-nav {min-height:34px;padding-block:5px;}
+  .app-shell .sidebar-bottom {margin-top:3px;}
+}
+@media (orientation:landscape) and (max-height:330px) and (max-width:1180px) {
+  .app-shell .sidebar-brand-row {margin-bottom:3px;}
+  .app-shell .nav-item,.app-shell .sidebar-bottom .settings-nav {min-height:31px;}
+}
+@media (orientation:landscape) and (max-height:620px) and (max-width:760px) {
+  .app-shell .nav-item {gap:5px;padding-inline:5px;font-size:9.5px;}
+  .app-shell .landscape-nav-toggle {padding-inline:7px;}
+  .app-shell .landscape-nav-toggle span {display:none;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .app-shell .sidebar,.app-shell .main-wrap {transition:none!important;}
+}
+.reduce-motion .app-shell .sidebar,.reduce-motion .app-shell .main-wrap {transition:none!important;}

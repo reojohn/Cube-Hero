@@ -1,0 +1,794 @@
+/* Cube Hero – premium, self-contained pre-race VS presentation.
+   All movement is decorative: RaceRoom is NOT mounted until the intro exits. */
+.cube-vs-intro,
+.cube-vs-intro * { box-sizing: border-box; }
+.cube-vs-intro {
+  --vs-player: #50caff;
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: #fff;
+  background: #070c1e;
+  font-family: inherit;
+  isolation: isolate;
+  -webkit-font-smoothing: antialiased;
+}
+.cube-vs-intro::before {
+  content: "";
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 45% 60% at 15% 55%, #1e74a242, transparent 77%),
+    radial-gradient(ellipse 46% 60% at 88% 50%, color-mix(in srgb, var(--vs-rival-accent) 31%, transparent), transparent 80%),
+    linear-gradient(123deg, #0c1631 0%, #070b18 46%, #151026 100%);
+}
+.cube-vs-intro::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  opacity: .48;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, #ffffff09 1px, transparent 1px),
+    linear-gradient(#ffffff08 1px, transparent 1px);
+  background-size: 58px 58px;
+  mask-image: linear-gradient(to bottom, transparent, black 22%, black 75%, transparent);
+}
+.cube-vs-atmosphere {position:fixed;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+.cube-vs-atmosphere span {position:absolute;width:62vmax;height:2px;left:-20%;top:55%;transform:rotate(-29deg);background:linear-gradient(90deg,transparent,#4dccff32,transparent);box-shadow:0 0 34px #47bdfb4d;animation:vs-flare-sweep 5s ease-out both}
+.cube-vs-atmosphere span:nth-child(2) {left:55%;top:46%;background:linear-gradient(90deg,transparent,var(--vs-rival-accent),transparent);opacity:.4;animation-delay:.12s}
+.cube-vs-atmosphere span:nth-child(3) {left:-4%;top:78%;opacity:.36;animation-delay:.32s}
+.cube-vs-frame {
+  width: min(1260px, calc(100% - 56px));
+  min-height: min(100dvh, 850px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: clamp(20px, 3.5vh, 44px) 0 clamp(24px, 3vh, 40px);
+  position: relative;
+}
+.cube-vs-topline,.cube-vs-brand,.cube-vs-top-right,.cube-vs-metadata,.cube-vs-actions {display:flex;align-items:center}
+.cube-vs-topline {justify-content:space-between;gap:18px}
+.cube-vs-brand {gap:12px}
+.cube-vs-brand-cube {display:flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid #b694f463;background:linear-gradient(150deg,#6a35bf52,#192246);border-radius:12px;color:#d7b8ff;box-shadow:0 0 22px #754de244}
+.cube-vs-brand b {display:block;font-size:15px;font-weight:900;letter-spacing:3px;line-height:1.3}
+.cube-vs-brand small {display:block;font-size:9px;letter-spacing:1.65px;color:#abbad7;font-weight:750;margin-top:4px}
+.cube-vs-top-right {gap:10px;color:#cad5ec;font-size:10px;letter-spacing:1.6px;font-weight:800}
+.cube-vs-live-dot {width:7px;height:7px;background:#3be7ad;border-radius:50%;box-shadow:0 0 13px #3be7ad}
+.cube-vs-kicker {margin:clamp(15px,3.4vh,34px) auto 14px;display:flex;align-items:center;justify-content:center;gap:14px;color:#e7e0fa;font-size:10px;font-weight:900;letter-spacing:2.1px;white-space:nowrap}
+.cube-vs-kicker span {color:#ba9aea}
+.cube-vs-kicker div {height:1px;width:clamp(20px,8vw,120px);background:linear-gradient(90deg,transparent,#887fae90,transparent)}
+.cube-vs-matchup {display:grid;grid-template-columns:minmax(0,1fr) 138px minmax(0,1fr);align-items:stretch;gap:0;min-width:0;flex:1;min-height:340px;max-height:540px}
+.cube-vs-fighter {
+  position:relative;min-width:0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:17px clamp(14px,2vw,26px) 20px;
+  border:1px solid #6897be68;
+  background:radial-gradient(ellipse at 50% 33%,#184e6652,transparent 65%),linear-gradient(155deg,#15223bde,#101a30e0);
+  border-radius:22px 7px 7px 22px;
+  box-shadow:inset 0 1px #ffffff11,0 18px 40px #01040da8;
+  overflow:hidden;
+  animation:vs-slide-player .65s cubic-bezier(.16,.9,.25,1) both;
+}
+.cube-vs-fighter--rival {
+  border-color:color-mix(in srgb,var(--vs-rival-accent) 52%,#44436c);
+  background:radial-gradient(ellipse at 50% 33%,color-mix(in srgb,var(--vs-rival-accent) 24%,transparent),transparent 66%),linear-gradient(160deg,#25203cd9,#13182ddf);
+  border-radius:7px 22px 22px 7px;
+  animation-name:vs-slide-rival;
+}
+.cube-vs-fighter::before {
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 28%,#ffffff08 50%,transparent 72%);
+  transform:translateX(-140%);animation:vs-sheen 1.2s ease .75s both;
+}
+.cube-vs-fighter--rival::before {animation-delay:.86s}
+.cube-vs-corner {position:absolute;width:43px;height:43px;z-index:4;pointer-events:none}
+.cube-vs-corner--tl {top:-1px;left:-1px;border-top:3px solid var(--vs-player);border-left:3px solid var(--vs-player);border-radius:20px 0 0 0}
+.cube-vs-corner--br {right:-1px;bottom:-1px;border-right:3px solid var(--vs-player);border-bottom:3px solid var(--vs-player);border-radius:0 0 7px 0}
+.cube-vs-fighter--rival .cube-vs-corner {border-color:var(--vs-rival-accent)}
+.cube-vs-fighter--rival .cube-vs-corner--tl{border-radius:7px 0 0 0}
+.cube-vs-fighter--rival .cube-vs-corner--br{border-radius:0 0 20px 0}
+.cube-vs-fighter-tag {position:relative;z-index:3;display:inline-flex;gap:8px;align-items:center;color:#78dcff;font-weight:850;letter-spacing:1.3px;font-size:11px;text-transform:uppercase;white-space:nowrap}
+.cube-vs-fighter--rival .cube-vs-fighter-tag{color:var(--vs-rival-accent)}
+.cube-vs-portrait-stage {position:relative;z-index:1;display:flex;align-items:center;justify-content:center;flex:1;min-height:0;margin:7px -7px 0;isolation:isolate;overflow:visible}
+.cube-vs-halo {position:absolute;left:50%;top:46%;width:min(79%,320px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;opacity:.74;background:radial-gradient(circle,#3bace649,transparent 68%);filter:blur(17px);pointer-events:none}
+.cube-vs-fighter--rival .cube-vs-halo {background:radial-gradient(circle,color-mix(in srgb,var(--vs-rival-accent) 35%,transparent),transparent 67%)}
+.cube-vs-halo-ring {position:absolute;left:50%;top:46%;width:min(75%,320px);aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid #55c8ff50;box-shadow:0 0 0 18px #51a9f409,0 0 35px #37b7fa0e;border-radius:50%;opacity:.75;pointer-events:none}
+.cube-vs-fighter--rival .cube-vs-halo-ring {border-color:color-mix(in srgb,var(--vs-rival-accent) 51%,transparent);box-shadow:0 0 0 18px color-mix(in srgb,var(--vs-rival-accent) 6%,transparent)}
+.cube-vs-player-image,.cube-vs-rival-art {position:relative;z-index:2;object-fit:contain;object-position:center;width:100%;max-width:390px;height:min(34vw,330px);max-height:100%;min-height:0;pointer-events:none;filter:drop-shadow(0 14px 25px #01040eb5);animation:vs-portrait-raise .75s cubic-bezier(.19,.8,.32,1) .14s both}
+.cube-vs-player-image { mix-blend-mode: screen; }
+.cube-vs-rival-art {display:flex;align-items:center;justify-content:center;isolation:isolate}
+.cube-vs-rival-art .rival-code-avatar {position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 12px 16px #0007)}
+.cube-vs-rival-art .rival-png-avatar {display:block;position:relative;width:100%;height:100%;max-height:100%;max-width:100%;object-fit:contain;filter:drop-shadow(0 14px 19px #0007)}
+.cube-vs-rival-art .rival-png-decor {height:94%;width:90%;top:50%;opacity:.65;pointer-events:none}
+.cube-vs-fighter-title{position:relative;z-index:3;border-top:1px solid #66cafa36;padding-top:13px;text-align:left}
+.cube-vs-fighter--rival .cube-vs-fighter-title{border-color:color-mix(in srgb,var(--vs-rival-accent) 32%,transparent);text-align:right}
+.cube-vs-fighter-title span {display:block;font-size:10px;color:#91bddc;font-weight:850;letter-spacing:1.6px}
+.cube-vs-fighter--rival .cube-vs-fighter-title span {color:var(--vs-rival-accent)}
+.cube-vs-fighter-title h2{margin:6px 0 3px;font-size:clamp(30px,4vw,58px);font-weight:950;line-height:1.03;letter-spacing:-1.5px;text-shadow:0 6px 16px #0006;overflow-wrap:anywhere}
+.cube-vs-fighter-title p{margin:0;color:#c1c9e2;font-size:clamp(11px,1.2vw,14px);font-weight:650;line-height:1.4}
+.cube-vs-center{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;position:relative;z-index:5;pointer-events:none;margin:0 -37px}
+.cube-vs-center-spark{color:#ddceff;font-size:18px;text-shadow:0 0 30px #ad7fff;animation:vs-float 2.2s ease-in-out infinite alternate}
+.cube-vs-center-slash{position:absolute;z-index:-1;width:6px;height:94%;background:linear-gradient(to bottom,transparent,#55cfff90 30%,#fff 50%,var(--vs-rival-accent) 72%,transparent);transform:rotate(22deg);box-shadow:0 0 24px #b898ff,0 0 64px #b898ff69;opacity:.75;animation:vs-impact .45s ease .6s both}
+.cube-vs-symbol{position:relative;padding:0 6px;font-size:clamp(62px,10vw,152px);letter-spacing:-.14em;line-height:.9;font-style:italic;font-weight:1000;transform:skewX(-10deg);background:linear-gradient(135deg,#d5f9ff 7%,#69caff 42%,#fff 51%,var(--vs-rival-accent) 80%,#ffe6fa 100%);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-stroke:1px #ffffff48;filter:drop-shadow(0 6px 12px #000c) drop-shadow(0 0 17px #9f7aff80);animation:vs-burst .65s cubic-bezier(.2,1.4,.42,1) .58s both}
+.cube-vs-center-sub {font-size:8px;letter-spacing:1.1px;font-weight:950;white-space:nowrap;padding:8px 9px;border:1px solid #ad96cd72;border-radius:99px;background:#15172b;color:#eeecff;box-shadow:0 5px 18px #060818cc;animation:vs-burst .5s ease 1s both}
+.cube-vs-bottom {padding:17px clamp(3px,1vw,10px) 0;text-align:center}
+.cube-vs-rival-quote{min-height:26px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:clamp(12px,1.3vw,15px);color:#f1edff;font-style:italic;font-weight:750;letter-spacing:.1px}
+.cube-vs-rival-quote svg {flex:none;color:var(--vs-rival-accent)}
+.cube-vs-metadata {justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0 14px}
+.cube-vs-metadata span {display:inline-flex;gap:6px;align-items:center;font-size:9px;color:#b2bfdd;font-weight:800;letter-spacing:1.2px}
+.cube-vs-metadata span+span{border-left:1px solid #5a5985;padding-left:12px}
+.cube-vs-progress{position:relative;overflow:hidden;height:3px;background:#39405d8f;border-radius:99px}
+.cube-vs-progress span{display:block;width:100%;height:100%;transform-origin:left center;background:linear-gradient(90deg,#59caff 0%,#bf9dff 48%,var(--vs-rival-accent) 100%);box-shadow:0 0 14px #bdabfd;animation:vs-timeline 5s linear both}
+.cube-vs-actions {gap:14px;justify-content:space-between;margin-top:14px}
+.cube-vs-back,.cube-vs-skip{font:inherit;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;min-height:42px;border-radius:10px;font-size:12px;font-weight:800;transition:background .18s ease,transform .18s ease,border-color .18s ease}
+.cube-vs-back{color:#c0c7e0;padding:0 12px;border:1px solid #595a7a;background:#141b30}
+.cube-vs-back:hover{background:#232641;border-color:#b0a7d4;transform:translateY(-1px)}
+.cube-vs-skip{color:#091124;background:linear-gradient(105deg,#d7f9ff,#89d9ff);padding:0 20px;border:1px solid #fff9;box-shadow:0 5px 22px #78bfff5c}
+.cube-vs-skip:hover{transform:translateY(-2px);box-shadow:0 8px 26px #78bfff78}
+.cube-vs-intro button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.cube-vs-next-note{display:flex;align-items:center;gap:5px;color:#778ba9;font-size:9px;letter-spacing:1px;font-weight:750}
+
+@keyframes vs-slide-player{from{opacity:0;transform:translateX(-110px) scale(.97)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes vs-slide-rival{from{opacity:0;transform:translateX(110px) scale(.97)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes vs-portrait-raise{from{opacity:0;transform:translateY(35px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes vs-burst{0%{opacity:0;transform:skewX(-10deg) scale(2.7);filter:blur(12px)}65%{opacity:1;filter:blur(0)}100%{opacity:1;transform:skewX(-10deg) scale(1);filter:drop-shadow(0 5px 12px #000a)}}
+@keyframes vs-impact{from{opacity:0;transform:rotate(22deg) scaleY(.04)}to{opacity:.8;transform:rotate(22deg) scaleY(1)}}
+@keyframes vs-flare-sweep{from{opacity:0;translate:-30vw 0}50%{opacity:1}to{opacity:.18;translate:25vw 0}}
+@keyframes vs-sheen{from{transform:translateX(-140%)}to{transform:translateX(140%)}}
+@keyframes vs-timeline{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes vs-float{from{transform:translateY(-4px)}to{transform:translateY(5px)}}
+
+@media(max-width:900px){
+  .cube-vs-frame{width:min(100% - 32px,800px);padding-top:22px}
+  .cube-vs-matchup{grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr);min-height:330px}
+  .cube-vs-fighter{padding:15px 13px 16px}
+  .cube-vs-center{margin:0 -28px}
+  .cube-vs-symbol{font-size:clamp(65px,10.5vw,108px)}
+  .cube-vs-player-image,.cube-vs-rival-art{height:min(35vw,310px)}
+}
+@media(max-width:600px){
+  .cube-vs-frame{width:calc(100% - 24px);min-height:100dvh;padding:16px 0 18px}
+  .cube-vs-brand-cube{width:32px;height:32px;border-radius:9px}
+  .cube-vs-brand b{font-size:12px;letter-spacing:2px}
+  .cube-vs-brand small{font-size:7px;letter-spacing:.7px}
+  .cube-vs-top-right{font-size:8px;letter-spacing:.7px;gap:6px}
+  .cube-vs-kicker{margin:22px auto 13px;letter-spacing:1.15px;font-size:8px;gap:7px}
+  .cube-vs-kicker div{width:24px}
+  .cube-vs-matchup{grid-template-columns:minmax(0,1fr) 50px minmax(0,1fr);min-height:286px;max-height:none}
+  .cube-vs-fighter{padding:12px 10px 15px;border-radius:14px 4px 4px 14px}
+  .cube-vs-fighter--rival{border-radius:4px 14px 14px 4px}
+  .cube-vs-fighter-tag{font-size:8px;letter-spacing:.4px;gap:3px}
+  .cube-vs-fighter-tag svg{width:12px;height:12px}
+  .cube-vs-portrait-stage{margin:8px -3px 0}
+  .cube-vs-player-image,.cube-vs-rival-art{height:clamp(126px,37vw,215px);max-width:none}
+  .cube-vs-fighter-title{padding-top:8px}
+  .cube-vs-fighter-title span{font-size:7px;letter-spacing:.55px}
+  .cube-vs-fighter-title h2{font-size:clamp(22px,6vw,32px);letter-spacing:-.8px}
+  .cube-vs-fighter-title p{font-size:10px}
+  .cube-vs-center{margin:0 -26px;gap:5px}
+  .cube-vs-symbol{font-size:clamp(53px,14vw,80px)}
+  .cube-vs-center-slash{width:3px}
+  .cube-vs-center-spark{font-size:14px}
+  .cube-vs-center-sub{font-size:6px;letter-spacing:0;padding:5px 4px}
+  .cube-vs-rival-quote{font-size:12px;line-height:1.4;margin:6px 0}
+  .cube-vs-metadata{gap:6px;margin:7px 0 13px}
+  .cube-vs-metadata span{font-size:8px;letter-spacing:.4px}
+  .cube-vs-metadata span+span{padding-left:8px}
+  .cube-vs-actions{gap:6px;flex-wrap:wrap}
+  .cube-vs-back,.cube-vs-skip{font-size:11px;padding:0 11px;min-height:44px}
+  .cube-vs-next-note{display:none}
+}
+@media(max-width:370px){
+  .cube-vs-top-right{font-size:7px}
+  .cube-vs-frame{width:calc(100% - 16px)}
+  .cube-vs-matchup{grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr)}
+  .cube-vs-fighter{padding-inline:7px;min-height:264px}
+  .cube-vs-fighter-tag{font-size:7px}
+  .cube-vs-fighter-title h2{font-size:21px}
+  .cube-vs-center{margin:0 -22px}
+  .cube-vs-symbol{font-size:50px}
+  .cube-vs-center-sub{font-size:5px}
+  .cube-vs-player-image,.cube-vs-rival-art{height:122px}
+  .cube-vs-back,.cube-vs-skip{font-size:10px}
+}
+@media(max-height:690px) and (min-width:601px){
+  .cube-vs-frame{padding:14px 0;min-height:100dvh}
+  .cube-vs-kicker{margin:8px auto}
+  .cube-vs-matchup{min-height:245px;max-height:360px}
+  .cube-vs-player-image,.cube-vs-rival-art{height:230px}
+  .cube-vs-bottom{padding-top:10px}
+}
+/* Settings toggle and OS preference both disable motion and flashing. */
+.cube-vs-intro--reduced *,
+.cube-vs-intro--reduced *::before,
+.cube-vs-intro--reduced *::after {animation:none!important;transition:none!important}
+.cube-vs-intro--reduced .cube-vs-progress span {transform:scaleX(1)}
+@media(prefers-reduced-motion:reduce){
+  .cube-vs-intro *, .cube-vs-intro *::before, .cube-vs-intro *::after{animation:none!important;transition:none!important}
+  .cube-vs-progress span{transform:scaleX(1)}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FREE-FOR-ALL INTRO · 2–10 independent rivals
+   Keeps the original cinematic 1v1 screen completely intact.
+   All competitors have their OWN cards; there is no opposing "AI team".
+   ══════════════════════════════════════════════════════════════════ */
+.cube-vs-tournament{
+  display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2.2vh,22px);
+  min-width:0;flex:1;position:relative;padding:4px 0 0;
+}
+.cube-vs-tournament-heading{text-align:center;position:relative;z-index:1}
+.cube-vs-tournament-heading-icon{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:7px 13px;border:1px solid color-mix(in srgb,var(--vs-rival-accent) 58%,#464467);
+  border-radius:999px;background:color-mix(in srgb,var(--vs-rival-accent) 12%,#151527);
+  color:var(--vs-rival-accent);font-size:9px;font-weight:950;letter-spacing:1.8px;
+}
+.cube-vs-tournament-heading h1{
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+  /* Each word has its own layout box: space survives font kerning and CSS resets. */
+  column-gap:.28em;row-gap:.07em;
+  font-size:clamp(25px,3.4vw,45px);line-height:1.16;margin:10px 0 6px;
+  font-weight:950;letter-spacing:-.015em;
+}
+.cube-vs-tournament-heading .cube-vs-title-word{
+  display:inline-block;flex:0 0 auto;white-space:nowrap;letter-spacing:inherit;
+}
+.cube-vs-tournament-heading .cube-vs-title-word--accent{
+  background:linear-gradient(105deg,#d6ceff 1%,var(--vs-rival-accent) 96%);
+  background-clip:text;-webkit-background-clip:text;color:transparent;
+}
+.cube-vs-tournament-heading p{
+  margin:0;color:#b7c2db;font-size:clamp(10px,1vw,13px);font-weight:650;letter-spacing:.2px;line-height:1.5;
+}
+.cube-vs-tournament-lineup{
+  display:grid;grid-template-columns:repeat(var(--vs-lineup-columns),minmax(0,1fr));
+  align-content:center;gap:clamp(8px,1.2vw,15px);width:100%;min-width:0;
+}
+/* The foreground overlay is only active in compact phone landscape.
+   Desktop and portrait keep their original separators inside each card. */
+.cube-vs-lineup-labels { display: none; }
+.cube-vs-contender{
+  position:relative;isolation:isolate;overflow:visible;min-width:0;
+  display:flex;flex-direction:column;gap:3px;
+  padding:12px 10px 11px;
+  border:1px solid color-mix(in srgb,var(--vs-rival-accent) 39%,#353d62);
+  background:radial-gradient(ellipse 80% 72% at 50% 42%,color-mix(in srgb,var(--vs-rival-accent) 17%,transparent),transparent 85%),linear-gradient(160deg,#20213bea,#101a32f2);
+  border-radius:16px;box-shadow:inset 0 1px #ffffff1a,0 12px 27px #0307138a;
+  animation:vs-multi-appear .57s cubic-bezier(.15,.85,.2,1) calc(.28s + var(--vs-entrant-index,0)*.11s) both;
+}
+.cube-vs-contender--player{
+  --vs-rival-accent:#5edbff;
+  --rival-accent:#5edbff;
+  --rival-glow:#ccfaff;
+  border-color:#59cfff8e;
+  background:radial-gradient(ellipse at 50% 32%,#1c80a14e,transparent 72%),linear-gradient(155deg,#162b46,#101a32);
+  box-shadow:inset 0 1px #a5f2ff2b,0 0 0 1px #1c78973f,0 10px 35px #031c335c;
+  animation-delay:.08s;
+}
+.cube-vs-contender::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 32%,#ffffff0a 50%,transparent 68%);opacity:.7}
+.cube-vs-contender-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--vs-rival-accent);font-size:clamp(8px,.75vw,10px);font-weight:850;letter-spacing:.8px;white-space:nowrap}
+.cube-vs-contender-art{position:relative;display:flex;align-items:center;justify-content:center;flex:1;min-height:0;height:clamp(110px,16vh,174px);max-height:174px;padding:2px 0 0;isolation:isolate}
+.cube-vs-contender-aura{position:absolute;width:76%;aspect-ratio:1;left:50%;top:47%;transform:translate(-50%,-50%);border-radius:50%;border:1px solid color-mix(in srgb,var(--vs-rival-accent) 31%,transparent);box-shadow:0 0 0 12px color-mix(in srgb,var(--vs-rival-accent) 4%,transparent),0 0 24px color-mix(in srgb,var(--vs-rival-accent) 10%,transparent);pointer-events:none}
+.cube-vs-contender-art>img,.cube-vs-contender-art>.rival-png-portrait,.cube-vs-contender-art>.rival-code-avatar,.cube-vs-contender-art>.rival-portrait-wrapper{
+  display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;position:relative;z-index:1;
+  filter:drop-shadow(0 11px 12px #0009);
+}
+.cube-vs-contender--player .cube-vs-contender-art>img{mix-blend-mode:screen;object-fit:contain}
+.cube-vs-contender-art .rival-png-avatar{display:block;width:100%;height:100%;object-fit:contain;position:relative;z-index:2}
+.cube-vs-contender-art .rival-code-avatar{width:100%;height:100%;object-fit:contain}
+.cube-vs-contender-art .rival-png-decor{inset:50% auto auto 50%;width:92%;height:92%;opacity:.47;pointer-events:none}
+.cube-vs-contender-info{z-index:2;position:relative;border-top:1px solid color-mix(in srgb,var(--vs-rival-accent) 23%,#3b4561);padding-top:7px;text-align:center;min-width:0}
+.cube-vs-contender-info strong{display:block;font-size:clamp(20px,2vw,32px);font-weight:950;line-height:1.1;letter-spacing:-.7px;color:#fff;white-space:nowrap}
+.cube-vs-contender--player .cube-vs-contender-info strong{color:#b7efff}
+.cube-vs-contender-info span{display:block;margin-top:4px;color:#bdc5df;font-size:clamp(8px,.75vw,10px);font-weight:800;letter-spacing:.45px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cube-vs-contender-separator{
+  position:absolute;z-index:5;left:-18px;top:49%;transform:translateY(-50%) rotate(-8deg);
+  width:35px;height:30px;display:flex;align-items:center;justify-content:center;
+  border:1px solid color-mix(in srgb,var(--vs-rival-accent) 58%,#9991cd);
+  border-radius:7px;background:linear-gradient(135deg,#ebfbff,#b9ddff 48%,var(--vs-rival-accent));
+  color:#172342;font-size:12px;font-weight:1000;font-style:italic;letter-spacing:-1px;
+  box-shadow:0 3px 12px #040917ac,0 0 15px color-mix(in srgb,var(--vs-rival-accent) 17%,transparent);
+  animation:vs-multi-flash .48s ease calc(.6s + var(--vs-entrant-index,0)*.1s) both;
+}
+.cube-vs-tournament-summary{display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center}
+.cube-vs-tournament-chain{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;color:#f8faff;font-size:clamp(10px,.9vw,13px);letter-spacing:.2px;line-height:1.5}
+.cube-vs-tournament-chain>strong{padding:4px 10px;border:1px solid #66d8ff89;background:#14334b8c;border-radius:7px;color:#a6eeff}
+.cube-vs-tournament-chain>span{display:inline-flex;align-items:center;gap:6px}
+.cube-vs-tournament-chain span b{color:var(--vs-rival-accent);font-size:10px;font-style:italic}
+.cube-vs-tournament-chain span strong{padding:4px 9px;border:1px solid color-mix(in srgb,var(--vs-rival-accent) 31%,#373e61);border-radius:7px;background:#1c2038bd}
+.cube-vs-tournament-summary>p{display:flex;align-items:center;gap:7px;margin:0;color:#c8bce9;font-size:9px;font-weight:850;letter-spacing:1.4px}
+.cube-vs-tournament-summary>p svg{color:var(--vs-rival-accent)}
+@keyframes vs-multi-appear{from{opacity:0;transform:translateY(33px) scale(.93)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes vs-multi-flash{from{opacity:0;transform:translateY(-50%) scale(1.8) rotate(-18deg)}to{opacity:1;transform:translateY(-50%) scale(1) rotate(-8deg)}}
+@media(max-width:1050px){
+  .cube-vs-tournament-lineup{grid-template-columns:repeat(var(--vs-tablet-columns),minmax(0,1fr))}
+  .cube-vs-contender-art{height:clamp(100px,13vh,150px)}
+  .cube-vs-contender-separator{left:-15px;width:30px;height:27px;font-size:10px}
+}
+@media(max-width:650px){
+  .cube-vs-tournament{gap:10px;justify-content:flex-start;padding-top:0}
+  .cube-vs-tournament-heading h1{font-size:clamp(20px,5.5vw,29px);margin:7px 0 5px;letter-spacing:-.6px}
+  .cube-vs-tournament-heading-icon{font-size:8px;letter-spacing:.7px;padding:5px 9px}
+  .cube-vs-tournament-heading p{font-size:10px}
+  .cube-vs-tournament-lineup{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .cube-vs-contender{padding:7px 5px 6px;border-radius:10px}
+  .cube-vs-contender-top{font-size:7px;letter-spacing:0;gap:2px}
+  .cube-vs-contender-top svg{width:10px;height:10px}
+  .cube-vs-contender-art{height:clamp(56px,15vw,80px)}
+  .cube-vs-contender-aura{box-shadow:0 0 0 5px color-mix(in srgb,var(--vs-rival-accent) 4%,transparent)}
+  .cube-vs-contender-info{padding-top:3px}
+  .cube-vs-contender-info strong{font-size:clamp(15px,4.1vw,20px)}
+  .cube-vs-contender-info span{font-size:7px;margin-top:2px;letter-spacing:0}
+  .cube-vs-contender-separator{width:20px;height:19px;left:-12px;font-size:8px;border-radius:5px}
+  .cube-vs-tournament-chain{gap:3px;font-size:9px}
+  .cube-vs-tournament-chain>strong,.cube-vs-tournament-chain span strong{padding:3px 5px}
+  .cube-vs-tournament-chain>span{gap:3px}
+  .cube-vs-tournament-summary{gap:6px}
+  .cube-vs-tournament-summary>p{font-size:7px;letter-spacing:.5px}
+  .cube-vs-tournament-summary>p svg{width:11px;height:11px}
+}
+@media(max-width:360px){
+  .cube-vs-tournament-heading h1{font-size:20px}
+  .cube-vs-contender-art{height:58px}
+  .cube-vs-contender-info strong{font-size:15px}
+  .cube-vs-contender-top{font-size:6.5px}
+}
+/* The existing reduced-motion and user settings rules also apply here. */
+
+/* ────────────────────────────────────────────────────────────────────────
+   MOBILE COMPACT VS INTRO · 1v1 AND 2–10 AI FREE-FOR-ALL
+   The original tall fighter panels previously stretched to viewport height.
+   Keep the matchup readable, preserve safe-area taps and avoid horizontal
+   scrolling on 320px–600px viewports, including short landscape screens.
+   ──────────────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .cube-vs-intro {
+    overflow-x: clip;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cube-vs-frame {
+    width: min(100% - 24px, 480px);
+    max-width: 100%;
+    min-height: 100dvh;
+    padding: max(12px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom));
+    gap: 0;
+  }
+  .cube-vs-topline { min-height: 34px; gap: 8px; }
+  .cube-vs-brand { gap: 8px; min-width: 0; }
+  .cube-vs-brand-cube { width: 31px; height: 31px; flex: none; }
+  .cube-vs-brand b { font-size: 11px; letter-spacing: 1.4px; }
+  .cube-vs-brand small { font-size: 7px; letter-spacing: .5px; margin-top: 1px; }
+  .cube-vs-top-right { font-size: 7px; letter-spacing: .4px; gap: 5px; white-space: nowrap; }
+  .cube-vs-live-dot { width: 6px; height: 6px; flex: none; }
+  .cube-vs-kicker { margin: 13px auto 11px; gap: 7px; letter-spacing: .9px; font-size: 8px; max-width: 100%; }
+  .cube-vs-kicker div { width: clamp(8px, 4.2vw, 22px); flex: 0 1 22px; }
+
+  /* HEAD-TO-HEAD: use one compact row instead of two tall empty columns. */
+  .cube-vs-matchup {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr);
+    flex: 0 0 auto;
+    height: clamp(255px, 44dvh, 355px);
+    min-height: 0;
+    max-height: none;
+    align-items: stretch;
+  }
+  .cube-vs-fighter,
+  .cube-vs-fighter--rival {
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    padding: 10px 7px 11px;
+    border-radius: 12px;
+    justify-content: space-between;
+  }
+  .cube-vs-fighter-tag {
+    font-size: clamp(6.5px, 2.2vw, 9px);
+    line-height: 1.2;
+    letter-spacing: .15px;
+    gap: 4px;
+    white-space: normal;
+  }
+  .cube-vs-fighter-tag svg { width: 11px; height: 11px; flex-shrink: 0; }
+  .cube-vs-portrait-stage {
+    flex: 1 1 auto;
+    margin: 5px -3px 3px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .cube-vs-player-image,
+  .cube-vs-rival-art {
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .cube-vs-rival-art .rival-png-avatar,
+  .cube-vs-rival-art .rival-code-avatar { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .cube-vs-halo, .cube-vs-halo-ring { width: min(100%, 175px); }
+  .cube-vs-fighter-title { flex: 0 0 auto; padding-top: 7px; min-height: 54px; }
+  .cube-vs-fighter-title span { font-size: 7px; letter-spacing: .15px; line-height: 1.25; }
+  .cube-vs-fighter-title h2 { font-size: clamp(21px, 6.6vw, 31px); letter-spacing: -.7px; margin: 3px 0 2px; }
+  .cube-vs-fighter-title p { font-size: 9px; line-height: 1.25; overflow-wrap: anywhere; }
+  .cube-vs-center { margin: 0 -16px; gap: 0; z-index: 6; }
+  .cube-vs-symbol { font-size: clamp(43px, 13vw, 62px); padding: 0 3px; }
+  .cube-vs-center-spark { font-size: 12px; }
+  .cube-vs-center-sub { display: none; }
+  .cube-vs-center-slash { width: 3px; height: 75%; }
+
+  /* FREE-FOR-ALL: scale by actual racer count without sideways overflow. */
+  .cube-vs-tournament {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    gap: clamp(7px, 1.4dvh, 12px);
+    padding: 0;
+  }
+  .cube-vs-tournament-heading-icon { padding: 5px 8px; font-size: 8px; letter-spacing: .5px; gap: 5px; }
+  .cube-vs-tournament-heading-icon svg { width: 12px; height: 12px; }
+  .cube-vs-tournament-heading h1 { font-size: clamp(18px, 5.6vw, 25px); line-height: 1.08; letter-spacing: -.6px; margin: 6px 0 4px; }
+  .cube-vs-tournament-heading p { font-size: 9px; line-height: 1.3; max-width: 340px; margin-inline: auto; }
+  .cube-vs-tournament-lineup {
+    grid-template-columns: repeat(var(--vs-mobile-columns, 3), minmax(0, 1fr));
+    gap: clamp(5px, 1.5vw, 8px);
+    align-content: start;
+  }
+  .cube-vs-contender {
+    gap: 2px;
+    padding: 7px 4px 6px;
+    border-radius: 10px;
+    min-width: 0;
+    box-shadow: inset 0 1px #ffffff17, 0 5px 15px #03071365;
+  }
+  .cube-vs-contender-top { font-size: 7px; line-height: 1.15; letter-spacing: 0; gap: 3px; }
+  .cube-vs-contender-top svg { width: 10px; height: 10px; flex: none; }
+  .cube-vs-contender-art {
+    flex: 0 0 auto;
+    width: 100%;
+    height: clamp(41px, calc((100dvh - 340px) / var(--vs-mobile-rows, 3) - 53px), 108px);
+    max-height: none;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .cube-vs-contender-art > img,
+  .cube-vs-contender-art .rival-png-avatar,
+  .cube-vs-contender-art .rival-code-avatar { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
+  .cube-vs-contender-art .rival-png-decor { height: 82%; width: 85%; }
+  .cube-vs-contender-aura { width: 62%; }
+  .cube-vs-contender-info { padding-top: 4px; }
+  .cube-vs-contender-info strong { font-size: clamp(15px, 4.2vw, 20px); line-height: 1.1; letter-spacing: -.3px; }
+  .cube-vs-contender-info span { font-size: 7px; line-height: 1.2; margin-top: 2px; letter-spacing: 0; }
+  .cube-vs-contender-separator { left: -10px; width: 19px; height: 19px; top: 50%; font-size: 8px; border-radius: 5px; }
+  /* VS is already between each portrait. Avoid repeating the full 11-name chain. */
+  .cube-vs-tournament-chain { display: none; }
+  .cube-vs-tournament-summary { gap: 0; }
+  .cube-vs-tournament-summary > p { font-size: 8px; line-height: 1.3; letter-spacing: .25px; justify-content: center; }
+  .cube-vs-tournament-summary > p svg { width: 12px; height: 12px; }
+
+  /* Controls remain comfortably tappable and in view on normal-height phones. */
+  .cube-vs-bottom { flex: 0 0 auto; margin-top: auto; padding: 12px 0 0; min-width: 0; }
+  .cube-vs-rival-quote { font-size: 11px; line-height: 1.3; min-height: 0; margin: 0 0 7px; gap: 6px; }
+  .cube-vs-rival-quote svg { width: 14px; height: 14px; }
+  .cube-vs-metadata { gap: 5px; margin: 0 0 10px; }
+  .cube-vs-metadata span { font-size: 7px; letter-spacing: .3px; gap: 3px; }
+  .cube-vs-metadata span+span { padding-left: 7px; }
+  .cube-vs-progress { height: 3px; }
+  .cube-vs-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr); gap: 9px; margin-top: 11px; }
+  .cube-vs-back, .cube-vs-skip { width: 100%; min-width: 0; min-height: 44px; padding: 0 6px; font-size: 11px; gap: 4px; white-space: nowrap; }
+  .cube-vs-back svg, .cube-vs-skip svg { width: 15px; height: 15px; flex: none; }
+  .cube-vs-next-note { display: none; }
+}
+@media (max-width: 600px) and (max-height: 700px) {
+  .cube-vs-frame { padding-top: 8px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .cube-vs-kicker { margin: 7px auto 8px; }
+  .cube-vs-matchup { height: clamp(235px, 43dvh, 290px); }
+  .cube-vs-tournament { gap: 6px; }
+  .cube-vs-tournament-heading-icon { padding: 4px 7px; }
+  .cube-vs-tournament-heading h1 { margin: 4px 0 3px; }
+  .cube-vs-tournament-heading p { font-size: 8px; }
+  .cube-vs-contender { padding: 5px 3px 4px; }
+  .cube-vs-contender-art { height: clamp(34px, calc((100dvh - 320px) / var(--vs-mobile-rows, 3) - 46px), 84px); }
+  .cube-vs-contender-info { padding-top: 2px; }
+  .cube-vs-contender-info strong { font-size: 15px; }
+  .cube-vs-contender-info span { font-size: 6.5px; }
+  .cube-vs-bottom { padding-top: 7px; }
+  .cube-vs-rival-quote { margin-bottom: 5px; }
+  .cube-vs-metadata { margin-bottom: 7px; }
+  .cube-vs-actions { margin-top: 7px; }
+}
+@media (max-width: 360px) {
+  .cube-vs-frame { width: calc(100% - 16px); }
+  .cube-vs-top-right { font-size: 6px; }
+  .cube-vs-brand b { font-size: 10px; }
+  .cube-vs-brand small { font-size: 6px; }
+  .cube-vs-matchup { grid-template-columns: minmax(0,1fr) 25px minmax(0,1fr); }
+  .cube-vs-fighter { padding: 9px 5px 10px; }
+  .cube-vs-fighter-tag { font-size: 6.5px; gap: 2px; }
+  .cube-vs-center { margin: 0 -14px; }
+  .cube-vs-symbol { font-size: 42px; }
+  .cube-vs-tournament-lineup { gap: 5px; }
+  .cube-vs-contender-top { font-size: 6.5px; }
+  .cube-vs-contender-info strong { font-size: 14px; }
+  .cube-vs-contender-info span { font-size: 6px; }
+  .cube-vs-contender-separator { left: -8px; width: 17px; height: 17px; font-size: 7px; }
+  .cube-vs-back, .cube-vs-skip { font-size: 10px; }
+}
+/* Very short mobile landscape: retain readable cards and allow vertical
+   scrolling rather than cropping controls behind browser chrome. */
+@media (max-width: 600px) and (max-height: 480px) {
+  .cube-vs-matchup { height: 230px; }
+  .cube-vs-contender-art { height: 40px; }
+  .cube-vs-frame { min-height: 100dvh; }
+}
+/* Balance spare vertical space above and below the matchup on tall phones,
+   instead of leaving one huge empty strip beneath the cards. */
+@media (max-width: 600px) {
+  .cube-vs-kicker { margin-top: auto; }
+  .cube-vs-contender-art {
+    height: clamp(38px, calc((100dvh - 390px) / var(--vs-mobile-rows, 3) - 53px), 108px);
+  }
+}
+@media (max-width: 600px) and (max-height: 700px) {
+  .cube-vs-contender-art {
+    height: clamp(32px, calc((100dvh - 380px) / var(--vs-mobile-rows, 3) - 44px), 78px);
+  }
+  .cube-vs-intro--dense .cube-vs-tournament-heading p,
+  .cube-vs-intro--dense .cube-vs-tournament-summary,
+  .cube-vs-intro--dense .cube-vs-rival-quote,
+  .cube-vs-intro--dense .cube-vs-metadata { display: none; }
+  .cube-vs-intro--dense .cube-vs-tournament-heading h1 { margin: 3px 0; }
+  .cube-vs-intro--dense .cube-vs-bottom { padding-top: 7px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOBILE LANDSCAPE · FULL-SCREEN, NON-SCROLLING CINEMATIC MATCHUP
+   Fits the *visible* viewport, including browser toolbar reduction.
+   1v1: two full portraits and a central VS; 2–10 AI: every entrant on one
+   or two rows, chosen by competitor count. Landscape only: portrait and
+   full desktop presentations are deliberately untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (orientation: landscape) and (max-height: 620px) and (max-width: 1180px) and (min-width: 601px) {
+  .cube-vs-intro {
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cube-vs-frame {
+    flex: 0 1 auto;
+    display: flex;
+    width: min(1040px, calc(100% - 18px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    height: 100%;
+    min-height: 0;
+    max-height: 100dvh;
+    min-width: 0;
+    margin: 0 auto;
+    padding: max(3px, env(safe-area-inset-top)) 0 max(3px, env(safe-area-inset-bottom));
+    gap: 3px;
+    overflow: hidden;
+  }
+  .cube-vs-topline {
+    flex: 0 0 22px;
+    min-height: 0;
+    gap: 8px;
+  }
+  .cube-vs-brand { gap: 6px; }
+  .cube-vs-brand-cube { width: 22px; height: 22px; border-radius: 6px; }
+  .cube-vs-brand-cube svg { width: 13px; height: 13px; }
+  .cube-vs-brand b { font-size: 11px; letter-spacing: 1.3px; line-height: 1; }
+  .cube-vs-brand small { font-size: 7px; letter-spacing: .6px; margin-top: 2px; }
+  .cube-vs-top-right { font-size: 8px; letter-spacing: .6px; gap: 5px; }
+  .cube-vs-live-dot { width: 5px; height: 5px; }
+  .cube-vs-kicker { display: none; }
+
+  /* HEAD TO HEAD: the available stage height, not vw, drives portrait sizes. */
+  .cube-vs-matchup {
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 0;
+    max-height: none;
+    height: auto;
+    grid-template-columns: minmax(0,1fr) clamp(40px, 9vw, 92px) minmax(0,1fr);
+    align-items: stretch;
+  }
+  .cube-vs-fighter,
+  .cube-vs-fighter--rival {
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    padding: 7px 12px 6px;
+    border-radius: 12px;
+  }
+  .cube-vs-fighter-tag { flex: 0 0 auto; font-size: 9px; letter-spacing: .3px; line-height: 1; gap: 5px; }
+  .cube-vs-fighter-tag svg { width: 11px; height: 11px; }
+  .cube-vs-portrait-stage {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    margin: 1px -3px 0;
+    overflow: hidden;
+  }
+  .cube-vs-player-image,
+  .cube-vs-rival-art {
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .cube-vs-fighter-title { flex: 0 0 auto; min-height: 0; padding-top: 4px; }
+  .cube-vs-fighter-title span { font-size: 8px; letter-spacing: .5px; line-height: 1.1; }
+  .cube-vs-fighter-title h2 { font-size: clamp(19px,3.9vw,32px); line-height: 1; letter-spacing: -.6px; margin: 3px 0 1px; }
+  .cube-vs-fighter-title p { font-size: 9px; line-height: 1.15; }
+  .cube-vs-center { margin: 0 -23px; gap: 3px; }
+  .cube-vs-center-spark { font-size: 12px; }
+  .cube-vs-symbol { font-size: clamp(39px, 7vw, 68px); }
+  .cube-vs-center-slash { width: 3px; height: 80%; }
+  .cube-vs-center-sub { font-size: 6px; padding: 4px 6px; letter-spacing: .1px; }
+
+  /* FREE FOR ALL: every opponent fits without swiping or scrolling.
+     2–5 AI = one row, 6–10 AI = two balanced rows. */
+  .cube-vs-tournament,
+  .cube-vs-tournament--dense {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .cube-vs-tournament-heading { flex: 0 0 auto; min-height: 0; order: 0; }
+  .cube-vs-tournament-heading-icon { display: none; }
+  .cube-vs-tournament-heading h1 {
+    font-size: clamp(18px, 2.8vw, 26px);
+    line-height: 1.15;
+    letter-spacing: 0;
+    column-gap: .3em;
+    row-gap: 0;
+    margin: 1px 0 3px;
+  }
+  .cube-vs-tournament-heading p { display: none; }
+  .cube-vs-tournament-lineup {
+    flex: 1 1 0;
+    order: 2;
+    width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    display: grid;
+    grid-template-columns: repeat(var(--vs-landscape-columns, 4), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--vs-landscape-rows, 1), minmax(0, 1fr));
+    align-content: stretch;
+    gap: 5px 8px;
+    overflow: hidden;
+  }
+  .cube-vs-contender,
+  .cube-vs-contender--player {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    padding: 4px 6px 4px;
+    gap: 2px;
+  }
+  .cube-vs-contender-top { flex: 0 0 auto; font-size: 7px; line-height: 1; letter-spacing: .1px; gap: 3px; }
+  .cube-vs-contender-top svg { width: 10px; height: 10px; }
+  .cube-vs-contender-art {
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+  }
+  .cube-vs-contender-art > img,
+  .cube-vs-contender-art .rival-png-avatar,
+  .cube-vs-contender-art .rival-code-avatar,
+  .cube-vs-contender-art .rival-portrait-wrapper {
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .cube-vs-contender-info { flex: 0 0 auto; min-height: 0; padding-top: 3px; }
+  .cube-vs-contender-info strong { font-size: clamp(12px,2.3vw,19px); line-height: 1; }
+  .cube-vs-contender-info span { font-size: 7px; margin-top: 2px; line-height: 1; }
+  .cube-vs-contender-separator { width: 18px; height: 18px; left: -9px; font-size: 8px; }
+  /* DESKTOP-STYLE VS OVERLAY: badges float in front of the cards, never
+     behind or clipped by each card's short-screen overflow:hidden. */
+  .cube-vs-tournament-lineup { position: relative; order: 1; isolation: isolate; }
+  .cube-vs-contender-separator { display: none; } /* desktop badges retained outside landscape */
+  .cube-vs-lineup-labels {
+    position: absolute;
+    z-index: 100;
+    inset: 0;
+    pointer-events: none;
+    display: grid;
+    grid-template-columns: repeat(var(--vs-landscape-columns, 4), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--vs-landscape-rows, 1), minmax(0, 1fr));
+    gap: 5px 8px;
+  }
+  .cube-vs-lineup-label {
+    justify-self: start;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -4px; /* exact middle of the grid gap, like desktop */
+    transform: translateX(-50%) rotate(-8deg); /* also applies with reduced motion */
+    width: clamp(22px, 3.1vw, 32px);
+    height: clamp(20px, 2.8vw, 28px);
+    border: 1px solid color-mix(in srgb, var(--vs-rival-accent) 58%, #a1b8fc);
+    border-radius: 6px;
+    background: linear-gradient(135deg, #ecfbff 0%, #c7dfff 53%, #c3b1fa 100%);
+    color: #172342;
+    font-size: clamp(10px, 1.25vw, 13px);
+    font-style: italic;
+    font-weight: 1000;
+    letter-spacing: -.4px;
+    text-shadow: 0 1px #fff6;
+    box-shadow: 0 4px 11px #05081ec0, 0 0 12px #9977ff5c;
+    animation: vs-floating-label-appear .45s ease calc(.42s + var(--vs-entrant-index, 0) * .08s) both;
+  }
+  @keyframes vs-floating-label-appear {
+    from { opacity: 0; transform: translateX(-50%) rotate(-11deg) scale(1.4); }
+    to { opacity: 1; transform: translateX(-50%) rotate(-8deg) scale(1); }
+  }
+  /* The introductory YOU VS AI chip row belongs BELOW the desktop cards.
+     In landscape, the visible overlaid badges are the single VS display. */
+  .cube-vs-tournament-summary,
+  .cube-vs-intro--dense .cube-vs-tournament-summary { display: none !important; }
+
+  /* Consistent, accessible entrance controls + running 5-second progress. */
+  .cube-vs-bottom { flex: 0 0 auto; min-width: 0; padding: 1px 2px 0; margin: 0; }
+  .cube-vs-rival-quote { min-height: 0; font-size: 10px; line-height: 1.2; gap: 4px; }
+  .cube-vs-rival-quote svg { width: 12px; height: 12px; }
+  .cube-vs-metadata { gap: 7px; margin: 2px 0 4px; }
+  .cube-vs-metadata span { font-size: 8px; letter-spacing: .3px; gap: 4px; }
+  .cube-vs-metadata span+span { padding-left: 7px; }
+  .cube-vs-progress { height: 3px; }
+  .cube-vs-actions { gap: 8px; margin-top: 5px; }
+  .cube-vs-back,
+  .cube-vs-skip { min-height: 30px; font-size: 10px; padding: 0 12px; border-radius: 7px; }
+  .cube-vs-back svg,
+  .cube-vs-skip svg { width: 13px; height: 13px; }
+  .cube-vs-next-note { display: none; }
+}
+
+/* Browser bars can leave little more than 240–290 CSS px in landscape. */
+@media (orientation:landscape) and (min-width:601px) and (max-width:1180px) and (max-height:320px) {
+  .cube-vs-frame { gap: 2px; padding-top: 2px; padding-bottom: 2px; }
+  .cube-vs-topline { flex-basis: 19px; }
+  .cube-vs-brand-cube { width: 19px; height: 19px; }
+  .cube-vs-brand b { font-size: 10px; }
+  .cube-vs-brand small { font-size: 6px; margin-top: 1px; }
+  .cube-vs-top-right { font-size: 7px; }
+  .cube-vs-tournament-heading h1 { font-size: clamp(16px,2.65vw,21px);margin:0 0 2px; }
+  .cube-vs-lineup-label { width: 23px; height: 21px; font-size: 10px; }
+  .cube-vs-rival-quote { font-size: 9px; }
+  .cube-vs-metadata { margin: 1px 0 3px; }
+  .cube-vs-metadata span { font-size: 7px; }
+  .cube-vs-actions { margin-top: 4px; }
+  .cube-vs-back,.cube-vs-skip { min-height: 27px; }
+}

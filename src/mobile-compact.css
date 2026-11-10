@@ -1,0 +1,316 @@
+/* Cube Hero — compact, genuinely responsive small-screen layer.
+   This file is intentionally presentation-only. Race timers, solving, data,
+   drag gestures and keyboard controls remain owned by their components. */
+
+@media (max-width: 720px) {
+  .app-shell .main-wrap, .app-shell .main-content,
+  .app-shell .page-stack, .app-shell .academy-page,
+  .app-shell .race-setup, .app-shell .room-page, .app-shell .ghost-page {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .app-shell .main-content { padding: 18px 13px 27px; }
+  .app-shell .page-stack { gap: 14px; }
+  .app-shell .topbar { min-height: 60px; height: 60px; padding-inline: 13px; }
+  .app-shell .topbar-left { min-width: 0; gap: 8px; }
+  .app-shell .topbar-page { min-width: 0; white-space: nowrap; }
+  .app-shell .topbar-page strong { overflow: hidden; text-overflow: ellipsis; }
+  .app-shell .app-footer { gap: 9px; padding: 15px 13px; }
+
+  /* Mode heroes: keep the art, without taking an entire phone screen. */
+  .app-shell .ch-mode-hero,
+  .app-shell .ch-ghost-mode-hero { padding: 20px 18px; gap: 10px; }
+  .app-shell .ch-mode-hero h1 { font-size: clamp(26px, 6.6vw, 35px); margin: 10px 0 8px; }
+  .app-shell .ch-mode-hero-copy>p { font-size: 12px; line-height: 1.55; }
+  .app-shell .ch-mode-hero-pills { margin-top: 11px; }
+  .app-shell .ch-mode-hero-actions { margin-top: 13px; }
+  .app-shell .ch-ai-hero-art { min-height: 170px; height: 170px; }
+  .app-shell .ch-ai-hero-illustration { width: min(178px, 62%); max-height: 148px; }
+  .app-shell .ch-ai-hero-core { width: min(240px, 73%); max-height: 218px; transform: translate(2%, 0); }
+  .app-shell .ch-ai-hero-orbit { width: 186px; }
+  .app-shell .ch-ai-hero-level { bottom: 0; }
+  .app-shell .ch-ghost-hero-art { min-height: 145px; height: 145px; }
+  .app-shell .ch-ghost-hero-ring-outer { width: 139px; height: 139px; }
+  .app-shell .ch-ghost-hero-ring-inner { width: 119px; height: 119px; }
+  .app-shell .ch-ghost-hero-avatar { width: 76px; height: 76px; border-radius: 19px; margin-top: -19px; }
+  .app-shell .ch-ghost-hero-avatar svg { width: 50px; height: 50px; }
+  .app-shell .ch-ghost-hero-score { min-width: 146px; padding: 6px 10px; }
+  .app-shell .ch-ghost-hero-score>strong { font-size: 22px; }
+
+  /* Mechanics guide is highly visible but does not dominate mobile. */
+  .app-shell .ch-mechanics-spotlight { padding: 12px; gap: 9px; border-radius: 14px; }
+  .app-shell .ch-mechanics-spotlight-icon { flex-basis: 37px; width: 37px; height: 37px; border-radius: 11px; }
+  .app-shell .ch-mechanics-spotlight-icon svg { width: 20px; height: 20px; }
+  .app-shell .ch-mechanics-spotlight-copy h2 { font-size: 15px; }
+  .app-shell .ch-mechanics-spotlight-copy p { font-size: 11px; }
+  .app-shell .ch-mechanics-spotlight-button { min-height: 46px; padding: 8px; }
+
+  /* Less empty space on the common dashboard and settings cards. */
+  .app-shell .hero { min-height: 315px; padding: 24px 20px; }
+  .app-shell .hero-content h1 { font-size: clamp(29px, 7vw, 35px); }
+  .app-shell .feature-card { padding: 13px 11px; }
+  .app-shell .feature-icon { margin-bottom: 10px; }
+  .app-shell .settings-surface { padding: 15px 13px 4px; }
+  .app-shell .settings-section-head { gap: 10px; }
+  .app-shell .stats-graph { padding: 15px; }
+  .app-shell .stat-grid { gap: 8px; }
+  .app-shell .stat-tile { padding: 12px; }
+  .app-shell .race-setup { padding: 17px 13px; }
+  .app-shell .setup-divider { margin: 17px 0; }
+
+  /* Protect long scrambles and tabular data instead of clipping them. */
+  .app-shell .scramble-panel,
+  .app-shell .ghost-scramble-panel,
+  .app-shell .history-scroll-viewport,
+  .app-shell .history-table-wrap { max-width: 100%; min-width: 0; }
+  .app-shell .ch-compact-scroll { overscroll-behavior-inline: contain; }
+
+  /* Academy: a small page, not a stack of giant desktop panels. */
+  .app-shell .academy-page { gap: 12px !important; }
+  .app-shell .academy-hero { padding: 18px 15px; border-radius: 15px; }
+  .app-shell .academy-hero h1 { font-size: clamp(27px, 7vw, 35px); margin: 11px 0; }
+  .app-shell .academy-hero-content>p { line-height: 1.55; font-size: 11.5px; }
+  .app-shell .academy-hero-actions { margin-top: 13px; gap: 7px; }
+  .app-shell .academy-hero-actions .btn { min-height: 42px; }
+  .app-shell .academy-trust { margin-top: 11px; font-size: 10px; }
+  .app-shell .academy-overview-metrics { gap: 7px; }
+  .app-shell .academy-case-counts { gap: 7px; }
+  .app-shell .academy-case-counts>div { padding: 10px; }
+  .app-shell .academy-case-counts>div strong { font-size: clamp(12px, 3.5vw, 16px); }
+  .app-shell .academy-case-counts>div small { font-size: 9.5px; }
+  .app-shell .academy-learned-meter { gap: 7px; }
+  .app-shell .academy-explorer-head { margin: 4px 0 10px; }
+  .app-shell .academy-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 11px;
+    padding-bottom: 11px;
+  }
+  .app-shell .academy-tab, .app-shell .academy-tab:first-child {
+    grid-column: auto;
+    min-width: 0;
+    min-height: 42px;
+    padding: 7px 5px;
+    font-size: 10.5px;
+    gap: 4px;
+    white-space: normal;
+    line-height: 1.18;
+    border-radius: 9px;
+  }
+  .app-shell .academy-tab svg { width: 14px; height: 14px; flex: 0 0 14px; }
+  .app-shell .academy-overview-content,
+  .app-shell .academy-content-panel { padding: 12px; border-radius: 14px; }
+  .app-shell .academy-section-heading { align-items: flex-start; margin-bottom: 12px; }
+  .app-shell .academy-section-heading h3 { font-size: 18px; line-height: 1.25; }
+  .app-shell .academy-section-heading p { font-size: 11px; }
+  .app-shell .academy-path-badge { font-size: 9px; padding: 6px 8px; }
+
+  /* Six steps: EXACTLY 3 COLUMNS x 2 ROWS, even on small phones. */
+  .app-shell .academy-course-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(146px, auto));
+    grid-auto-flow: row;
+    gap: 7px;
+  }
+  .app-shell .academy-course-card {
+    min-width: 0;
+    min-height: 146px;
+    height: 100%;
+    padding: 10px 8px;
+    gap: 5px;
+    border-radius: 11px;
+    overflow: hidden;
+  }
+  .app-shell .academy-course-top { gap: 2px; min-height: 23px; }
+  .app-shell .academy-course-num { font-size: 21px; letter-spacing: -.6px; }
+  .app-shell .academy-course-level { display: none; }
+  .app-shell .academy-completed { font-size: 0; }
+  .app-shell .academy-completed svg { width: 15px; height: 15px; }
+  .app-shell .academy-course-card>strong {
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1.23;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .app-shell .academy-course-card p {
+    font-size: 9.5px;
+    line-height: 1.32;
+    color: #bbc9e4;
+    flex: 1 1 auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .app-shell .academy-course-cta {
+    margin-top: auto;
+    gap: 3px;
+    font-size: 9px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .app-shell .academy-course-cta svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .app-shell .academy-quick-grid { gap: 7px; margin-top: 10px; }
+  .app-shell .academy-quick-grid>button { padding: 10px; }
+  .app-shell .academy-library-tools { gap: 9px; }
+  .app-shell .academy-category-filters {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #8052d5 transparent;
+    padding-bottom: 5px;
+  }
+  .app-shell .academy-category-filters button { flex-shrink: 0; }
+  .app-shell .academy-library-layout,
+  .app-shell .academy-library-preview,
+  .app-shell .academy-algorithm-browser,
+  .app-shell .academy-algorithm-list { min-width: 0; }
+  .app-shell .academy-notation-workbench,
+  .app-shell .academy-notation-actions,
+  .app-shell .academy-lesson-info,
+  .app-shell .academy-lesson-demo,
+  .app-shell .academy-library-preview,
+  .app-shell .academy-drill-preview { padding: 12px; }
+}
+
+@media (max-width: 430px) {
+  /* Quick selected AI levels are still in the familiar 3x2 grid. */
+  .app-shell .difficulty-grid { gap: 6px; }
+  .app-shell .difficulty-option { min-height: 61px; }
+  .app-shell .difficulty-option strong { font-size: 11px; }
+  .app-shell .personality-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .app-shell .personality-option {
+    min-height: 113px;
+    padding: 9px 7px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+  .app-shell .personality-icon { width: 30px; height: 30px; }
+  .app-shell .personality-copy>strong { font-size: 10.5px; }
+  .app-shell .personality-copy small { font-size: 9.2px; line-height: 1.33; }
+  .app-shell .multi-ai-live-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .app-shell .multi-ai-live-rival { padding: 8px 7px; }
+  .app-shell .multi-ai-rival-body { grid-template-columns: minmax(0, 1fr) 51px; gap: 3px; }
+  .app-shell .multi-ai-rival-time { font-size: clamp(17px, 4.9vw, 21px); letter-spacing: -.6px; }
+  .app-shell .multi-ai-rival-time small { font-size: 9px; margin-bottom: 2px; }
+  .app-shell .multi-ai-rival-cube,
+  .app-shell .multi-ai-rival-cube-placeholder { width: 51px; height: 54px; }
+  .app-shell .multi-ai-rival-cube .ai-3d-cube-shell { height: 51px; }
+  .app-shell .multi-ai-rival-cube .ai-css-cube-stage { --cube-size: 40px; --cube-half: 20px; min-height: 49px; }
+  .app-shell .multi-ai-rival-cube .ai-physical-turn-stage { --cube-size: 40px; }
+  .app-shell .multi-ai-rival-top small { font-size: 7px; letter-spacing: 0; }
+  .app-shell .ghost-qualification-grid { gap: 6px; }
+  .app-shell .ghost-qualification-card { padding: 10px 8px; gap: 7px; }
+  .app-shell .ghost-qualification-card strong { font-size: clamp(17px, 5vw, 22px); }
+  .app-shell .ghost-qualification-card>span:last-child { font-size: 8px; }
+  .app-shell .ghost-scramble-panel { padding: 14px 11px; }
+  .app-shell .ghost-scramble-line { padding: 11px 8px; gap: 7px; }
+  .app-shell .ghost-start-buttons { gap: 8px; }
+
+  .app-shell .academy-course-grid { gap: 6px; grid-template-rows: repeat(2, minmax(146px, auto)); }
+  .app-shell .academy-course-card { padding: 9px 7px; }
+  .app-shell .academy-course-card>strong { font-size: 11px; }
+  .app-shell .academy-course-card p { font-size: 9px; }
+  .app-shell .academy-course-cta { font-size: 8.6px; }
+  .app-shell .academy-course-num { font-size: 20px; }
+  .app-shell .academy-overview-content { padding: 11px; }
+  .app-shell .academy-quick-grid { margin-top: 9px; }
+  .app-shell .academy-quick-grid>button { grid-template-columns: 30px minmax(0, 1fr) 14px; column-gap: 7px; }
+  .app-shell .academy-quick-icon { width: 30px; height: 30px; }
+}
+
+@media (max-width: 340px) {
+  .app-shell .main-content { padding-inline: 9px; }
+  .app-shell .academy-overview-content { padding: 9px; }
+  .app-shell .academy-course-card { padding: 8px 6px; }
+  .app-shell .academy-course-card>strong { font-size: 10.5px; }
+  .app-shell .academy-course-cta { font-size: 8px; }
+  .app-shell .academy-course-cta svg { width: 10px; }
+  .app-shell .multi-ai-rival-body { grid-template-columns: minmax(0, 1fr) 45px; }
+  .app-shell .multi-ai-rival-cube,
+  .app-shell .multi-ai-rival-cube-placeholder { width: 45px; }
+}
+
+@media (hover: none) {
+  .app-shell .academy-course-card:hover,
+  .app-shell .academy-quick-grid>button:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .academy-course-card,
+  .app-shell .academy-tab { transition: none; }
+}
+
+/* Portrait drawer: keep the local player's identity visible at the bottom.
+   Only the navigation list may scroll on a short phone, never the profile.
+   Landscape's compact desktop rail is intentionally unaffected. */
+@media (orientation: portrait) and (max-width: 720px) {
+  .app-shell .sidebar {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .app-shell .sidebar-brand-row {
+    flex: 0 0 auto;
+    margin-bottom: clamp(12px, 3vh, 24px);
+  }
+  .app-shell .sidebar-label { flex: 0 0 auto; }
+  .app-shell .main-nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 6px;
+  }
+  .app-shell .main-nav::-webkit-scrollbar { display: none; }
+  .app-shell .sidebar-bottom {
+    flex: 0 0 auto;
+    margin-top: 0;
+    gap: 8px;
+    padding-top: 8px;
+    background: linear-gradient(180deg, rgba(11, 14, 29, .96), #0b0e1b);
+  }
+  .app-shell .sidebar-bottom .settings-nav { flex: 0 0 auto; min-height: 44px; }
+  .app-shell .guest-profile {
+    display: flex;
+    flex: 0 0 auto;
+    min-height: 58px;
+    gap: 9px;
+    align-items: center;
+    padding: 10px 2px 1px;
+  }
+  .app-shell .guest-profile > div { min-width: 0; flex: 1 1 auto; }
+  .app-shell .guest-profile strong {
+    display: block;
+    max-width: 100%;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .app-shell .guest-profile small {
+    display: block;
+    font-size: 10.5px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .app-shell .guest-profile .online-dot { display: block; flex: 0 0 6px; }
+}

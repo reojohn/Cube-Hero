@@ -1,0 +1,18 @@
+/* The username is independent of game engine ids (which remain "YOU"). */
+.cube-topbar-player{display:inline-flex;align-items:center;gap:10px;min-width:0}
+.cube-topbar-player>span{font-size:12px;font-weight:750;color:#dedbf4;max-width:155px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guest-profile>div:not(.guest-avatar){min-width:0}
+.guest-profile strong{display:block;max-width:157px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cube-profile-settings .settings-header-icon{background:transparent;box-shadow:none}
+.cube-profile-edit{display:flex;flex-direction:column;gap:9px;margin:20px 0 3px}
+.cube-profile-edit label{font-size:11px;letter-spacing:.35px;font-weight:700;color:#d9dbf7}
+.cube-profile-edit-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cube-profile-edit input{box-sizing:border-box;flex:1 1 185px;min-width:0;background:#11182e;border:1px solid #64739a80;border-radius:10px;color:#f2f4ff;font-size:16px;outline:none;padding:12px 13px;transition:border-color .15s,box-shadow .15s}
+.cube-profile-edit input:focus-visible{border-color:#bb94ff;box-shadow:0 0 0 3px #ba88ff22}
+.cube-profile-edit button{min-height:43px;white-space:nowrap}
+.cube-profile-edit button:disabled{opacity:.48;cursor:not-allowed}
+.cube-profile-edit small{color:#aab8d6;min-height:16px;font-size:11px}
+@media(max-width:860px){.cube-topbar-player>span{display:none}}
+@media(max-width:380px){.cube-profile-edit button{width:100%;justify-content:center}}
+/* Long usernames must never widen mobile matchups or standings columns. */
+.cube-vs-contender-info span,.cube-vs-fighter-title p,.journey-board-name strong,.multi-ai-place strong{max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

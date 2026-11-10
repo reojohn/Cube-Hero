@@ -1,0 +1,112 @@
+/* Cube Hero AI personality portrait cards — presentation only.
+   AI timings, personalities and selection persistence remain unchanged. */
+.personality-option.ch-personality-card {
+  --personality-accent: 181, 133, 250;
+  display: grid;
+  grid-template-columns: minmax(0, 106px) minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 123px;
+  padding: 10px 15px 10px 5px;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 15px;
+  background: linear-gradient(122deg, rgba(var(--personality-accent), .065), transparent 62%), linear-gradient(145deg,#192136,#13192d);
+  border-color: rgba(var(--personality-accent), .26);
+}
+.personality-option.ch-personality-casual { --personality-accent: 53, 222, 153; }
+.personality-option.ch-personality-balanced { --personality-accent: 255, 177, 69; }
+.personality-option.ch-personality-competitive { --personality-accent: 255, 83, 112; }
+.personality-option.ch-personality-card:hover,
+.personality-option.ch-personality-card.selected {
+  border-color: rgba(var(--personality-accent), .8);
+  background: linear-gradient(112deg,rgba(var(--personality-accent), .14),rgba(29,27,52,.7) 62%), #171b31;
+  box-shadow: 0 0 0 1px rgba(var(--personality-accent), .12) inset, 0 10px 28px rgba(var(--personality-accent), .075);
+}
+.personality-option.ch-personality-card.selected::after {
+  content: '';
+  position: absolute;
+  inset: auto 16px 0;
+  height: 2px;
+  background: linear-gradient(90deg,transparent,rgba(var(--personality-accent),.95),transparent);
+  pointer-events: none;
+}
+.personality-option .ch-personality-portrait {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  min-width: 0;
+  pointer-events: none;
+}
+.personality-option .ch-personality-portrait::before {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(var(--personality-accent), .09);
+  filter: blur(17px);
+  pointer-events: none;
+}
+.personality-option .ch-personality-portrait img {
+  display: block;
+  width: 110%;
+  max-width: none;
+  height: 110%;
+  object-fit: contain;
+  transform: translateZ(0);
+  transition: transform .2s ease;
+  user-select: none;
+}
+.personality-option.ch-personality-card:hover .ch-personality-portrait img,
+.personality-option.ch-personality-card.selected .ch-personality-portrait img {
+  transform: scale(1.045);
+}
+.personality-option.ch-personality-card .personality-copy { position: relative; z-index: 1; gap: 6px; }
+.personality-option.ch-personality-card .personality-copy>strong {font-size: 14px; letter-spacing: -.1px;}
+.personality-option.ch-personality-card .personality-copy small {font-size: 11px; max-width: 180px;}
+.personality-option.ch-personality-card .personality-check {color: rgb(var(--personality-accent)); right: 10px; top: 10px;}
+.personality-option.ch-personality-card .personality-copy em { background: rgba(var(--personality-accent), .2); color: #f1eaff; }
+@media (min-width:721px) and (max-width:1120px) {
+  .personality-option.ch-personality-card {grid-template-columns: 104px minmax(0,1fr); min-height: 112px;}
+}
+@media (max-width: 720px) {
+  .personality-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+  .personality-option.ch-personality-card,
+  .app-shell .personality-option.ch-personality-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 178px;
+    padding: 9px 6px 11px;
+    gap: 4px;
+    text-align: center;
+  }
+  .personality-option .ch-personality-portrait,
+  .app-shell .personality-option .ch-personality-portrait {
+    width: min(100%, 106px);
+    aspect-ratio: 1;
+    height: auto;
+  }
+  .personality-option.ch-personality-card .personality-copy { align-items: center; width: 100%; gap: 4px; }
+  .personality-option.ch-personality-card .personality-copy>strong { justify-content: center; font-size: 11.5px; gap: 3px; }
+  .personality-option.ch-personality-card .personality-copy small { font-size: 9.5px; line-height: 1.35; }
+  .personality-option.ch-personality-card .personality-copy em { font-size: 7px; padding: 2px 4px; }
+  .personality-option.ch-personality-card .personality-check {top: 5px;right:5px;}
+}
+@media (max-width: 400px) {
+  .app-shell .personality-grid {grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px;}
+  .app-shell .personality-option.ch-personality-card { min-height: 165px; padding: 7px 4px 9px; gap: 2px; }
+  .personality-option.ch-personality-card .personality-copy>strong { font-size: 10.5px; }
+  .personality-option.ch-personality-card .personality-copy small { font-size: 8.8px; }
+  .app-shell .personality-option .ch-personality-portrait {width: min(100%,91px);}
+}
+@media (prefers-reduced-motion: reduce) {
+  .personality-option .ch-personality-portrait img {transition: none;}
+  .personality-option.ch-personality-card:hover .ch-personality-portrait img { transform:none; }
+}

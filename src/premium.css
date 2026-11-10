@@ -1,0 +1,1116 @@
+/*
+ * CUBE HERO | LUXE INTERFACE PASS — Phase 3
+ * Visual-only enhancement layer. The race clock, keyboard/pointer controls,
+ * CFOP engine, scramble state, cube transforms and record storage are untouched.
+ * Keep this stylesheet imported AFTER styles.css in main.tsx.
+ */
+:root {
+  --ch-luxe-ink: #080c1c;
+  --ch-luxe-panel: #151c31;
+  --ch-luxe-violet: #a778ff;
+  --ch-luxe-border: #39425f;
+  --ch-luxe-secondary: #adb9d3;
+  --ch-luxe-glow: rgba(136, 83, 255, .20);
+  --ch-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* App shell: more depth with no continuously animated background. */
+.app-shell {
+  background:
+    radial-gradient(ellipse 68% 34% at 74% -9%, rgba(103, 60, 200, .18), transparent 78%),
+    radial-gradient(ellipse 30% 25% at 98% 65%, rgba(43, 51, 126, .09), transparent 83%),
+    linear-gradient(170deg, #0a0d20 0%, #080c19 64%, #070b18 100%);
+  color: #f5f5ff;
+}
+.app-shell .sidebar {
+  background:
+    radial-gradient(circle at -30% 0%, rgba(104, 74, 194, .16), transparent 48%),
+    linear-gradient(180deg, rgba(15, 18, 37, .99), rgba(9, 13, 27, .99));
+  border-right: 1px solid rgba(147, 145, 212, .13);
+  box-shadow: 12px 0 42px rgba(0, 0, 0, .12);
+}
+.app-shell .brand-logo svg {
+  filter: drop-shadow(0 6px 12px rgba(139, 79, 255, .28));
+  transition: filter .28s ease, transform .38s var(--ch-ease);
+}
+.app-shell .brand-link:hover .brand-logo svg,
+.app-shell .brand-link:focus-visible .brand-logo svg {
+  transform: rotate(-8deg) scale(1.06);
+  filter: drop-shadow(0 8px 18px rgba(158, 109, 255, .47));
+}
+.app-shell .brand-logo span { letter-spacing: -.85px; }
+.app-shell .brand-logo strong { color: #c8b0ff; }
+.app-shell .sidebar-label { color: #8e98b9; }
+.app-shell .nav-item {
+  color: #afb8d0;
+  transition: background .25s ease, color .2s ease, border-color .2s ease,
+    box-shadow .28s ease, transform .25s var(--ch-ease);
+  border: 1px solid transparent;
+}
+.app-shell .nav-item:hover:not(.active) {
+  background: linear-gradient(100deg, rgba(148, 118, 255, .14), rgba(148, 118, 255, .035));
+  border-color: rgba(156, 129, 255, .15);
+  color: #f4efff;
+  transform: translateX(3px);
+}
+.app-shell .nav-item.active {
+  background: linear-gradient(112deg, #7545e1 0%, #5129a0 65%, #43218b 100%);
+  border-color: rgba(200, 171, 255, .25);
+  box-shadow: inset 0 1px 0 rgba(232, 210, 255, .28), 0 10px 24px rgba(94, 44, 178, .24);
+  color: #fff;
+}
+.app-shell .nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 1px; top: 24%; bottom: 24%; width: 2px;
+  background: #d8baff;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(215, 173, 255, .7);
+}
+.app-shell .nav-item svg { transition: color .2s, transform .28s var(--ch-ease); }
+.app-shell .nav-item:hover svg { transform: scale(1.08); }
+.app-shell .sidebar-phase {
+  border: 1px solid rgba(166, 142, 236, .23);
+  background: linear-gradient(128deg, rgba(122, 82, 217, .16), rgba(25, 28, 51, .74));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 14px 28px rgba(0,0,0,.09);
+}
+.app-shell .phase-indicator,
+.app-shell .onboarding-icon,
+.app-shell .stats-side-icon,
+.app-shell .settings-header-icon,
+.app-shell .learn-tip-icon {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 8px 22px rgba(123, 78, 241, .12);
+}
+.app-shell .guest-profile { border-top-color: rgba(133, 152, 205, .18); }
+.app-shell .topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(10, 13, 29, .87);
+  border-bottom: 1px solid rgba(144, 151, 202, .15);
+  box-shadow: 0 8px 30px rgba(0,0,0,.1);
+  backdrop-filter: saturate(1.23) blur(18px);
+  -webkit-backdrop-filter: saturate(1.23) blur(18px);
+}
+.app-shell .topbar-avatar {
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 6px 18px rgba(0,0,0,.17);
+}
+.app-shell .topbar-page strong { color: #edf0ff; }
+.app-shell .app-footer {
+  border-top-color: rgba(147, 155, 205, .13);
+  background: rgba(11, 15, 28, .4);
+}
+.app-shell .main-content { padding-top: clamp(24px, 3vw, 38px); }
+.app-shell .page-stack { gap: clamp(18px, 2.15vw, 27px); }
+
+/* Shared editorial hierarchy and glass cards. */
+.app-shell .eyebrow { color: #bca0ff; letter-spacing: 2px; }
+.app-shell .page-heading h1 { font-weight: 800; letter-spacing: -1.45px; }
+.app-shell .page-heading p,
+.app-shell .settings-section-head p,
+.app-shell .section-row p,
+.app-shell .row-between p { color: var(--ch-luxe-secondary); }
+.app-shell .surface {
+  border-color: rgba(139, 154, 210, .25);
+  background:
+    linear-gradient(158deg, rgba(28, 35, 59, .96), rgba(18, 24, 44, .98) 73%);
+  box-shadow: inset 0 1px 0 rgba(229, 222, 255, .045), 0 13px 32px rgba(2, 5, 15, .17);
+  border-radius: 17px;
+}
+.app-shell .label-badge {
+  border-color: rgba(187, 137, 255, .39);
+  background: linear-gradient(105deg, rgba(110, 48, 188, .43), rgba(111, 59, 176, .29));
+  color: #dfcaff;
+}
+.app-shell .label-badge.badge-muted {
+  color: #b5c3e3;
+  background: #1b2440;
+  border-color: #354260;
+}
+
+/* Shared buttons: tactile, quick, and light on GPU work. */
+.app-shell .btn {
+  border-radius: 12px;
+  letter-spacing: .08px;
+  transition: transform .23s var(--ch-ease), border-color .2s ease,
+    background .22s ease, box-shadow .25s ease, filter .2s ease;
+}
+.app-shell .btn-primary {
+  border-color: rgba(199, 167, 255, .66);
+  background: linear-gradient(104deg, #6351f7 0%, #8251f4 47%, #a039ec 100%);
+  box-shadow: inset 0 1px 0 rgba(247, 233, 255, .34),
+    0 9px 24px rgba(96, 52, 218, .29), 0 0 0 1px rgba(177, 139, 255, .09);
+}
+.app-shell .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(103deg, #796bff 0%, #9665ff 49%, #b44af2 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 246, 255, .48),
+    0 14px 31px rgba(116, 63, 237, .38);
+  filter: brightness(1.04);
+}
+.app-shell .btn-outline {
+  color: #f1f0ff;
+  border-color: #4a5474;
+  background: rgba(14, 20, 37, .78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .02);
+}
+.app-shell .btn-outline:hover:not(:disabled) {
+  border-color: #9877ef;
+  background: #252446;
+  box-shadow: 0 8px 22px rgba(70, 51, 137, .14);
+}
+.app-shell .btn:hover:not(:disabled):not(.ghost-start-hold):not(.ghost-stop-button):not(.ghost-inspect-cta) {
+  transform: translateY(-2px);
+}
+.app-shell .btn:active:not(:disabled):not(.ghost-start-hold):not(.ghost-stop-button):not(.ghost-inspect-cta) {
+  transform: translateY(1px) scale(.986);
+  transition-duration: .1s;
+}
+.app-shell button:disabled { opacity: .61; box-shadow: none; }
+.app-shell :is(button, select, input, summary, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid #cb9aff;
+  outline-offset: 3px;
+}
+.app-shell .btn svg { flex-shrink: 0; }
+
+/* Home: the glowing cube remains the hero, not an extra heavy video/animation. */
+.app-shell .hero {
+  min-height: 435px;
+  border-radius: 24px;
+  padding: clamp(25px, 3.7vw, 49px);
+  background:
+    radial-gradient(ellipse 65% 110% at 84% 48%, rgba(110, 53, 202, .40), transparent 75%),
+    radial-gradient(ellipse 50% 60% at 2% 0%, rgba(64, 66, 134, .18), transparent 82%),
+    linear-gradient(119deg, #161b32, #101427 54%, #191231);
+  border-color: rgba(160, 125, 235, .31);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12),
+    0 22px 65px rgba(12, 8, 40, .21);
+}
+.app-shell .hero::before {
+  border-color: rgba(190, 126, 255, .13);
+  box-shadow: 0 0 0 65px rgba(140, 70, 255, .022), 0 0 0 130px rgba(140, 70, 255, .016);
+}
+.app-shell .hero-kicker { color: #d2bbff; }
+.app-shell .hero-content h1 {
+  font-weight: 800;
+  letter-spacing: -2.6px;
+  line-height: 1.14;
+  text-shadow: 0 4px 30px rgba(15, 9, 41, .20);
+}
+.app-shell .hero-content h1 span {
+  background-image: linear-gradient(103deg, #e3deff, #ac83ff 57%, #c573ff);
+}
+.app-shell .hero-content>p {
+  color: #b9c3e0;
+  line-height: 1.8;
+  font-size: 14px;
+}
+.app-shell .hero-cube>.cube-art { filter: drop-shadow(0 11px 27px rgba(133, 52, 243, .43)); }
+.app-shell .cube-backdrop {
+  background: radial-gradient(ellipse, rgba(135, 63, 255, .31), rgba(66, 37, 114, .08) 56%, transparent 76%);
+}
+.app-shell .floating-note {
+  border-color: rgba(187, 159, 247, .28);
+  background: rgba(20, 23, 45, .88);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 27px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.075);
+}
+.app-shell .hero-trust { color: #b1bbd7; }
+.app-shell .section-row h2 { font-weight: 750; }
+.app-shell .feature-card {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  border-radius: 18px;
+  padding: 24px 21px;
+  background: linear-gradient(151deg, rgba(31, 39, 66, .95), rgba(17, 24, 43, .96));
+  border-color: rgba(143, 157, 214, .23);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 13px 26px rgba(0,0,0,.12);
+  transition: transform .32s var(--ch-ease), border-color .26s ease, box-shadow .32s ease, background .32s ease;
+}
+.app-shell .feature-card::before {
+  content: ""; pointer-events: none; position: absolute; inset: 0 0 auto; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(178, 134, 255, .55), transparent);
+  opacity: 0; transition: opacity .22s ease;
+}
+.app-shell .feature-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(169, 133, 255, .56);
+  box-shadow: 0 18px 40px rgba(24, 13, 60, .22), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.app-shell .feature-card:hover::before { opacity: 1; }
+.app-shell .feature-icon {
+  border: 1px solid rgba(190, 148, 255, .13);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.11), 0 9px 20px rgba(88, 42, 177, .12);
+  transition: transform .32s var(--ch-ease);
+}
+.app-shell .feature-card:hover .feature-icon { transform: rotate(-5deg) scale(1.08); }
+.app-shell .feature-card h3 { color: #f1f2ff; font-size: 14px; }
+.app-shell .feature-card p { color: #aebbd5; font-size: 12px; }
+.app-shell .onboarding-banner {
+  background:
+    radial-gradient(ellipse at 98% 18%, rgba(132, 62, 222, .20), transparent 53%),
+    linear-gradient(110deg, #291c4a, #1b2039 65%, #171c32);
+  border-color: rgba(163, 120, 247, .36);
+  border-radius: 18px;
+}
+.app-shell .roadmap-surface { border-radius: 17px; }
+.app-shell .timeline-step.done>span {
+  background: linear-gradient(130deg, #8553f9, #6340d7);
+  box-shadow: 0 5px 14px rgba(109, 61, 231, .25);
+}
+
+/* Race setup and difficulty selection. */
+.app-shell .race-setup { border-radius: 21px; }
+.app-shell .field-label { color: #dfe5f9; }
+.app-shell .select-wrap,
+.app-shell .setting-select {
+  border: 1px solid #414a68;
+  border-radius: 11px;
+  background: linear-gradient(160deg, #111a2d, #0f1628);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.app-shell .select-wrap:hover,
+.app-shell .setting-select:hover { border-color: #745fbd; }
+.app-shell .select-wrap:focus-within,
+.app-shell .setting-select:focus-within {
+  border-color: #ae85ff;
+  box-shadow: 0 0 0 3px rgba(135, 86, 255, .17);
+}
+.app-shell .difficulty-option,
+.app-shell .multi-ai-choice,
+.app-shell .extended-menu-option {
+  transition: transform .25s var(--ch-ease), box-shadow .25s ease,
+    border-color .2s ease, background .2s ease;
+}
+.app-shell .difficulty-option {
+  border-radius: 12px;
+  background: linear-gradient(165deg, #1d2740, #141b30);
+  border-color: #414b69;
+}
+.app-shell .difficulty-option:hover:not(.selected) {
+  transform: translateY(-3px);
+  border-color: #9c7df1;
+  box-shadow: 0 9px 24px rgba(26, 20, 65, .18);
+}
+.app-shell .difficulty-option.selected {
+  background: linear-gradient(145deg, #7847df, #452695);
+  border-color: #cdabff;
+  box-shadow: 0 0 0 1px rgba(199, 164, 255, .48), 0 12px 30px rgba(105, 52, 227, .28);
+}
+.app-shell .extended-difficulty {
+  border-radius: 18px;
+  box-shadow: 0 14px 33px rgba(81, 45, 157, .09);
+}
+.app-shell .extended-difficulty-trigger {
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.075);
+}
+.app-shell .extended-trigger-action {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 9px 22px rgba(96, 51, 195, .26);
+}
+.app-shell .extended-difficulty-menu { border-color: rgba(171, 128, 249, .45); }
+.app-shell .extended-menu-option:hover,
+.app-shell .multi-ai-choice:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 17px rgba(38, 22, 93, .18);
+}
+.app-shell .multi-ai-picker {
+  border-color: rgba(164, 128, 247, .42);
+  border-radius: 17px;
+  background: linear-gradient(132deg, rgba(47, 30, 83, .94), rgba(28, 25, 52, .95));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.app-shell .multi-ai-choice.active { box-shadow: 0 7px 24px rgba(112, 60, 233, .30); }
+.app-shell .opponent-summary {
+  border-color: rgba(143, 119, 220, .37);
+  background: linear-gradient(105deg, #28213f, #191d35);
+  border-radius: 13px;
+}
+.app-shell .option-card {
+  background: linear-gradient(146deg, #1a2237, #151b2d);
+  border-color: #3b4665;
+  border-radius: 12px;
+  transition: background .24s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.app-shell .option-card:hover {
+  background: #23243c;
+  border-color: #8570c8;
+  box-shadow: 0 6px 16px rgba(20, 13, 50, .15);
+}
+.app-shell .switch { box-shadow: inset 0 1px 2px rgba(0,0,0,.15); }
+.app-shell .switch.on { box-shadow: inset 0 1px 1px rgba(255,255,255,.19), 0 0 12px rgba(121, 76, 249, .19); }
+
+/* Live race: visible hierarchy, with zero layout/transform changes on cube parts. */
+.app-shell .live-status {
+  border-color: rgba(152, 115, 225, .47);
+  border-radius: 14px;
+  background: linear-gradient(92deg, rgba(55, 34, 87, .86), rgba(23, 28, 49, .95));
+}
+.app-shell .scramble-panel {
+  border-radius: 19px;
+  border-color: rgba(141, 146, 199, .27);
+}
+.app-shell .ch-compact-helper,
+.app-shell .scramble-helper {
+  border-color: rgba(113, 137, 204, .3);
+  background: linear-gradient(168deg, #151e35, #111a2e);
+}
+.app-shell .ch-compact-move,
+.app-shell .arrow-move-card {
+  border-color: rgba(112, 132, 190, .31);
+  background: linear-gradient(148deg, #202a43, #161e35);
+  transition: background .2s ease, border-color .2s ease;
+}
+.app-shell .ch-compact-move:hover,
+.app-shell .arrow-move-card:hover {
+  border-color: #9379e0;
+  background: #272849;
+}
+.app-shell .racer-panel {
+  border-radius: 19px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 13px 26px rgba(0,0,0,.11);
+  transition: border-color .2s ease, box-shadow .25s ease;
+}
+.app-shell .human-panel {
+  background: radial-gradient(ellipse at 50% 85%, rgba(11, 133, 96, .105), transparent 70%),
+    linear-gradient(160deg, #102531, #0d1a2a);
+  border-color: rgba(40, 225, 157, .63);
+}
+.app-shell .human-panel.racer-live {
+  border-color: rgba(52, 243, 165, .90);
+  box-shadow: inset 0 0 0 1px rgba(53, 243, 165, .22), 0 0 35px rgba(36, 181, 126, .10);
+}
+.app-shell .ai-panel {
+  background: radial-gradient(ellipse at 54% 32%, rgba(91, 50, 164, .18), transparent 74%),
+    linear-gradient(150deg, #191b36, #161a30);
+  border-color: rgba(131, 125, 204, .31);
+}
+.app-shell .racer-top strong { color: #f9f7ff; }
+.app-shell .timer-control { border-color: rgba(119, 147, 187, .38); }
+.app-shell .inspection-panel,
+.app-shell .ghost-inspection-strip { border-radius: 15px; }
+.app-shell .multi-ai-live { border-color: rgba(122, 131, 196, .34); }
+.app-shell .multi-ai-live-rival {
+  border-color: rgba(111, 133, 192, .28);
+  background: linear-gradient(148deg, #1e2a44, #151c31);
+  border-radius: 13px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.app-shell .multi-ai-live-rival.finished { border-color: rgba(73, 208, 163, .6); }
+.app-shell .multi-ai-live-rival .multi-ai-rival-cube { border-color: rgba(135, 135, 200, .27); }
+
+/* Ghost Race: refined qualifying, challenge, results and reset sections. */
+.app-shell .ghost-banner,
+.app-shell .ghost-results-panel {
+  border-radius: 22px;
+  border-color: rgba(174, 132, 250, .40);
+  background: radial-gradient(ellipse 45% 130% at 93% 5%, rgba(129, 70, 219, .21), transparent 80%),
+    linear-gradient(116deg, #261d44, #151b32 75%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 20px 43px rgba(19, 9, 45, .17);
+}
+.app-shell .ghost-banner-stat {
+  border-color: rgba(174, 130, 242, .41);
+  background: linear-gradient(142deg, rgba(88, 55, 137, .37), rgba(38, 31, 74, .55));
+  border-radius: 16px;
+}
+.app-shell .ghost-heading h1 { letter-spacing: -1.4px; }
+.app-shell .ghost-qualification-card {
+  background: linear-gradient(160deg, #1d273e, #151d32);
+  border-color: rgba(141, 160, 213, .29);
+  border-radius: 15px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 21px rgba(0,0,0,.11);
+  transition: border-color .24s ease, box-shadow .24s ease, transform .27s var(--ch-ease);
+}
+.app-shell .ghost-qualification-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(169, 137, 255, .58);
+  box-shadow: 0 12px 25px rgba(25, 19, 65, .17);
+}
+.app-shell .ghost-qualification-card.best {
+  border-color: rgba(60, 225, 161, .68);
+  background: linear-gradient(135deg, #123731, #122a32);
+}
+.app-shell .ghost-scramble-panel,
+.app-shell .ghost-history-panel { border-radius: 19px; }
+.app-shell .ghost-player-card {
+  border-radius: 19px;
+  background: radial-gradient(ellipse at 50% 85%, rgba(16, 164, 106, .10), transparent 73%),
+    linear-gradient(155deg, #122a32, #101c2b);
+  border-color: rgba(45, 224, 159, .6);
+}
+.app-shell .ghost-opponent-card {
+  border-radius: 19px;
+  border-color: rgba(144, 121, 205, .34);
+  background: radial-gradient(ellipse at 52% 42%, rgba(97, 56, 177, .19), transparent 73%),
+    linear-gradient(160deg, #191a36, #161b31);
+}
+.app-shell .ghost-locked-card {
+  border-color: rgba(147, 127, 202, .3);
+  border-radius: 19px;
+}
+.app-shell .ghost-history-list>div {
+  border-radius: 11px;
+  transition: border-color .2s ease, background .2s ease;
+}
+.app-shell .ghost-history-list>div:hover { border-color: #8067c1; background: #1c2340; }
+.app-shell .ghost-reset-zone { border-radius: 15px; }
+.app-shell .ghost-reset-button:active:not(:disabled) { transform: translateY(1px) scale(.986); }
+
+/* Statistics: more legible KPIs, data display, and table row interactions. */
+.app-shell .stat-tile {
+  border-radius: 17px;
+  background: linear-gradient(147deg, #1c2740, #151d32);
+  border-color: rgba(131, 153, 213, .28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 9px 20px rgba(0,0,0,.10);
+  transition: transform .32s var(--ch-ease), border-color .23s ease, box-shadow .28s ease;
+}
+.app-shell .stat-tile:hover {
+  transform: translateY(-4px);
+  border-color: rgba(160, 126, 246, .53);
+  box-shadow: 0 14px 27px rgba(18, 18, 54, .18);
+}
+.app-shell .stat-tile>strong { font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.app-shell .stat-tile>span { color: #c3cde5; }
+.app-shell .stat-tile>small { color: #a6b5d3; }
+.app-shell .stats-graph,
+.app-shell .stats-side,
+.app-shell .history-snippet { border-radius: 18px; }
+.app-shell .history-table-wrap,
+.app-shell .history-scroll-viewport { border-color: #3a4769; }
+.app-shell .history-table th,
+.app-shell .history-scroll-viewport .history-table thead th {
+  background: #28203f;
+  color: #d9baff;
+  box-shadow: 0 1px 0 rgba(179, 152, 243, .16);
+}
+.app-shell .history-table td { border-top-color: #303b57; }
+.app-shell .history-table tbody tr { transition: background .18s ease; }
+.app-shell .history-table tbody tr:hover { background: rgba(114, 79, 203, .13); }
+.app-shell .history-scroll-viewport { scrollbar-color: #7e60bd #171f35; }
+
+/* Learn: editorial hero and relaxed expanders. */
+.app-shell .learn-hero,
+.app-shell .learn-footer {
+  border-radius: 20px;
+  border-color: rgba(164, 124, 235, .31);
+  background: radial-gradient(ellipse at 87% 28%, rgba(136, 76, 235, .22), transparent 65%),
+    linear-gradient(118deg, #251e44, #171d33);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 18px 35px rgba(14, 12, 44, .12);
+}
+.app-shell .learn-hero h2 { letter-spacing: -1.15px; }
+.app-shell .lesson {
+  border-radius: 15px;
+  border-color: rgba(119, 143, 204, .26);
+  background: linear-gradient(147deg, #1b253e, #141c31);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.048);
+  transition: border-color .24s ease, background .24s ease, box-shadow .25s ease, transform .25s var(--ch-ease);
+}
+.app-shell .lesson:hover {
+  transform: translateX(3px);
+  border-color: rgba(161, 130, 245, .6);
+  box-shadow: 0 9px 26px rgba(21, 14, 53, .18);
+}
+.app-shell .lesson[open] {
+  border-color: rgba(176, 146, 255, .57);
+  background: linear-gradient(154deg, #232345, #171e36);
+  box-shadow: 0 12px 31px rgba(23, 17, 59, .15);
+}
+.app-shell .lesson-text>span { color: #b0bfdc; }
+.app-shell .lesson-text strong { color: #f2f0ff; }
+.app-shell .learn-footer { border-color: rgba(146, 138, 210, .26); }
+
+/* Settings: coherent controls with easy-to-scan sections. */
+.app-shell .settings-surface { border-radius: 19px; }
+.app-shell .settings-section-head { border-bottom-color: rgba(134, 154, 205, .2); }
+.app-shell .settings-row {
+  border-bottom-color: rgba(125, 148, 195, .16);
+  transition: background .18s ease;
+}
+.app-shell .settings-row:hover {
+  background: rgba(127, 105, 211, .045);
+}
+.app-shell .settings-row strong { color: #f1f3ff; }
+.app-shell .settings-row p { color: #aebbd7; }
+.app-shell .switch { transition: background .2s, border-color .2s, box-shadow .2s; }
+.app-shell .switch:hover { border-color: #b295fa; }
+.app-shell .switch:focus-visible { outline: 2px solid #bc99ff; outline-offset: 3px; }
+
+/* Respect users' motion settings, without affecting actual cube solving logic. */
+@media (prefers-reduced-motion: reduce) {
+  .app-shell :is(.btn,.nav-item,.feature-card,.feature-icon,.difficulty-option,.multi-ai-choice,
+  .extended-menu-option,.ghost-qualification-card,.stat-tile,.lesson,.history-table tbody tr,
+  .option-card,.brand-logo svg) { transition: none !important; }
+  .app-shell :is(.feature-card,.difficulty-option,.multi-ai-choice,.extended-menu-option,
+  .ghost-qualification-card,.stat-tile,.lesson,.nav-item,.btn):hover { transform: none !important; }
+}
+.reduce-motion .app-shell :is(.btn,.nav-item,.feature-card,.feature-icon,.difficulty-option,.multi-ai-choice,
+.extended-menu-option,.ghost-qualification-card,.stat-tile,.lesson,.history-table tbody tr,
+.option-card,.brand-logo svg) { transition: none !important; }
+.reduce-motion .app-shell :is(.feature-card,.difficulty-option,.multi-ai-choice,.extended-menu-option,
+.ghost-qualification-card,.stat-tile,.lesson,.nav-item,.btn):hover { transform: none !important; }
+
+/* Responsive: preserve layout, avoid tiny labels and clipping. */
+@media (max-width: 1120px) {
+  .app-shell .hero { padding: 29px; }
+  .app-shell .hero-content h1 { font-size: clamp(30px, 3.8vw, 42px); }
+  .app-shell .feature-card { padding: 21px 17px; }
+}
+@media (max-width: 740px) {
+  .app-shell .topbar { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .app-shell .main-content { padding-top: 24px; }
+  .app-shell .hero { min-height: 365px; padding: 28px 23px; border-radius: 18px; }
+  .app-shell .hero-content h1 { letter-spacing: -1.6px; white-space: normal; }
+  .app-shell .hero-content>p { font-size: 13px; }
+  .app-shell .section-row h2 { font-size: 19px; }
+  .app-shell .feature-card { padding: 19px 17px; min-height: 0; }
+  .app-shell .feature-icon { margin-bottom: 13px; }
+  .app-shell .race-setup { padding: 22px 17px; }
+  .app-shell .ghost-banner { border-radius: 17px; }
+  .app-shell .ghost-history-panel { padding: 18px 15px; }
+  .app-shell .lesson:hover { transform: none; }
+  .app-shell .nav-item:hover:not(.active) { transform: none; }
+}
+@media (max-width: 480px) {
+  .app-shell .topbar { min-height: 67px; height: 67px; }
+  .app-shell .main-content { padding: 19px 13px 32px; }
+  .app-shell .page-stack { gap: 17px; }
+  .app-shell .hero { padding: 25px 20px; }
+  .app-shell .hero-content h1 { font-size: clamp(29px, 7vw, 37px); }
+  .app-shell .hero-trust { line-height: 1.4; }
+  .app-shell .onboarding-banner { padding: 20px 17px; }
+  .app-shell .feature-card { border-radius: 15px; }
+  .app-shell .stat-tile { padding: 15px; }
+  .app-shell .race-setup { border-radius: 16px; }
+  .app-shell .ghost-qualification-card:hover,
+  .app-shell .stat-tile:hover,
+  .app-shell .feature-card:hover { transform: none; }
+  .app-shell .app-footer { flex-wrap: wrap; }
+}
+
+@media (hover: none) {
+  .app-shell :is(.feature-card,.difficulty-option,.multi-ai-choice,.extended-menu-option,
+  .ghost-qualification-card,.stat-tile,.lesson,.nav-item):hover { transform: none; }
+}
+
+/* ================================================================
+   MODE HEROES | Race AI + YOU vs YOU
+   Isolated visual layer — no timer, CFOP, store or pointer logic touched.
+   ================================================================ */
+.app-shell .ch-mode-hero {
+  --ch-hero-glow: rgba(139, 79, 255, .24);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(265px, .8fr);
+  align-items: center;
+  min-height: 322px;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(177, 140, 255, .44);
+  padding: clamp(27px, 3.2vw, 43px);
+  background:
+    radial-gradient(ellipse 48% 105% at 87% 48%, var(--ch-hero-glow), transparent 79%),
+    radial-gradient(ellipse 68% 80% at -12% -34%, rgba(91, 82, 182, .23), transparent 76%),
+    linear-gradient(114deg, #181c35 1%, #14152d 58%, #241737 100%);
+  box-shadow: inset 0 1px 0 rgba(239, 222, 255, .12),
+    0 20px 55px rgba(9, 5, 30, .27), 0 0 0 1px rgba(121, 72, 219, .045);
+}
+.app-shell .ch-mode-hero::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(203, 167, 255, .72), transparent);
+  opacity: .55;
+}
+.app-shell .ch-mode-hero::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  top: -275px;
+  left: -150px;
+  border: 1px solid rgba(197, 163, 255, .09);
+  box-shadow: 0 0 0 52px rgba(180, 125, 255, .025), 0 0 0 104px rgba(180, 125, 255, .016);
+}
+.app-shell .ch-mode-hero-copy { z-index: 2; position: relative; min-width: 0; }
+.app-shell .ch-mode-hero-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #d2baff;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1.65px;
+  line-height: 1.65;
+}
+.app-shell .ch-mode-hero-spark { display: inline-flex; align-items: center; justify-content: center; color: #c7a5ff; }
+.app-shell .ch-mode-hero-separator { opacity: .5; font-weight: 500; }
+.app-shell .ch-mode-hero h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(30px, 3.25vw, 43px);
+  font-weight: 850;
+  line-height: 1.18;
+  letter-spacing: -1.85px;
+  color: #fff;
+  margin: 16px 0 12px;
+  text-wrap: balance;
+}
+.app-shell .ch-mode-hero h1>span,
+.app-shell .ch-mode-hero h1>em {
+  font-weight: 800;
+  font-style: normal;
+  color: #bb95ff;
+  background: linear-gradient(105deg, #e6dafa, #b695ff 43%, #a56bff 83%, #d19aff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.app-shell .ch-ghost-mode-hero h1>span {
+  background: none; -webkit-text-fill-color: #ab8fe4; color: #ab8fe4;
+  font-weight: 400;
+}
+.app-shell .ch-mode-hero-copy>p {
+  max-width: 510px;
+  color: #c1c9e1;
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0;
+}
+.app-shell .ch-mode-hero-pills {display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:18px}
+.app-shell .ch-mode-hero-pills>span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(173, 157, 221, .23);
+  color: #d5c9ee;
+  background: rgba(19, 24, 47, .66);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.app-shell .ch-mode-hero-pills svg { color:#b796ff; flex-shrink:0; }
+.app-shell .ch-mode-hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 21px;
+}
+.app-shell .ch-mode-hero-button { min-height: 45px; font-size: 12px; padding: 0 16px; }
+.app-shell .ch-mode-hero-subnote {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12px;
+  color: #aebadb;
+}
+.app-shell .ch-mode-hero-subnote>span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #47e6a5;
+  box-shadow: 0 0 13px rgba(71, 230, 165, .65);
+}
+/* Race AI: holographic AI core artwork, scaled independently of the Home cube. */
+.app-shell .ch-ai-hero-art {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  min-width: 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.app-shell .ch-ai-hero-orbit {
+  position:absolute;
+  width:min(340px,108%);
+  aspect-ratio:1;
+  border-radius:50%;
+  border:1px solid rgba(178,110,255,.11);
+  box-shadow:0 0 0 30px rgba(125,66,228,.025),0 0 0 70px rgba(136,76,237,.018);
+  background:radial-gradient(circle,rgba(126,59,211,.19),transparent 67%);
+}
+.app-shell .ch-ai-hero-illustration {
+  position:relative;
+  width:min(375px,113%);
+  height:auto;
+  max-height:315px;
+  overflow:visible;
+  filter:drop-shadow(0 17px 31px rgba(89,36,181,.48));
+  transform:translate(4%, 1%);
+  transition:transform .55s var(--ch-ease),filter .4s ease;
+}
+.app-shell .ch-ai-mode-hero:hover .ch-ai-hero-illustration { transform: translate(4%, -1%) scale(1.035); filter:drop-shadow(0 23px 36px rgba(107,52,212,.56)); }
+
+.app-shell .ch-ai-hero-core {
+  /* Transparent artwork has breathing room within its own canvas.
+     A larger max height lets the visible hologram occupy the hero without
+     stretching the card or intruding into the headline. */
+  width: min(455px, 108%);
+  max-height: 425px;
+  object-fit: contain;
+  transform: translate(3%, 1%);
+}
+.app-shell .ch-ai-mode-hero:hover .ch-ai-hero-core {
+  transform: translate(3%, -1%) scale(1.025);
+}
+.app-shell .ch-ai-hero-level,
+.app-shell .ch-ai-hero-float {
+  position:absolute;
+  z-index:3;
+  border:1px solid rgba(193,158,255,.3);
+  background:rgba(22,23,45,.88);
+  box-shadow:0 11px 28px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.app-shell .ch-ai-hero-level {
+  left:0;
+  bottom:10px;
+  padding:10px 14px;
+  border-radius:13px;
+  display:grid;
+  gap:4px;
+}
+.app-shell .ch-ai-hero-level>span {font-size:9px;color:#bfa6f3;font-weight:850;letter-spacing:.95px}
+.app-shell .ch-ai-hero-level>strong {font-size:24px;color:#f9f6ff;font-variant-numeric:tabular-nums;letter-spacing:-.8px}
+.app-shell .ch-ai-hero-level small {font-size:11px;color:#d0c2ea;letter-spacing:0;font-weight:650}
+.app-shell .ch-ai-hero-float {
+  right:-5px;
+  top:14px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  border-radius:9px;
+  padding:10px 11px;
+  font-size:9px;
+  color:#ddcdff;
+  font-weight:850;
+  letter-spacing:.5px;
+}
+.app-shell .ch-ai-hero-float svg {color:#c79eff;}
+/* Ghost Race: show honest progress (qualifying) or actual recorded best. */
+.app-shell .ch-ghost-mode-hero { --ch-hero-glow: rgba(140,68,231,.35); grid-template-columns:minmax(0,1.2fr) minmax(255px,.8fr); }
+.app-shell .ch-ghost-hero-art {
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:278px;
+  min-width:0;
+  border-radius:20px;
+}
+.app-shell .ch-ghost-hero-ring {
+  position:absolute;
+  width:232px;
+  height:232px;
+  border-radius:50%;
+  transform:translateY(-14px);
+  pointer-events:none;
+}
+.app-shell .ch-ghost-hero-ring-outer {
+  border:1px solid rgba(188,132,255,.24);
+  box-shadow:0 0 0 32px rgba(171,104,255,.035),0 0 0 68px rgba(171,104,255,.024);
+}
+.app-shell .ch-ghost-hero-ring-inner {
+  width:183px;
+  height:183px;
+  border:1px dashed rgba(200,159,255,.35);
+  background:radial-gradient(circle,rgba(165,75,250,.23),rgba(140,75,232,.065) 59%,transparent 72%);
+}
+.app-shell .ch-ghost-hero-avatar {
+  position:relative;
+  z-index:1;
+  width:120px;
+  height:120px;
+  margin-top:-36px;
+  display:grid;
+  place-items:center;
+  border-radius:29px;
+  color:#d4adff;
+  background:linear-gradient(135deg,rgba(130,66,219,.59),rgba(68,46,125,.8));
+  border:1px solid rgba(204,151,255,.48);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.17),0 20px 45px rgba(90,28,185,.25),0 0 35px rgba(179,103,255,.18);
+  transform:rotate(-4deg);
+  transition:transform .48s var(--ch-ease),box-shadow .4s ease;
+}
+.app-shell .ch-ghost-mode-hero:hover .ch-ghost-hero-avatar {transform:rotate(0deg) translateY(-4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.17),0 24px 55px rgba(90,28,185,.35),0 0 48px rgba(179,103,255,.28)}
+.app-shell .ch-ghost-hero-score {
+  position:absolute;
+  z-index:2;
+  left:50%;bottom:0;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-width:206px;
+  padding:13px 19px;
+  border:1px solid rgba(189,150,255,.4);
+  border-radius:14px;
+  color:#fff;
+  text-align:center;
+  background:linear-gradient(135deg,rgba(45,32,83,.96),rgba(30,24,54,.96));
+  box-shadow:0 16px 30px rgba(5,3,19,.28),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.app-shell .ch-ghost-hero-score>span {font-size:9px;font-weight:800;letter-spacing:1px;color:#c9adef}
+.app-shell .ch-ghost-hero-score>strong {font-size:clamp(25px,2.75vw,32px);line-height:1.32;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.app-shell .ch-ghost-hero-score>small {font-size:10px;color:#bfc2dc}
+.app-shell .ch-ghost-hero-float {
+  position:absolute;
+  z-index:2;
+  top:8px;right:-5px;
+  display:flex;align-items:center;gap:7px;
+  border:1px solid rgba(188,145,255,.37);
+  background:rgba(27,24,51,.9);
+  border-radius:8px;
+  padding:9px;
+  color:#dcc8ff;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.35px;
+}
+/* Anchor target sits below sticky topbar. */
+.app-shell .race-setup { scroll-margin-top:95px; }
+@media(max-width:1020px) {
+  .app-shell .ch-mode-hero { grid-template-columns:minmax(0,1.2fr) minmax(215px,.8fr);padding:27px; }
+  .app-shell .ch-mode-hero h1 {font-size:clamp(29px,3.4vw,37px);}
+  .app-shell .ch-ai-hero-illustration {width:min(300px,110%)}
+  .app-shell .ch-ai-hero-core {width:min(385px,112%);max-height:375px}
+  .app-shell .ch-ai-hero-level {left:-4px}
+  .app-shell .ch-ghost-hero-ring-outer {width:205px;height:205px}
+  .app-shell .ch-ghost-hero-ring-inner {width:160px;height:160px}
+}
+@media(max-width:740px) {
+  .app-shell .ch-mode-hero,
+  .app-shell .ch-ghost-mode-hero {display:flex;flex-direction:column;align-items:stretch;min-height:0;border-radius:19px;padding:26px 22px;gap:12px}
+  .app-shell .ch-mode-hero h1 {font-size:clamp(29px,6.5vw,40px);letter-spacing:-1.55px;margin:14px 0 10px}
+  .app-shell .ch-mode-hero-copy>p {font-size:12.5px;line-height:1.65;max-width:100%}
+  .app-shell .ch-mode-hero-pills {gap:6px;margin-top:14px}
+  .app-shell .ch-mode-hero-pills>span {padding:6px 8px;font-size:9.5px}
+  .app-shell .ch-mode-hero-actions {margin-top:17px}
+  .app-shell .ch-ai-hero-art {height:195px;min-height:195px;width:100%}
+  .app-shell .ch-ai-hero-illustration {width:min(280px,75%);max-height:200px;transform:translate(13%,0)}
+  .app-shell .ch-ai-mode-hero:hover .ch-ai-hero-illustration {transform:translate(13%,-2%) scale(1.02)}
+  .app-shell .ch-ai-hero-core {width:min(288px,82%);max-height:260px;transform:translate(5%,0)}
+  .app-shell .ch-ai-mode-hero:hover .ch-ai-hero-core {transform:translate(5%,-1%) scale(1.015)}
+  .app-shell .ch-ai-hero-orbit {width:215px}
+  .app-shell .ch-ai-hero-level {left:2%;bottom:4px;padding:7px 10px}
+  .app-shell .ch-ai-hero-level>strong {font-size:21px}
+  .app-shell .ch-ai-hero-float {top:4px;right:4px;padding:7px;font-size:8px}
+  .app-shell .ch-ghost-hero-art {min-height:192px;height:192px;width:100%}
+  .app-shell .ch-ghost-hero-ring-outer {width:174px;height:174px;transform:translateY(-4px)}
+  .app-shell .ch-ghost-hero-ring-inner {width:144px;height:144px;transform:translateY(-4px)}
+  .app-shell .ch-ghost-hero-avatar {width:91px;height:91px;border-radius:22px;margin-top:-29px}
+  .app-shell .ch-ghost-hero-avatar svg {width:60px;height:60px}
+  .app-shell .ch-ghost-hero-score {bottom:0;min-width:185px;padding:9px 12px}
+  .app-shell .ch-ghost-hero-score>strong {font-size:26px}
+}
+@media(max-width:420px) {
+  .app-shell .ch-mode-hero {padding:22px 18px}
+  .app-shell .ch-mode-hero h1 {font-size:29px}
+  .app-shell .ch-mode-hero-eyebrow {letter-spacing:.95px;font-size:9px}
+  .app-shell .ch-mode-hero-button {width:100%;min-height:43px}
+  .app-shell .ch-mode-hero-subnote {font-size:9px}
+  .app-shell .ch-ghost-hero-float {font-size:8px;right:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .ch-ai-hero-illustration,.app-shell .ch-ghost-hero-avatar{transition:none!important;transform:none!important}
+  .app-shell .ch-ai-mode-hero:hover .ch-ai-hero-illustration,.app-shell .ch-ghost-mode-hero:hover .ch-ghost-hero-avatar{transform:none!important}
+}
+.reduce-motion .ch-ai-hero-illustration,.reduce-motion .ch-ghost-hero-avatar{transition:none!important;transform:none!important}
+.reduce-motion .ch-ai-mode-hero:hover .ch-ai-hero-illustration,.reduce-motion .ch-ghost-mode-hero:hover .ch-ghost-hero-avatar{transform:none!important}
+
+/* Prominent, always-available mechanics guides. Visually separate from the hero actions. */
+.app-shell .ch-mechanics-spotlight {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  width: 100%;
+  min-width: 0;
+  padding: 17px 21px;
+  border-radius: 17px;
+  border: 1px solid rgba(182, 142, 255, .66);
+  background: linear-gradient(106deg, rgba(69, 43, 130, .77) 0%, rgba(37, 33, 77, .98) 45%, rgba(27, 30, 63, .98) 100%);
+  box-shadow: inset 0 1px rgba(246, 225, 255, .15), 0 13px 34px rgba(71, 37, 145, .25), 0 0 22px rgba(142, 84, 255, .13);
+}
+.app-shell .ch-mechanics-spotlight::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 90% 50%, rgba(163, 94, 255, .21), transparent 43%);
+}
+.app-shell .ch-mechanics-spotlight-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  border-radius: 15px;
+  color: #f8eeff;
+  background: linear-gradient(135deg, #824de5, #5c2eaf);
+  border: 1px solid rgba(220, 190, 255, .52);
+  box-shadow: 0 8px 23px rgba(97, 45, 181, .35);
+}
+.app-shell .ch-mechanics-spotlight-copy { flex: 1 1 auto; min-width: 0; }
+.app-shell .ch-mechanics-spotlight-copy>span {
+  display: block;
+  margin-bottom: 5px;
+  color: #dbbbff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.15px;
+}
+.app-shell .ch-mechanics-spotlight-copy h2 {
+  margin: 0 0 4px;
+  font-size: clamp(17px, 1.65vw, 21px);
+  font-weight: 820;
+  line-height: 1.25;
+  letter-spacing: -.35px;
+  color: #fff;
+}
+.app-shell .ch-mechanics-spotlight-copy p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #d2cdeb;
+}
+.app-shell .ch-mechanics-spotlight-button {
+  flex: 0 0 auto;
+  min-height: 63px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  padding: 9px 19px;
+  border-radius: 13px;
+  border: 1px solid rgba(238, 209, 255, .74);
+  background: linear-gradient(115deg, #7253ff 0%, #9738ed 100%);
+  box-shadow: 0 7px 24px rgba(143, 67, 252, .40), inset 0 1px rgba(255, 255, 255, .3);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition: transform .24s var(--ch-ease), box-shadow .24s ease, filter .24s ease;
+}
+.app-shell .ch-mechanics-spotlight-button>span {
+  display: grid;
+  gap: 2px;
+  line-height: 1.17;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: left;
+  white-space: nowrap;
+}
+.app-shell .ch-mechanics-spotlight-button small {
+  font-size: 9px;
+  font-weight: 900;
+  color: #f3dfff;
+  letter-spacing: 1.05px;
+}
+.app-shell .ch-mechanics-spotlight-button:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.09);
+  box-shadow: 0 12px 33px rgba(155, 74, 255, .56), inset 0 1px rgba(255,255,255,.4);
+}
+.app-shell .ch-mechanics-spotlight-button:active { transform: translateY(0) scale(.985); }
+.app-shell .ch-mechanics-spotlight-button:focus-visible {
+  outline: 3px solid #ead5ff;
+  outline-offset: 4px;
+}
+.app-shell .ch-mechanics-spotlight-ghost {
+  background: linear-gradient(106deg, rgba(61, 39, 119, .83), rgba(35, 31, 75, .98) 51%, rgba(29, 31, 65, .99));
+}
+@media(max-width: 850px) {
+  .app-shell .ch-mechanics-spotlight { gap: 13px; flex-wrap: wrap; padding: 15px 16px; }
+  .app-shell .ch-mechanics-spotlight-icon { width: 48px; height: 48px; flex-basis: 48px; }
+  .app-shell .ch-mechanics-spotlight-button { width: 100%; min-height: 54px; }
+  .app-shell .ch-mechanics-spotlight-button>span { display: block; text-align: center; white-space: normal; }
+  .app-shell .ch-mechanics-spotlight-button small { display: inline-block; margin-right: 9px; }
+}
+@media(max-width: 420px) {
+  .app-shell .ch-mechanics-spotlight-copy h2 { font-size: 17px; }
+  .app-shell .ch-mechanics-spotlight-copy p { font-size: 11.5px; }
+  .app-shell .ch-mechanics-spotlight-button { gap: 8px; padding: 10px; }
+}
+@media(prefers-reduced-motion: reduce) {
+  .app-shell .ch-mechanics-spotlight-button { transition: none; }
+  .app-shell .ch-mechanics-spotlight-button:hover, .app-shell .ch-mechanics-spotlight-button:active { transform: none; }
+}
+.reduce-motion .ch-mechanics-spotlight-button { transition: none; }
+.reduce-motion .ch-mechanics-spotlight-button:hover,
+.reduce-motion .ch-mechanics-spotlight-button:active { transform: none; }
+
+
+/* Cube Hero mascot identity — replaces the original small wireframe cube logo.
+   Only affects the sidebar brand; Race AI and learning UI remain untouched. */
+.app-shell .sidebar-brand-row { margin-bottom: 37px; }
+.app-shell .brand-link { border-radius: 12px; }
+.app-shell .brand-logo { gap: 8px; }
+.app-shell .brand-mascot-wrap {
+  display: grid;
+  place-items: center;
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
+  background: radial-gradient(circle at 50% 54%, rgba(143, 84, 255, .26), rgba(79, 52, 165, .06) 60%, transparent 73%);
+  border-radius: 18px;
+}
+.app-shell .brand-mascot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 9px rgba(72, 154, 255, .24));
+  transition: transform .34s var(--ch-ease), filter .28s ease;
+}
+.app-shell .brand-link:hover .brand-mascot,
+.app-shell .brand-link:focus-visible .brand-mascot {
+  transform: translateY(-3px) scale(1.09);
+  filter: drop-shadow(0 7px 15px rgba(81, 194, 255, .48));
+}
+.app-shell .brand-logo > span:last-child {
+  letter-spacing: -.9px;
+  font-size: 20px;
+}
+@media (min-width: 721px) and (max-width: 1240px) {
+  .app-shell .brand-mascot-wrap { width: 48px; height: 48px; flex-basis: 48px; }
+  .app-shell .brand-logo { gap: 6px; }
+  .app-shell .brand-logo > span:last-child { font-size: 18px; }
+  .app-shell .sidebar-brand-row { margin-bottom: 43px; }
+}
+@media (min-width: 721px) and (max-width: 910px) {
+  .app-shell .brand-mascot-wrap { width: 44px; height: 44px; flex-basis: 44px; }
+  .app-shell .brand-logo > span:last-child { font-size: 17px; }
+  .app-shell .brand-link { padding-inline: 4px; }
+}
+@media (max-width: 720px) {
+  .app-shell .sidebar-brand-row { margin-bottom: 24px; }
+  .app-shell .brand-mascot-wrap { width: 54px; height: 54px; flex-basis: 54px; }
+  .app-shell .brand-logo > span:last-child { font-size: 18px; }
+  .app-shell .brand-link { padding-inline: 0; }
+}
+@media (max-width: 360px) {
+  .app-shell .brand-mascot-wrap { width: 48px; height: 48px; flex-basis: 48px; }
+  .app-shell .brand-logo > span:last-child { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .brand-mascot { transition: none; }
+}
+
+/* Landing-page return link (existing game navigation remains unchanged). */
+.app-shell .app-site-link{display:inline-flex;margin-left:12px;color:#c8aeff;text-decoration:none;font-weight:800;transition:color .2s}
+.app-shell .app-site-link:hover{color:#fff;text-decoration:underline}

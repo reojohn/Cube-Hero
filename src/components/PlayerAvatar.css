@@ -1,0 +1,35 @@
+/* A single local PNG profile image for the current Guest Cuber. */
+.cube-player-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 37px;
+  height: 37px;
+  padding: 0;
+  border: 1px solid rgba(91, 156, 232, .56);
+  border-radius: 50%;
+  background: #050b18;
+  overflow: hidden;
+  vertical-align: middle;
+  box-shadow: 0 0 0 2px rgba(67, 128, 209, .1), 0 4px 14px rgba(6, 25, 58, .32);
+}
+.cube-player-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+  background: #000;
+}
+.cube-player-avatar.topbar-avatar { width: 34px; height: 34px; border-radius: 50%; }
+.cube-player-avatar.guest-avatar { width: 41px; height: 41px; border-radius: 50%; }
+.cube-player-avatar--inline { width: 22px; height: 22px; border-width: 1px; box-shadow: none; }
+.cube-player-avatar--compact { width: 20px; height: 20px; border-width: 1px; box-shadow: none; }
+.cube-player-avatar--standings { width: 26px; height: 26px; box-shadow: none; }
+@media (max-width: 540px) {
+  .cube-player-avatar.topbar-avatar { width: 29px; height: 29px; }
+  .cube-player-avatar--inline { width: 18px; height: 18px; }
+  .cube-player-avatar--compact { width: 18px; height: 18px; }
+}

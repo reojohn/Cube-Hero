@@ -1,0 +1,60 @@
+/* Hero Journey tournament selectors: visually designed popovers rather than OS-native menus. */
+.journey-picker-field{position:relative;display:grid;gap:8px;min-width:0;z-index:1}
+.journey-picker-field.is-open{z-index:50}
+.journey-picker-label{font-size:11px;font-weight:850;color:#cbd0ea;letter-spacing:.1px}
+.journey-page .journey-picker-trigger{display:flex;width:100%;min-width:0;min-height:62px;align-items:center;gap:12px;text-align:left;padding:10px 13px;border:1px solid #625982;border-radius:13px;background:linear-gradient(117deg,#1e2443,#1a1c34);color:#fff;box-shadow:inset 0 1px #ffffff0b,0 5px 15px #070a1a26;transition:background .2s,border-color .2s,box-shadow .2s,transform .2s}
+.journey-page .journey-picker-trigger:hover{border-color:#bb8dff;background:linear-gradient(117deg,#28274e,#211c3f);box-shadow:0 6px 24px #a96cff20,inset 0 1px #ffffff14}
+.journey-page .journey-picker-trigger:active{transform:scale(.993)}
+.journey-page .is-open .journey-picker-trigger{border-color:#c89cff;background:linear-gradient(117deg,#2a2751,#201c3e);box-shadow:0 0 0 3px #9f6af236,0 10px 32px #09081650}
+.journey-picker-symbol{display:grid;place-items:center;flex:0 0 38px;height:38px;border:1px solid #8362c38a;background:linear-gradient(145deg,#6345a7,#382c6e);color:#e7caff;border-radius:11px;box-shadow:inset 0 1px #ffffff27}
+.journey-picker-trigger-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.journey-picker-trigger-copy strong{font-size:13px;line-height:1.15;font-weight:850;color:#faf6ff}
+.journey-picker-trigger-copy small{font-size:10px;line-height:1.25;font-weight:550;color:#acbbd9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journey-picker-caret{color:#d6c6f3;display:grid;place-items:center;flex:0 0 29px;height:29px;border-radius:8px;background:#ffffff0b;transition:transform .25s ease,background .2s}
+.journey-picker-caret.rotated{transform:rotate(180deg);background:#9e7ce526}
+.journey-picker-popover{position:absolute;top:calc(100% + 9px);left:0;right:0;z-index:80;display:flex;flex-direction:column;max-height:var(--journey-menu-max-height,362px);min-width:0;padding:10px;border:1px solid #8d6cc0;border-radius:17px;background:linear-gradient(155deg,#232444 0%,#171c34 60%,#18162e 100%);box-shadow:0 22px 55px #03050bd9,0 0 0 1px #c8a1ff14,inset 0 1px #ffffff1e;animation:journey-picker-appear .18s cubic-bezier(.2,.78,.25,1) both;overflow:hidden;isolation:isolate}
+.journey-picker-popover.opens-up{top:auto;bottom:calc(100% + 9px);transform-origin:bottom center;animation-name:journey-picker-up}
+.journey-picker-popover:before{content:'';position:absolute;top:-95px;right:-80px;width:250px;height:200px;background:radial-gradient(circle,#9a5ff732,transparent 70%);pointer-events:none;z-index:-1}
+.journey-picker-popover-top{padding:5px 6px 11px;display:grid;gap:5px}
+.journey-picker-overline{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:900;letter-spacing:1.35px;color:#c39cff}
+.journey-picker-popover-top>strong{font-size:15px;font-weight:850;color:#fff;letter-spacing:-.2px}
+.journey-picker-search{display:flex;align-items:center;gap:9px;min-height:40px;border:1px solid #5a507c;border-radius:11px;padding:0 11px;margin-bottom:8px;background:#10172c;color:#b18eee;transition:border-color .15s}
+.journey-picker-search:focus-within{border-color:#ae81f4;box-shadow:0 0 0 2px #8e5bea2a}
+.journey-picker-search input{width:100%;flex:1;min-width:0;color:#f7efff;background:none;border:0;outline:0;font-size:11px;font-weight:600}
+.journey-picker-search input::placeholder{color:#77849f}
+.journey-picker-search>span{font-size:10px;color:#b89cde;font-weight:800}
+.journey-picker-presets{display:flex;align-items:center;flex-wrap:wrap;gap:5px;border-bottom:1px solid #ffffff19;padding:0 3px 10px;margin-bottom:4px}
+.journey-picker-presets>span{width:100%;font-size:9px;font-weight:850;letter-spacing:.9px;color:#a9b5d4}
+.journey-page .journey-picker-presets button{border:1px solid #564975;border-radius:7px;background:#292748;color:#d4c3ee;padding:5px 7px;font-size:10px;line-height:1.2;font-weight:800;transition:background .17s,border-color .17s,transform .17s}
+.journey-page .journey-picker-presets button:hover{background:#533d83;color:#fff;border-color:#ba91f8;transform:translateY(-2px)}
+.journey-page .journey-picker-presets button.chosen{background:#6745ac;border-color:#bb91f4;color:white}
+.journey-picker-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#8a66c4 #21253e;scrollbar-width:thin;display:grid;align-content:start;gap:4px;padding:3px 2px 4px}
+.journey-picker-list::-webkit-scrollbar{width:6px}
+.journey-picker-list::-webkit-scrollbar-track{background:#21253e;border-radius:6px}
+.journey-picker-list::-webkit-scrollbar-thumb{background:#8261bd;border-radius:6px}
+.journey-picker-option{display:flex;align-items:center;gap:9px;min-height:49px;border:1px solid transparent;border-radius:10px;background:transparent;padding:7px 9px;color:#e4e2f4;cursor:pointer;outline:none;transition:background .14s,border-color .14s,transform .14s;user-select:none}
+.journey-picker-option:hover,.journey-picker-option.focused{background:#383055;border-color:#6e538e}
+.journey-picker-option:active{transform:scale(.987)}
+.journey-picker-option.chosen{background:linear-gradient(110deg,#4c377b,#382d64);border-color:#a57fda;box-shadow:inset 0 1px #ffffff19}
+.journey-picker-option-icon{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;color:#b894f1;background:#8a63d01e;border:1px solid #855ac04d;border-radius:9px}
+.journey-picker-option.chosen .journey-picker-option-icon{color:#ffe0ff;background:#a67afe3b}
+.journey-picker-option-text{min-width:0;flex:1;display:grid;gap:3px}
+.journey-picker-option-text strong{font-size:11px;font-weight:850;color:#f8f3ff}
+.journey-picker-option-text small{font-size:10px;line-height:1.35;color:#aab5d1}
+.journey-picker-selected{height:23px;width:23px;flex:0 0 23px;border-radius:50%;display:grid;place-items:center;background:#9870de;color:#fff}
+.journey-picker-recommended{font-size:8px;font-weight:900;color:#d9bbff;border:1px solid #765797;padding:4px 6px;border-radius:6px;letter-spacing:.3px}
+.journey-picker-empty{padding:18px 8px;text-align:center;color:#bbc5dd;font-size:11px;line-height:1.6}
+.journey-picker-foot{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #ffffff1a;padding:10px 5px 2px;font-size:9px;color:#9babc9}
+@keyframes journey-picker-appear{from{opacity:0;transform:translateY(-7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes journey-picker-up{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:600px){.journey-page .journey-picker-trigger{min-height:58px;padding:9px 10px;gap:10px}.journey-picker-symbol{flex-basis:35px;height:35px}.journey-picker-popover{border-radius:14px;padding:9px}.journey-picker-option{min-height:47px}.journey-picker-foot{font-size:8px}}
+@media(max-width:350px){.journey-picker-foot span:last-child{display:none}.journey-picker-presets{gap:4px}.journey-page .journey-picker-presets button{padding:5px 6px}}
+@media(prefers-reduced-motion:reduce){.journey-picker-popover{animation:none!important}.journey-page .journey-picker-trigger,.journey-picker-option,.journey-picker-caret{transition:none!important}}
+.reduce-motion .journey-picker-popover{animation:none!important}
+/* Six popular speeds stay on one compact scrollable line on narrow screens. */
+@media(max-width:600px){
+ .journey-picker-presets{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+ .journey-picker-presets::-webkit-scrollbar{display:none}
+ .journey-picker-presets>span{flex:0 0 auto;width:auto;font-size:8px;padding-right:4px}
+ .journey-page .journey-picker-presets button{flex:0 0 auto}
+}

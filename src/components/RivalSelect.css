@@ -1,0 +1,642 @@
+/* Original Cube Hero character-select arena, upgraded to Phase 2.5.
+   SVG artwork only; AI speed/personality and race timers stay unchanged. */
+.rival-select{
+  margin:16px 0 25px; padding:19px;
+  border:1px solid rgba(155,119,240,.58);border-radius:19px;
+  background:radial-gradient(ellipse at 97% -12%,rgba(138,68,215,.20),transparent 48%),linear-gradient(125deg,#1d1b38,#141d32 78%);
+  box-shadow:inset 0 1px 0 rgba(248,230,255,.08),0 14px 38px rgba(10,7,31,.19);
+  color:#eef0ff;min-width:0;
+}
+.rival-select *{box-sizing:border-box}
+.rival-select-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.rival-eyebrow{display:flex;align-items:center;gap:7px;color:#cfaaff;font-size:10px;font-weight:850;letter-spacing:1.2px}
+.rival-eyebrow span{margin-left:5px;padding:5px 8px;border-radius:999px;background:#5837976e;border:1px solid #8b67ca74;font-size:9px;letter-spacing:.45px}
+.rival-select-heading h3{font-size:24px;letter-spacing:-.8px;margin:8px 0 6px;line-height:1.08;font-weight:850}
+.rival-select-heading h3 em{font-style:normal;background:linear-gradient(100deg,#e8d8ff,#a76cfa);background-clip:text;-webkit-background-clip:text;color:transparent}
+.rival-select-heading p{font-size:11.5px;line-height:1.6;color:#b9c4df;max-width:620px}
+.rival-phase-tag{font-size:9px;letter-spacing:.8px;white-space:nowrap;border:1px solid #665184;border-radius:999px;background:#37274b8a;padding:8px 10px;color:#d9c3fa;font-weight:850}
+.rival-select-stage{display:grid;grid-template-columns:minmax(0,1.36fr) minmax(260px,1fr);gap:13px;align-items:stretch;min-width:0}
+.rival-roster-panel,.rival-preview{min-width:0;overflow:hidden;border-radius:15px;border:1px solid #42486c}
+.rival-roster-panel{background:linear-gradient(150deg,#111a30,#14162b);padding:15px;display:flex;flex-direction:column}
+.rival-panel-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:11px;letter-spacing:.7px;color:#e3e2ff;font-weight:850}
+.rival-panel-heading span{display:inline-flex;gap:8px;align-items:center}.rival-panel-heading svg{color:#ba91f7}
+.rival-panel-heading strong{font-size:10px;color:#c8b3e9;border:1px solid #4f4b70;border-radius:999px;padding:5px 8px;background:#25223c}
+.rival-search{display:flex;align-items:center;gap:9px;padding:0 11px;min-height:38px;border:1px solid #444f73;background:#0e1528;border-radius:9px;color:#bd9aed}
+.rival-search:focus-within{border-color:#ad83f7;box-shadow:0 0 0 2px #9466df31}
+.rival-search input{border:0;background:transparent;color:#f4efff;min-width:0;flex:1;outline:0;font:600 11px inherit;font-family:inherit;font-size:11px}
+.rival-search input::placeholder{color:#7f8eaf}
+.rival-search button{border:0;color:#bcb2df;background:transparent;padding:5px;display:grid;place-items:center;border-radius:6px}
+.rival-search button:hover{background:#3f335b}
+.rival-division-filter{display:flex;gap:5px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#51446d transparent;margin:10px 0 10px;padding-bottom:4px;max-width:100%}
+.rival-division-filter button{font-family:inherit;white-space:nowrap;flex-shrink:0;font-size:10px;font-weight:750;color:#a8b7d1;border:1px solid #3a4364;background:#1a2338;padding:7px 10px;border-radius:8px;transition:background .18s,border-color .18s,color .18s}
+.rival-division-filter button:hover{border-color:#9b73dd;color:#fff;background:#2b274a}
+.rival-division-filter button.active{background:linear-gradient(135deg,#7742d1,#44286d);border-color:#ad85f2;color:#fff;box-shadow:0 2px 12px #7950d42b}
+.rival-roster-scroll{min-height:240px;max-height:378px;overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#6b53a3 #172039;scrollbar-width:thin;padding:3px 6px 3px 2px;outline:none}
+.rival-roster-scroll:focus-visible{outline:2px solid #ad8dff;outline-offset:2px;border-radius:8px}
+.rival-roster-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.rival-roster-card{--rival-accent:#ac94ff;position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;min-width:0;padding:5px 3px 7px;border:1px solid #414c6b;border-radius:9px;background:linear-gradient(155deg,#242d4a,#171d33);color:#e9e9ff;cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.rival-roster-card:hover{transform:translateY(-3px);border-color:var(--rival-accent);box-shadow:0 7px 18px #05091172}
+.rival-roster-card:focus-visible{outline:2px solid #d2afff;outline-offset:2px}
+.rival-roster-card.active{border-color:var(--rival-accent);background:linear-gradient(150deg,#43336e,#272648);box-shadow:0 0 0 1px var(--rival-accent),0 0 17px #a268ff29}
+.rival-roster-portrait{display:grid;place-items:center;height:68px;width:100%;min-width:0;overflow:hidden;border-radius:6px;background:radial-gradient(circle at 45% 55%,color-mix(in srgb,var(--rival-accent) 26%,transparent),transparent 65%),linear-gradient(150deg,#101528,#1f2343)}
+.rival-emblem{display:block;width:100%;height:100%;max-height:95px;object-fit:contain;filter:drop-shadow(0 5px 5px #0008)}
+.rival-roster-name{font-size:10.5px;font-weight:850;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;letter-spacing:-.1px}
+.rival-roster-card small{font-size:8px;color:#acbad4;font-weight:800;margin-top:2px;letter-spacing:.35px}
+.rival-roster-card.active small{color:#efddff}
+.rival-roster-selected{position:absolute;z-index:2;top:5px;right:5px;display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#ece0ff;color:#4d2e87;box-shadow:0 2px 5px #0006}
+.rival-roster-empty{font-size:11px;color:#b8c5db;text-align:center;padding:25px 10px}
+.rival-quick-picks{margin-top:auto;padding-top:13px}
+.rival-quick-picks>span{font-size:9px;font-weight:800;color:#ad9fc9;letter-spacing:.9px}
+.rival-quick-picks>div{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-top:8px}
+.rival-quick-picks button{min-width:0;padding:7px 3px;background:#22243b;border:1px solid #424765;color:#d5d9ee;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:800;font-size:10px;transition:border-color .16s,background .16s,transform .16s}
+.rival-quick-picks button small{font-size:8px;color:#aaa6c6;font-weight:650}
+.rival-quick-picks button:hover{transform:translateY(-2px);border-color:#a980ed}
+.rival-quick-picks button.active{background:#533495;border-color:#bca0f4;color:#fff;box-shadow:0 0 0 1px #a786fa35}
+.rival-quick-picks button.active small{color:#e6d8ff}
+.rival-preview{position:relative;background:radial-gradient(ellipse at 49% 35%,color-mix(in srgb,var(--rival-accent) 17%,transparent),transparent 70%),linear-gradient(155deg,#23203d,#141b30);border-color:color-mix(in srgb,var(--rival-accent) 42%,#414b72);padding:14px;display:flex;flex-direction:column;box-shadow:inset 0 1px 0 #fff1}
+.rival-preview-top{display:flex;align-items:center;justify-content:space-between;gap:7px;z-index:1}
+.rival-preview-top>span:first-child{display:flex;align-items:center;gap:6px;color:var(--rival-accent);letter-spacing:.7px;font-weight:850;font-size:9px}
+.rival-preview-count{font-variant-numeric:tabular-nums;font-weight:850;font-size:10px;color:#b0b9d8}
+.rival-preview-art{position:relative;flex:1 1 auto;min-height:225px;display:grid;place-items:center;isolation:isolate;margin:0 -6px}
+.rival-preview-orbit{position:absolute;top:50%;transform:translateY(-50%);width:203px;height:203px;border-radius:50%;border:1px solid color-mix(in srgb,var(--rival-accent) 35%,transparent);box-shadow:0 0 0 22px color-mix(in srgb,var(--rival-accent) 5%,transparent),0 0 0 42px color-mix(in srgb,var(--rival-accent) 3%,transparent)}
+.rival-emblem-large{position:relative;z-index:1;width:min(100%,242px);height:242px;max-height:242px;filter:drop-shadow(0 16px 13px #0204119a)}
+.rival-art-caption{position:absolute;right:0;bottom:7px;z-index:2;border:1px solid #58516f;background:#141a2dd8;border-radius:999px;padding:5px 7px;font-size:8px;letter-spacing:.5px;color:#c2b8d5;font-weight:800}
+.rival-preview-details{margin-top:auto;position:relative;z-index:2}
+.rival-preview-eyebrow{font-size:9px;color:#b8a7de;letter-spacing:1.1px;font-weight:850}
+.rival-preview-details h3{font-size:32px;letter-spacing:-1.2px;color:#fff;font-weight:900;margin:4px 0 0;line-height:1.05;text-shadow:0 2px 17px #9b78ff2c}
+.rival-preview-title{font-size:12px;color:var(--rival-accent);margin-top:3px;font-weight:800}
+.rival-preview-motto{font-size:11px;font-weight:600;font-style:italic;color:#c7bcd8;margin:10px 0;line-height:1.5}
+.rival-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.rival-stats>div{padding:9px 5px;min-width:0;border:1px solid #4a4666;background:#161b32af;border-radius:8px;display:flex;flex-direction:column;gap:4px}
+.rival-stats small{font-size:7.5px;color:#a4aec9;font-weight:800;letter-spacing:.45px}
+.rival-stats strong{font-size:11px;overflow-wrap:anywhere;color:#eee9ff}
+.rival-preview-hint{font-size:10px;line-height:1.6;color:#aebbd3;display:flex;align-items:flex-start;gap:6px;margin:10px 0}
+.rival-preview-hint svg{color:var(--rival-accent);flex:0 0 14px;margin-top:1px}
+.rival-preview-bottom{display:flex;justify-content:space-between;align-items:center;gap:5px;margin-top:10px}
+.rival-preview-bottom>span{font-size:10px;letter-spacing:.6px;color:#e5d9ff;font-weight:850;display:flex;align-items:center;gap:6px}
+.rival-preview-bottom>span svg{color:#4be4b8}
+.rival-preview-bottom>button{width:33px;height:33px;display:grid;place-items:center;background:#392953;border:1px solid #69558e;color:#ebdfff;border-radius:9px;transition:background .16s,transform .16s}
+.rival-preview-bottom>button:hover:not(:disabled){background:#6944b5;transform:translateY(-2px)}
+.rival-preview-bottom>button:disabled{opacity:.3;cursor:not-allowed}
+.rival-select-foot{display:flex;align-items:center;justify-content:space-between;gap:7px 15px;flex-wrap:wrap;margin:13px 0 0;color:#adbbd7;font-size:10px}
+.rival-select-foot span{display:inline-flex;align-items:center;gap:6px}
+.rival-select-foot svg{color:#bf9aff}
+@media(max-width:1130px){.rival-select-stage{grid-template-columns:minmax(0,1.2fr) minmax(225px,.85fr)}.rival-roster-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:950px){.rival-select-stage{grid-template-columns:1fr}.rival-preview{display:grid;grid-template-columns:minmax(165px,.7fr) minmax(0,1fr);align-items:start;gap:0 12px}.rival-preview-top{grid-column:1/-1}.rival-preview-art{grid-column:1;grid-row:2;margin:0}.rival-preview-details{grid-column:2;grid-row:2}.rival-roster-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.rival-preview-art{min-height:175px}}
+@media(max-width:720px){.rival-select{margin:10px 0 17px;padding:11px;border-radius:14px}.rival-select-heading{align-items:start;margin-bottom:12px}.rival-select-heading h3{font-size:21px}.rival-select-heading p{font-size:10.5px}.rival-eyebrow{font-size:9px;letter-spacing:.6px}.rival-eyebrow span{font-size:8px}.rival-phase-tag{display:none}.rival-select-stage{display:flex;flex-direction:column}.rival-preview{order:-1;grid-template-columns:120px minmax(0,1fr);gap:4px 9px;padding:10px}.rival-preview-top{grid-column:1/-1}.rival-preview-art{min-height:137px;margin:0}.rival-emblem-large{width:132px;height:139px}.rival-preview-orbit{width:114px;height:114px;top:50%}.rival-art-caption{display:none}.rival-preview-details h3{font-size:24px}.rival-preview-motto{font-size:9px;margin:6px 0}.rival-preview-title{font-size:10px}.rival-preview-eyebrow{font-size:7px;letter-spacing:.4px}.rival-stats{gap:3px}.rival-stats>div{padding:5px 4px}.rival-stats small{font-size:6px}.rival-stats strong{font-size:9px}.rival-preview-hint{display:none}.rival-preview-bottom{margin-top:7px}.rival-preview-bottom>button{width:27px;height:27px}.rival-preview-bottom>span{font-size:8px}.rival-roster-panel{padding:10px}.rival-roster-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.rival-roster-portrait{height:56px}.rival-roster-card{padding:4px 2px 6px}.rival-roster-name{font-size:9px;margin-top:4px}.rival-roster-card small{font-size:7px}.rival-roster-scroll{max-height:248px;min-height:180px}.rival-quick-picks>div{grid-template-columns:repeat(3,minmax(0,1fr))}.rival-quick-picks button{font-size:9px;flex-direction:row;justify-content:center;gap:5px;min-height:31px}.rival-quick-picks button small{font-size:8px}.rival-select-foot{font-size:9px}}
+@media(max-width:375px){
+  .rival-roster-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  /* At 320px, move the character details beneath the emblem instead of
+     squeezing three stats and two arrow buttons into a 120px-wide column. */
+  .rival-preview{display:flex;flex-direction:column;gap:0;min-width:0}
+  .rival-preview-top,.rival-preview-details{width:100%;min-width:0}
+  .rival-preview-art{align-self:center;width:100%;min-height:120px;height:120px;margin:0 0 4px}
+  .rival-emblem-large{width:124px;height:129px}
+  .rival-preview-orbit{width:104px;height:104px;top:50%}
+  .rival-preview-details h3{font-size:25px}
+  .rival-preview-eyebrow{font-size:8px}
+  .rival-preview-motto{font-size:10px}
+  .rival-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .rival-stats>div{padding:7px 5px}
+  .rival-stats small{font-size:6.5px}
+  .rival-stats strong{font-size:10px}
+  .rival-preview-bottom>span{font-size:9px;min-width:0}
+}
+@media(prefers-reduced-motion:reduce){.rival-roster-card,.rival-division-filter button,.rival-quick-picks button,.rival-preview-bottom button{transition:none!important}.rival-roster-card:hover,.rival-quick-picks button:hover{transform:none}}
+
+
+/* Phase 2 — layered character portraits, selected-rival energy, and tactile
+   card feedback. All motion is decorative and respects reduced-motion mode. */
+.rival-select{--rival-violet:#aa84ff}
+.rival-phase-tag{background:linear-gradient(110deg,#593b8d9c,#38265b9c);border-color:#9b7ce18c;box-shadow:inset 0 1px 0 #ffffff14}
+.rival-roster-card{overflow:hidden;will-change:auto}
+.rival-roster-card::before{content:"";position:absolute;inset:-120% -70%;pointer-events:none;z-index:1;background:linear-gradient(115deg,transparent 43%,#ffffff14 50%,transparent 57%);transform:translateX(-90%) rotate(7deg);transition:transform .5s ease}
+.rival-roster-card:hover::before,.rival-roster-card:focus-visible::before{transform:translateX(90%) rotate(7deg)}
+.rival-roster-card.active{box-shadow:0 0 0 1px var(--rival-accent),0 0 22px color-mix(in srgb,var(--rival-accent) 25%,transparent),inset 0 1px 0 #ffffff20}
+.rival-roster-card.active::after{content:"";position:absolute;left:18%;right:18%;bottom:0;height:2px;border-radius:4px;background:var(--rival-accent);box-shadow:0 0 11px var(--rival-accent)}
+.rival-roster-portrait{position:relative;background:radial-gradient(circle at 50% 72%,color-mix(in srgb,var(--rival-glow) 34%,transparent),transparent 71%),linear-gradient(150deg,#17142e,#1d2644)}
+.rival-character-img{display:block;object-fit:contain;object-position:center bottom;max-width:100%;max-height:100%;transform:translateY(0) scale(1);transition:transform .28s ease,filter .28s ease;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 4px 7px #05041395)}
+.rival-roster-card:hover .rival-character-img,.rival-roster-card:focus-visible .rival-character-img{transform:translateY(-2px) scale(1.13);filter:drop-shadow(0 7px 10px color-mix(in srgb,var(--rival-accent) 48%,#000))}
+.rival-roster-card.active .rival-character-img{transform:scale(1.08)}
+.rival-preview{transition:border-color .25s ease,background .25s ease,box-shadow .25s ease;box-shadow:0 14px 38px #04051150,inset 0 1px 0 #ffffff18}
+.rival-preview-art{overflow:hidden;animation:rival-portrait-arrival .36s cubic-bezier(.2,.8,.2,1) both}
+.rival-preview-art::before{content:"";position:absolute;inset:6% 2% 2%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center 68%,color-mix(in srgb,var(--rival-accent) 28%,transparent),transparent 54%)}
+.rival-preview-art::after{content:"";position:absolute;inset:auto 6% 8px;height:1px;background:linear-gradient(90deg,transparent,var(--rival-accent),transparent);opacity:.48;filter:blur(1px)}
+.rival-preview-halo{position:absolute;top:50%;left:50%;width:185px;height:185px;transform:translate(-50%,-50%);z-index:0;pointer-events:none;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--rival-glow) 21%,transparent),transparent 73%);filter:blur(13px);animation:rival-energy-pulse 4.3s ease-in-out infinite alternate}
+.rival-preview-orbit{animation:rival-orbit-breathe 4.3s ease-in-out infinite alternate}
+.rival-preview-art .rival-character-img.rival-emblem-large{position:relative;z-index:2;width:min(100%,300px);height:255px;max-height:255px;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 19px 16px #02020f9c);animation:rival-portrait-float 5s ease-in-out infinite alternate}
+.rival-preview-details h3{transition:text-shadow .2s ease}
+.rival-art-caption{border-color:color-mix(in srgb,var(--rival-accent) 44%,#58516f);z-index:3}
+@keyframes rival-portrait-arrival{from{opacity:.68;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes rival-energy-pulse{from{opacity:.68;transform:translate(-50%,-50%) scale(.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1.16)}}
+@keyframes rival-orbit-breathe{from{opacity:.6}to{opacity:1}}
+@keyframes rival-portrait-float{from{transform:translateY(4px)}to{transform:translateY(-4px)}}
+@media(max-width:950px){.rival-preview-art .rival-character-img.rival-emblem-large{height:190px;max-height:190px}}
+@media(max-width:720px){.rival-preview-art .rival-character-img.rival-emblem-large{width:132px;height:137px;max-height:137px}.rival-preview-halo{width:110px;height:110px}}
+@media(max-width:375px){.rival-preview-art .rival-character-img.rival-emblem-large{width:128px;height:125px;max-height:125px}}
+.reduce-motion .rival-select *, .reduce-motion .rival-select *::before,.reduce-motion .rival-select *::after{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.rival-select *, .rival-select *::before,.rival-select *::after{animation:none!important;transition:none!important}.rival-roster-card:hover .rival-character-img{transform:none}}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 2.5 — THE ORIGINAL CUBE HERO RIVAL ATELIER
+   Pure inline SVG portraits: 55 visual identities, no external art.
+   This section intentionally overrides Phase 2 raster-specific styling.
+   ═══════════════════════════════════════════════════════════════ */
+.rival-select{
+  background:
+    radial-gradient(ellipse at 92% -12%,rgba(138,68,215,.20),transparent 48%),
+    radial-gradient(ellipse at 0% 100%,rgba(87,53,177,.11),transparent 49%),
+    linear-gradient(125deg,#1d1b38,#141d32 78%);
+}
+.rival-phase-tag{border:1px solid #ad8aee91;white-space:normal;text-align:center;line-height:1.45;max-width:184px}
+.rival-roster-portrait{
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 48% 74%,color-mix(in srgb,var(--rival-accent) 27%,transparent),transparent 72%),
+    radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--rival-glow) 12%,transparent),transparent 64%),
+    linear-gradient(155deg,#11172b,#1b2541);
+}
+.rival-roster-portrait::after{
+  content:"";position:absolute;inset:auto 10% 0;height:1px;z-index:-1;
+  background:linear-gradient(90deg,transparent,var(--rival-accent),transparent);opacity:.5;
+}
+.rival-code-avatar{
+  display:block;max-width:100%;max-height:100%;width:100%;height:100%;
+  object-fit:contain;overflow:visible;user-select:none;pointer-events:none;
+  filter:drop-shadow(0 5px 4px #0106107a);
+  transform:translateY(1px) scale(1.00);transform-origin:50% 60%;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),filter .28s ease;
+}
+.rival-roster-card:hover .rival-code-avatar,.rival-roster-card:focus-visible .rival-code-avatar{
+  transform:translateY(-2px) scale(1.2);
+  filter:drop-shadow(0 6px 5px color-mix(in srgb,var(--rival-accent) 28%,#050a1a));
+}
+.rival-roster-card.active .rival-code-avatar{transform:translateY(-1px) scale(1.14)}
+.rival-roster-card.active .rival-roster-portrait{box-shadow:inset 0 0 15px color-mix(in srgb,var(--rival-accent) 15%,transparent)}
+.rival-roster-card::before{z-index:2}
+.rival-roster-card:focus-visible{outline-offset:3px}
+.rival-roster-selected{z-index:4}
+.rival-preview{
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 31%,color-mix(in srgb,var(--rival-accent) 17%,transparent),transparent 68%),
+    radial-gradient(ellipse at 15% 72%,color-mix(in srgb,var(--rival-glow) 6%,transparent),transparent 55%),
+    linear-gradient(150deg,#242039,#141b30);
+}
+.rival-preview:before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.45;
+  background-image:linear-gradient(90deg,transparent 96%,#ffffff08 100%),linear-gradient(0deg,transparent 96%,#ffffff08 100%);
+  background-size:34px 34px;mask-image:linear-gradient(#0008,transparent 60%);
+}
+.rival-preview-art{min-height:258px;overflow:hidden;margin:1px -6px 1px;position:relative}
+.rival-preview-art::before{
+  inset:6% 8% 4%;background:
+    radial-gradient(ellipse at center 65%,color-mix(in srgb,var(--rival-accent) 21%,transparent),transparent 63%);
+}
+.rival-preview-art .rival-code-avatar.rival-emblem-large{
+  position:relative;z-index:3;width:min(100%,273px);height:258px;max-height:258px;
+  object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 15px 13px #030512ad);
+  animation:rival-avatar-float 5s ease-in-out infinite alternate;
+}
+.rival-preview-orbit{width:209px;height:209px;z-index:0;box-shadow:0 0 0 22px color-mix(in srgb,var(--rival-accent) 5%,transparent),0 0 0 44px color-mix(in srgb,var(--rival-accent) 3%,transparent)}
+.rival-preview-orbit-secondary{
+  position:absolute;z-index:0;top:50%;left:50%;width:239px;height:239px;border-radius:50%;
+  border:1px dashed color-mix(in srgb,var(--rival-glow) 30%,transparent);
+  transform:translate(-50%,-50%);pointer-events:none;opacity:.7;
+  animation:rival-orbit-rotate 45s linear infinite;
+}
+.rival-preview-halo{width:220px;height:220px;filter:blur(20px);opacity:.88}
+.rival-preview-stage-light{
+  position:absolute;z-index:1;bottom:10px;left:50%;width:260px;height:34px;
+  transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(ellipse at center,color-mix(in srgb,var(--rival-accent) 30%,transparent),transparent 68%);
+  filter:blur(9px);
+}
+.rival-preview-rune{position:absolute;z-index:2;color:var(--rival-glow);text-shadow:0 0 13px var(--rival-accent);line-height:1;pointer-events:none;opacity:.65;font-size:16px;animation:rival-rune-drift 3.5s ease-in-out infinite alternate}
+.rival-preview-rune-a{top:20%;left:16%}
+.rival-preview-rune-b{top:42%;right:13%;font-size:21px;animation-delay:-1.6s}
+.rival-preview-rune-c{bottom:17%;left:22%;font-size:12px;animation-delay:-2.5s}
+.rival-art-caption{background:#151a2ce6;font-size:7.5px;white-space:nowrap;border-color:color-mix(in srgb,var(--rival-accent) 50%,#4d5068);color:#e0d6eb;bottom:5px}
+.rival-preview-traits{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:9px}
+.rival-preview-traits span{
+  display:inline-flex;align-items:center;gap:4px;min-width:0;padding:4px 7px;
+  border:1px solid color-mix(in srgb,var(--rival-accent) 38%,#343b57);
+  border-radius:6px;background:color-mix(in srgb,var(--rival-accent) 11%,#141728);
+  color:#d0cbe1;font-size:8px;font-weight:800;letter-spacing:.55px;
+}
+.rival-preview-traits span:first-child{color:var(--rival-accent)}
+.rival-preview-motto{margin:9px 0}
+.rival-vector-orbit{transform-origin:120px 130px}
+.rival-preview-art .rival-vector-orbit{animation:rival-avatar-crest-orbit 36s linear infinite}
+.rival-preview-art .rival-vector-eyes{animation:rival-avatar-eye-breathe 3.8s ease-in-out infinite alternate}
+.rival-preview-art .rival-vector-aura{animation:rival-avatar-aura 4.6s ease-in-out infinite alternate}
+@keyframes rival-avatar-float{from{transform:translateY(4px)}to{transform:translateY(-5px)}}
+@keyframes rival-orbit-rotate{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes rival-avatar-crest-orbit{to{transform:rotate(360deg)}}
+@keyframes rival-avatar-eye-breathe{from{opacity:.78}to{opacity:1}}
+@keyframes rival-avatar-aura{from{opacity:.6}to{opacity:1}}
+@keyframes rival-rune-drift{from{transform:translateY(4px) rotate(-7deg);opacity:.35}to{transform:translateY(-6px) rotate(8deg);opacity:.9}}
+@media(max-width:950px){
+  .rival-preview-art{min-height:194px}
+  .rival-preview-art .rival-code-avatar.rival-emblem-large{height:195px;max-height:195px;width:min(100%,211px)}
+  .rival-preview-orbit{width:172px;height:172px}
+  .rival-preview-orbit-secondary{width:193px;height:193px}
+  .rival-preview-stage-light{width:190px}
+}
+@media(max-width:720px){
+  .rival-roster-portrait{height:57px}
+  .rival-preview-art{min-height:143px}
+  .rival-preview-art .rival-code-avatar.rival-emblem-large{width:133px;height:143px;max-height:143px}
+  .rival-preview-orbit{width:109px;height:109px}
+  .rival-preview-orbit-secondary{width:127px;height:127px}
+  .rival-preview-stage-light{width:130px}
+  .rival-preview-rune{font-size:10px}
+  .rival-preview-traits{gap:3px;margin-top:5px}
+  .rival-preview-traits span{font-size:6px;padding:3px 4px;letter-spacing:.1px}
+  .rival-preview-motto{margin:5px 0}
+}
+@media(max-width:375px){
+  .rival-preview-art{min-height:130px;height:130px}
+  .rival-preview-art .rival-code-avatar.rival-emblem-large{width:139px;height:132px;max-height:132px}
+  .rival-preview-orbit{width:107px;height:107px}
+  .rival-preview-orbit-secondary{width:127px;height:127px}
+  .rival-preview-traits span{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){
+  .rival-preview-art .rival-code-avatar.rival-emblem-large,
+  .rival-preview-orbit-secondary,.rival-preview-rune,
+  .rival-preview-art .rival-vector-orbit,
+  .rival-preview-art .rival-vector-eyes,
+  .rival-preview-art .rival-vector-aura{animation:none!important}
+  .rival-roster-card:hover .rival-code-avatar,.rival-roster-card:focus-visible .rival-code-avatar{transform:translateY(0) scale(1.09)!important}
+}
+.reduce-motion .rival-preview-art .rival-code-avatar.rival-emblem-large,
+.reduce-motion .rival-preview-orbit-secondary,
+.reduce-motion .rival-preview-rune,
+.reduce-motion .rival-preview-art .rival-vector-orbit,
+.reduce-motion .rival-preview-art .rival-vector-eyes,
+.reduce-motion .rival-preview-art .rival-vector-aura{animation:none!important}
+
+/* Show the full silhouette + shoulder crest in the compact roster, not just eyes. */
+.rival-roster-portrait .rival-code-avatar{width:auto;height:100%;max-width:100%;transform:translateY(1px) scale(1)}
+.rival-roster-card:hover .rival-roster-portrait .rival-code-avatar,.rival-roster-card:focus-visible .rival-roster-portrait .rival-code-avatar{transform:translateY(-2px) scale(1.1)}
+.rival-roster-card.active .rival-roster-portrait .rival-code-avatar{transform:translateY(0) scale(1.055)}
+/* Use a flex-sized intrinsic SVG box so desktop five-column cards do not crop
+   the lower mask/armor when cards are wider than their portrait viewport. */
+.rival-roster-portrait{display:flex;align-items:center;justify-content:center}
+.rival-roster-portrait .rival-code-avatar{flex:0 1 auto;min-width:0}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 2.6 — Clean premium refinement
+   Softer lines, cleaner preview composition, no code-drawn badge.
+   ═══════════════════════════════════════════════════════════════ */
+.rival-select-heading p{max-width:580px}
+.rival-phase-tag{max-width:170px;background:#3226479f;color:#e7d8ff}
+.rival-roster-portrait{
+  background:
+    radial-gradient(ellipse at 50% 82%,color-mix(in srgb,var(--rival-accent) 17%,transparent),transparent 72%),
+    linear-gradient(180deg,#161d33,#12182b);
+}
+.rival-code-avatar{filter:drop-shadow(0 5px 10px rgba(5,8,20,.42))}
+.rival-roster-card:hover .rival-roster-portrait .rival-code-avatar,
+.rival-roster-card:focus-visible .rival-roster-portrait .rival-code-avatar{transform:translateY(-1px) scale(1.07)}
+.rival-roster-card.active .rival-roster-portrait .rival-code-avatar{transform:translateY(0) scale(1.04)}
+
+.rival-preview{
+  background:
+    radial-gradient(circle at 46% 22%,color-mix(in srgb,var(--rival-accent) 15%,transparent),transparent 38%),
+    linear-gradient(145deg,#2a243a 0%,#1d2340 38%,#0f1b3b 100%);
+}
+.rival-preview:before{display:none}
+.rival-preview-art{
+  min-height:300px;
+  margin:0;
+  padding:12px 0 2px;
+}
+.rival-preview-art::before{
+  content:"";position:absolute;inset:8% 12% auto;top:24px;bottom:auto;height:210px;border-radius:50%;
+  background:radial-gradient(circle at center,color-mix(in srgb,var(--rival-accent) 18%,transparent),transparent 68%);
+  pointer-events:none;
+}
+.rival-preview-art .rival-code-avatar.rival-emblem-large{
+  width:min(100%,286px);height:282px;max-height:282px;
+  filter:drop-shadow(0 18px 18px rgba(6,8,18,.44));
+}
+.rival-preview-orbit{
+  width:190px;height:190px;z-index:0;border:none;
+  background:radial-gradient(circle at center,transparent 61%,color-mix(in srgb,var(--rival-accent) 12%,transparent) 62%,transparent 66%);
+  box-shadow:0 0 0 18px color-mix(in srgb,var(--rival-accent) 5%,transparent),0 0 0 36px color-mix(in srgb,var(--rival-accent) 3%,transparent);
+  opacity:.84;
+}
+.rival-preview-orbit-secondary{
+  width:216px;height:216px;border:none;opacity:.55;
+  background:
+    radial-gradient(circle,transparent 65%,color-mix(in srgb,var(--rival-glow) 24%,transparent) 66%,transparent 67%),
+    conic-gradient(from 12deg,transparent 0 14%,color-mix(in srgb,var(--rival-accent) 24%,transparent) 14% 22%,transparent 22% 44%,color-mix(in srgb,var(--rival-accent) 18%,transparent) 44% 52%,transparent 52% 78%,color-mix(in srgb,var(--rival-glow) 20%,transparent) 78% 85%,transparent 85% 100%);
+  border-radius:50%;
+  animation:rival-orbit-rotate 56s linear infinite;
+}
+.rival-preview-halo{width:208px;height:208px;opacity:.66;filter:blur(23px)}
+.rival-preview-stage-light{width:210px;height:28px;opacity:.6}
+.rival-preview-rune{font-size:12px;opacity:.52;text-shadow:0 0 10px color-mix(in srgb,var(--rival-accent) 65%,transparent)}
+.rival-preview-rune-a{top:22%;left:14%}
+.rival-preview-rune-b{top:46%;right:14%;font-size:14px}
+.rival-preview-rune-c{bottom:22%;left:18%;font-size:10px}
+.rival-art-caption{display:none}
+.rival-preview-details{position:relative;z-index:2}
+.rival-preview-title{margin-top:2px}
+.rival-preview-traits{margin-top:10px;gap:6px}
+.rival-preview-traits span{
+  padding:4px 9px;
+  border-radius:9px;
+  background:rgba(18,22,42,.35);
+  border:1px solid color-mix(in srgb,var(--rival-accent) 38%,#3b4363);
+  color:#ece4ff;
+  font-size:8.2px;
+}
+.rival-preview-traits span:first-child{color:#ffd98b}
+.rival-preview-motto{font-size:11.5px;line-height:1.55;color:#efe9ff}
+.rival-preview-hint{margin-top:10px;color:#c1c7dc}
+.rival-preview-bottom{margin-top:14px}
+
+@media(max-width:950px){
+  .rival-preview-art{min-height:242px;padding-top:8px}
+  .rival-preview-art .rival-code-avatar.rival-emblem-large{width:min(100%,230px);height:224px;max-height:224px}
+  .rival-preview-orbit{width:154px;height:154px}
+  .rival-preview-orbit-secondary{width:178px;height:178px}
+  .rival-preview-halo{width:172px;height:172px}
+  .rival-preview-stage-light{width:168px}
+}
+@media(max-width:720px){
+  .rival-preview-art{min-height:176px;padding-top:8px}
+  .rival-preview-art .rival-code-avatar.rival-emblem-large{width:152px;height:162px;max-height:162px}
+  .rival-preview-orbit{width:118px;height:118px}
+  .rival-preview-orbit-secondary{width:136px;height:136px}
+  .rival-preview-halo{width:130px;height:130px}
+  .rival-preview-stage-light{width:122px;height:18px}
+  .rival-preview-rune{font-size:9px}
+}
+@media(max-width:375px){
+  .rival-preview-art{min-height:154px}
+  .rival-preview-art .rival-code-avatar.rival-emblem-large{width:142px;height:150px;max-height:150px}
+}
+
+
+/* Phase 2.7 — Batch 1 transparent portrait integration.
+   Only the 20 approved PNG characters use these rules. Keep all other
+   illustrations, behaviors, and mobile layouts unchanged. */
+.rival-roster-portrait .rival-png-avatar{
+  display:block;
+  flex:none;
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  object-position:center bottom;
+  transform:translateY(0) scale(1.03);
+  filter:drop-shadow(0 4px 7px rgba(3,6,16,.32));
+  transition:transform .25s ease,filter .25s ease;
+}
+.rival-roster-card:hover .rival-roster-portrait .rival-png-avatar,
+.rival-roster-card:focus-visible .rival-roster-portrait .rival-png-avatar{
+  transform:translateY(-1px) scale(1.12);
+  filter:drop-shadow(0 5px 7px color-mix(in srgb,var(--rival-accent) 25%,#020510));
+}
+.rival-roster-card.active .rival-roster-portrait .rival-png-avatar{
+  transform:translateY(0) scale(1.07);
+}
+.rival-preview-art--png .rival-preview-orbit,
+.rival-preview-art--png .rival-preview-orbit-secondary,
+.rival-preview-art--png .rival-preview-halo,
+.rival-preview-art--png .rival-preview-rune{
+  display:none;
+}
+.rival-preview-art--png .rival-png-avatar.rival-emblem-large{
+  position:relative;
+  z-index:3;
+  width:min(100%,305px);
+  height:282px;
+  max-height:282px;
+  object-fit:contain;
+  object-position:center bottom;
+  animation:rival-avatar-float 5s ease-in-out infinite alternate;
+  filter:drop-shadow(0 15px 15px rgba(2,3,10,.36));
+}
+.rival-preview-art--png .rival-preview-stage-light{opacity:.38}
+@media(max-width:950px){
+  .rival-preview-art--png .rival-png-avatar.rival-emblem-large{
+    width:min(100%,225px);height:220px;max-height:220px;
+  }
+}
+@media(max-width:720px){
+  .rival-preview-art--png .rival-png-avatar.rival-emblem-large{
+    width:155px;height:160px;max-height:160px;
+  }
+}
+@media(max-width:375px){
+  .rival-preview-art--png .rival-png-avatar.rival-emblem-large{
+    width:142px;height:147px;max-height:147px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .rival-preview-art--png .rival-png-avatar.rival-emblem-large{animation:none!important}
+  .rival-roster-card:hover .rival-roster-portrait .rival-png-avatar{transform:none}
+}
+.reduce-motion .rival-preview-art--png .rival-png-avatar.rival-emblem-large{animation:none!important}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 2.8 — Instant portraits + unified character backdrops
+   The PNG/WebP art has transparency, so this lightweight CSS layer restores
+   the magical rings, glowing particles and halo seen behind vector rivals.
+   It never sits on top of the portrait or captures clicks.
+   ═══════════════════════════════════════════════════════════════ */
+.rival-roster-portrait,
+.rival-preview-art--png { isolation:isolate; }
+.rival-roster-portrait:has(.rival-png-avatar) {
+  background:
+    radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--rival-accent) 28%,transparent) 0%,transparent 74%),
+    linear-gradient(170deg,#10182d 0%,#17213a 100%);
+}
+.rival-png-decor {
+  position:absolute;left:50%;top:50%;width:94%;height:98%;
+  transform:translate(-50%,-51%);z-index:0;pointer-events:none;
+  display:block;overflow:visible;
+}
+.rival-png-decor::before {
+  content:"";position:absolute;left:50%;top:49%;width:76%;aspect-ratio:1;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,
+    color-mix(in srgb,var(--rival-accent) 25%,transparent) 0%,
+    color-mix(in srgb,var(--rival-glow) 10%,transparent) 45%,
+    transparent 72%);
+  filter:blur(4px);opacity:.95;
+}
+.rival-png-decor::after {
+  content:"";position:absolute;left:50%;top:48%;width:64%;aspect-ratio:1;
+  border-radius:50%;transform:translate(-50%,-50%);
+  border:1px solid color-mix(in srgb,var(--rival-accent) 42%,transparent);
+  box-shadow:0 0 12px color-mix(in srgb,var(--rival-accent) 15%,transparent),
+     0 0 0 8px color-mix(in srgb,var(--rival-accent) 5%,transparent);
+}
+.rival-png-decor__ring {
+  position:absolute;left:50%;top:48%;width:83%;aspect-ratio:1;
+  transform:translate(-50%,-50%);border-radius:50%;
+  border:1px dashed color-mix(in srgb,var(--rival-glow) 35%,transparent);
+  opacity:.7;
+}
+.rival-png-decor__spark {
+  position:absolute;width:5px;height:5px;transform:rotate(45deg);
+  background:var(--rival-glow);box-shadow:0 0 8px var(--rival-accent);
+  opacity:.85;border-radius:1px;
+}
+.rival-png-decor__spark--one{top:19%;left:17%}
+.rival-png-decor__spark--two{top:37%;right:11%;width:3px;height:3px;opacity:.7}
+.rival-png-decor__spark--three{bottom:24%;left:12%;width:3px;height:3px;opacity:.65}
+.rival-roster-portrait .rival-png-avatar {
+  position:relative;z-index:2;
+  /* Keep artwork in front of all decorative rings at every screen size. */
+}
+.rival-roster-card:hover .rival-png-decor,
+.rival-roster-card.active .rival-png-decor {
+  filter:brightness(1.17);
+}
+.rival-preview-art--png .rival-preview-orbit,
+.rival-preview-art--png .rival-preview-orbit-secondary,
+.rival-preview-art--png .rival-preview-halo,
+.rival-preview-art--png .rival-preview-rune {display:block;opacity:.4}
+.rival-preview-art--png .rival-png-decor--featured {
+  width:min(82%,340px);height:88%;top:49%;transform:translate(-50%,-50%);
+}
+.rival-preview-art--png .rival-png-decor--featured::before {
+  width:88%;filter:blur(15px);opacity:.9;
+}
+.rival-preview-art--png .rival-png-decor--featured::after {
+  width:75%;border-width:1.5px;
+  box-shadow:0 0 21px color-mix(in srgb,var(--rival-accent) 20%,transparent),
+  0 0 0 17px color-mix(in srgb,var(--rival-glow) 5%,transparent);
+}
+.rival-preview-art--png .rival-png-decor--featured .rival-png-decor__ring {width:96%}
+.rival-preview-art--png .rival-png-decor--featured .rival-png-decor__spark {width:7px;height:7px}
+.rival-preview-art--png .rival-png-avatar.rival-emblem-large {
+  position:relative;z-index:3;
+}
+@media(max-width:720px){
+  .rival-preview-art--png .rival-png-decor--featured {width:100%;height:90%}
+  .rival-preview-art--png .rival-png-decor--featured::after {width:82%}
+}
+@media(max-width:375px){
+  .rival-preview-art--png .rival-png-decor--featured {width:106%}
+}
+
+
+/* Phase 2 mobile polish — give the Rival Roster room to browse.
+   The earlier 248px cap displayed fewer than three full rows on phones.
+   Keep filters + Quick Picks outside the inner scroll, and scale the list
+   with the available viewport height instead of a tiny fixed max-height. */
+@media (max-width: 720px) {
+  .rival-roster-scroll {
+    height: clamp(360px, 62vh, 620px); /* fallback for older mobile browsers */
+    height: clamp(360px, 62dvh, 620px);
+    min-height: 0;
+    max-height: none;
+    flex: 0 0 auto;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Remain comfortable to browse without adding a second page-wide scroll. */
+  .rival-roster-panel {
+    min-height: 0;
+  }
+  .rival-quick-picks {
+    margin-top: 0;
+  }
+}
+
+/* Mobile selected-rival alignment (2026-11-09)
+   The portrait must not stretch with the taller details column. Keep its
+   artwork, halo and decorative rings centered together in a fixed art stage. */
+@media (min-width:376px) and (max-width:720px) {
+  .rival-preview {
+    align-items:start;
+  }
+  .rival-preview-art {
+    align-self:start;
+    justify-self:center;
+    width:100%;
+    height:156px;
+    min-height:156px;
+    max-height:156px;
+    flex:none;
+    margin:0;
+    display:grid;
+    place-items:center;
+  }
+  .rival-preview-art .rival-png-avatar.rival-emblem-large,
+  .rival-preview-art .rival-code-avatar.rival-emblem-large {
+    width: min(100%,150px);
+    height:150px;
+    max-height:150px;
+    object-fit:contain;
+    object-position:center;
+    justify-self:center;
+    align-self:center;
+  }
+  .rival-preview-art--png .rival-png-decor--featured {
+    top:50%;
+    height:100%;
+    width:100%;
+  }
+  .rival-preview-details {
+    align-self:start;
+    margin-top:0;
+  }
+}
+@media (max-width:375px) {
+  /* Keep the existing stacked layout; center the portrait above its details. */
+  .rival-preview-art {
+    align-self:center;
+    justify-self:center;
+    display:grid;
+    place-items:center;
+    flex:none;
+  }
+  .rival-preview-art .rival-png-avatar.rival-emblem-large,
+  .rival-preview-art .rival-code-avatar.rival-emblem-large {
+    justify-self:center;
+    align-self:center;
+    object-position:center;
+  }
+  .rival-preview-art--png .rival-png-decor--featured {top:50%;}
+}
+
+
+/* Rival Roster performance pass — November 2026.
+ *  Small 160px WebPs are used in cards; full 512px art stays in preview/VS.
+ *  Keep the original aura, but avoid raster filter passes on 55 thumbnails.
+ *  Contain each card's paint so scrolling does not invalidate neighboring rows.
+ */
+.rival-roster-grid { min-width:0; }
+.rival-roster-card {
+  contain: layout paint style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 116px;
+}
+.rival-roster-portrait .rival-png-avatar,
+.rival-roster-card:hover .rival-roster-portrait .rival-png-avatar,
+.rival-roster-card:focus-visible .rival-roster-portrait .rival-png-avatar {
+  filter: none;
+}
+.rival-roster-portrait .rival-png-decor::before { filter: none; }
+.rival-roster-card:hover .rival-png-decor,
+.rival-roster-card.active .rival-png-decor { filter: none; }
+/* Native momentum scrolling on phones; do not turn on scroll-linked transforms. */
+.rival-roster-scroll { -webkit-overflow-scrolling: touch; }
+@media (prefers-reduced-motion: reduce) {
+  .rival-roster-card { transition: none; }
+}
