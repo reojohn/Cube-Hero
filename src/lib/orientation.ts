@@ -1,3 +1,5 @@
+import { nativeOrientationPlugin } from './nativePlatform'
+
 /** Mobile-only display preference. Layout CSS follows the device's real dimensions. */
 export type OrientationPreference = 'auto' | 'portrait' | 'landscape'
 export type OrientationLockFeedback = 'auto' | 'locked' | 'manual'
@@ -7,7 +9,8 @@ export const orientationPreference = (value: unknown): OrientationPreference =>
 
 /** Whether the current browser even offers the optional orientation lock API. */
 export const canRequestOrientationLock = (): boolean =>
-  typeof screen !== 'undefined' && typeof (screen.orientation as (ScreenOrientation & {lock?: unknown}) | undefined)?.lock === 'function'
+  !!nativeOrientationPlugin() ||
+  (typeof screen !== 'undefined' && typeof (screen.orientation as (ScreenOrientation & {lock?: unknown}) | undefined)?.lock === 'function')
 
 /**
  * Orientation locking is allowed by some installed Android PWAs/fullscreen apps.
@@ -17,6 +20,14 @@ export const canRequestOrientationLock = (): boolean =>
  * Call this directly from a user gesture where possible.
  */
 export async function requestOrientationPreference(preference: OrientationPreference): Promise<OrientationLockFeedback> {
+  const native = nativeOrientationPlugin()
+  if (native) {
+    try {
+      if (preference === 'auto') { await native.unlock(); return 'auto' }
+      await native.lock({ orientation: preference })
+      return 'locked'
+    } catch { return 'manual' }
+  }
   if (typeof screen === 'undefined') return 'manual'
   const control = screen.orientation as (ScreenOrientation & {
     lock?: (value: 'portrait-primary' | 'landscape-primary') => Promise<void>

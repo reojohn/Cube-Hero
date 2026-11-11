@@ -55,13 +55,14 @@ const mainCjs = ts.transpileModule(main, {compilerOptions: {
 }}).outputText
 function PlayerGate() {}
 function CubeVsLoader() {}
-function startupRoute(pathname, hash = '') {
+function startupRoute(pathname, hash = '', native = false) {
   let rendered
   const mocks = name => {
     if (name === 'react') return React
     if (name === 'react/jsx-runtime') return jsxRuntime
     if (name === 'react-dom/client') return {createRoot: () => ({render(tree) {rendered = tree}})}
     if (name === './lib/siteRouting') return {isGameLocation}
+    if (name === './lib/nativePlatform') return {isNativeApp: () => native}
     if (name === './components/LocalPlayerProvider') return {__esModule: true, default: PlayerGate}
     if (name === './components/CubeVsLoader') return {__esModule: true, default: CubeVsLoader}
     if (name === './localPlayer.css') return {}
@@ -71,10 +72,12 @@ function startupRoute(pathname, hash = '') {
   new Function('require', 'module', 'exports', 'window', 'document', mainCjs)(
     mocks, module, module.exports,
     {location: {pathname, hash}},
-    {getElementById: () => ({})},
+    {getElementById: () => ({}), documentElement:{classList:{add(){}}}},
   )
   return rendered.props.children.props.children
 }
+const nativeHome = startupRoute('/', '', true)
+assert.equal(nativeHome.type, PlayerGate, 'Capacitor native startup must open the arena instead of the web landing page')
 const homepage = startupRoute('/')
 assert.equal(homepage.type.$$typeof, Symbol.for('react.lazy'), 'the public root must display the landing page without name setup')
 const landingAnchor = startupRoute('/', '#features')
@@ -84,5 +87,5 @@ for (const [pathName, routeHash] of [['/app', '#/home'], ['/app', '#/race'], ['/
   assert.equal(game.type, PlayerGate, `the game at ${pathName}${routeHash} must request a name if missing`)
   assert.equal(game.props.children.type.$$typeof, Symbol.for('react.lazy'), 'the game must remain lazy-loaded inside the name gate')
 }
-console.log('Landing entrypoint: anonymous visitors see landing first; /app asks for name: PASSED')
+console.log('Landing entrypoint: website root stays public; native root enters game; /app still asks for name: PASSED')
 console.log('Landing page: homepage, /app routing, legacy bookmarks, asset references, CTAs, FAQ, Vercel rewrites: PASSED')

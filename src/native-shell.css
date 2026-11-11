@@ -1,0 +1,10 @@
+/* Native-only safe areas. Browser, desktop, and existing cube renderers are untouched. */
+html.cube-native { overscroll-behavior-y: none; }
+html.cube-native body.cube-game-body {
+  padding-inline-start: env(safe-area-inset-left, 0px);
+  padding-inline-end: env(safe-area-inset-right, 0px);
+}
+/* Do not add a second bottom inset: mobile-bottom-nav.css already handles it. */
+html.cube-native .app-shell .main-content {
+  scroll-padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}

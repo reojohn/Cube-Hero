@@ -50,7 +50,10 @@ assert.match(css, /min-height:37px/)
 // capability fallbacks, native lock and unlock, and invalid persisted values.
 const directory = mkdtempSync(join(tmpdir(), 'cube-orient-'))
 try {
-  const output = ts.transpileModule(helper, {compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}})
+  const nativeSource = readFileSync('src/lib/nativePlatform.ts', 'utf8')
+  const nativeJs = ts.transpileModule(nativeSource, {compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}})
+  writeFileSync(join(directory, 'nativePlatform.mjs'), nativeJs.outputText)
+  const output = ts.transpileModule(helper.replace("'./nativePlatform'", "'./nativePlatform.mjs'"), {compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}})
   const filename = join(directory, 'orientation.mjs')
   writeFileSync(filename, output.outputText)
   const mod = await import(pathToFileURL(filename).href)
@@ -58,6 +61,18 @@ try {
   for (const input of ['portrait','landscape','auto']) assert.equal(mod.orientationPreference(input),input)
   assert.equal(mod.canRequestOrientationLock(),false)
   assert.equal(await mod.requestOrientationPreference('landscape'),'manual')
+  let nativeLock='',nativeUnlock=false
+  globalThis.window={Capacitor:{getPlatform:()=> 'android',isNativePlatform:()=>true,Plugins:{
+    ScreenOrientation:{lock:async({orientation})=>{nativeLock=orientation},unlock:async()=>{nativeUnlock=true}}
+  }}}
+  assert.equal(mod.canRequestOrientationLock(),true)
+  assert.equal(await mod.requestOrientationPreference('landscape'),'locked')
+  assert.equal(nativeLock,'landscape')
+  assert.equal(await mod.requestOrientationPreference('portrait'),'locked')
+  assert.equal(nativeLock,'portrait')
+  assert.equal(await mod.requestOrientationPreference('auto'),'auto')
+  assert.equal(nativeUnlock,true)
+  delete globalThis.window
   let lastLock = '', unlocked = false
   globalThis.screen = {orientation:{lock: async key => {lastLock=key},unlock:()=>{unlocked=true}}}
   assert.equal(mod.canRequestOrientationLock(),true)
@@ -72,5 +87,6 @@ try {
   console.log('PASS: persistent Auto/Portrait/Landscape UI, compact desktop-style landscape layout, native lock/unlock and browser fallback')
 } finally {
   delete globalThis.screen
+  delete globalThis.window
   rmSync(directory,{recursive:true,force:true})
 }

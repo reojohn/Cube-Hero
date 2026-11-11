@@ -41,6 +41,7 @@ import type { RaceRecord, RaceSession, RaceSettings, Difficulty, RaceLength, AiP
 import { canRequestOrientationLock, orientationPreference, requestOrientationPreference } from './lib/orientation'
 import type { OrientationPreference, OrientationLockFeedback } from './lib/orientation'
 import { configureGameAudio, playGameSound, unlockGameAudio } from './lib/gameAudio'
+import { isNativeApp, listenForNativeBack, minimizeNativeApp } from './lib/nativePlatform'
 
 type Page='home'|'race'|'room'|'results'|'practice'|'solo'|'statistics'|'learn'|'journey'|'settings'
 type Preferences={sound:boolean;soundVolume:number;cinematicSounds:boolean;timerSounds:boolean;reducedMotion:boolean;compact:boolean;precision:'2'|'3';orientation:OrientationPreference}
@@ -298,6 +299,11 @@ export default function App(){
   const [journeyTab,setJourneyTab]=useState<JourneyTab>('overview')
   const [raceSettings,setRaceSettings]=useSavedState('cube-hero-race-settings-v1',initialRace)
   const [preferences,setPreferences]=useSavedState('cube-hero-preferences-v1',initialPreferences)
+  useEffect(()=>{
+    if (isNativeApp()) void requestOrientationPreference(orientationPreference(preferences.orientation))
+    // Apply the saved preference only once at native launch; subsequent changes use the Settings button.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[])
   const [history,setHistory]=useState<RaceRecord[]>(()=>{
     try{const raw=JSON.parse(localStorage.getItem('cube-hero-history-v2')||'[]');return Array.isArray(raw)?raw.filter(isRaceRecord).slice(-2000):[]}
     catch{return []}
@@ -368,6 +374,18 @@ export default function App(){
     return()=>{document.body.style.overflow=previousOverflow;window.removeEventListener('keydown',onKeyDown)}
   },[menuOpen])
   const goTo=(to:Page)=>{if(((page==='room'&&to!=='room'&&to!=='results')||(page==='practice'&&to!=='practice')||(page==='solo'&&to!=='solo'))&&activeRaceRef.current){if(!window.confirm('Leave the running race? This unfinished round will not be saved.'))return;activeRaceRef.current=false}setVsPendingSession(null);setPage(to);setMenuOpen(false);window.location.hash=`/${to}`;window.scrollTo({top:0,behavior:'instant'})}
+  // Android Back must respect an active solve, close overlays first, and never
+  // change the race clock or saved progress. Keep one native listener stable
+  // across timer-driven React renders (including multi-AI races).
+  const nativeBackAction = useRef<() => void>(()=>{})
+  nativeBackAction.current = () => {
+    if (vsPendingSession) { setVsPendingSession(null); return }
+    if (levelUp) { setLevelUp(null); return }
+    if (menuOpen) { setMenuOpen(false); return }
+    if (page === 'home') { minimizeNativeApp(); return }
+    goTo(page === 'room' || page === 'results' ? 'race' : 'home')
+  }
+  useEffect(()=>listenForNativeBack(()=>nativeBackAction.current()),[])
   const startRace=()=>{
     if(vsPendingSession)return
     unlockGameAudio()
@@ -428,7 +446,7 @@ export default function App(){
       <main className="main-content" id="main-content">{page==='home'&&<HomePage goTo={goTo} journey={journey}/>} {page==='race'&&<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>} {page==='room'&&(session?<RaceRoom key={`${session.id}:${session.records.length}`} session={session} goTo={goTo} onActiveChange={trackRaceActive} onComplete={completeRound} toast={setToastMessage} precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion}/>:<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>)} {page==='results'&&<>
         {currentTournament&&<section className="journey-results-summary"><div><span className="journey-eyebrow"><Trophy size={15}/> HERO JOURNEY · CHAMPIONSHIP</span><h3>Round {currentTournament.records.length} / 5 · You are #{tournamentPlayer?.place??'—'}</h3><p>{tournamentPlayer?.points??0} points · {currentTournament.records.length===5?'Championship complete!':'Your next race uses a new scramble.'}</p></div><button className="btn btn-primary btn-sm" onClick={()=>{setJourneyTab('tournaments');goTo('journey')}}><Award size={16}/> View standings <ArrowRight size={16}/></button></section>}
         <RaceResults playerName={playerName} session={session} goTo={goTo} nextRound={nextRound} raceAgain={startRace} precision={precision}/></>} {page==='practice'&&<GhostRace precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive}/>} {page==='solo'&&<SoloTimer precision={precision} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive} onRaceClick={()=>goTo('race')}/>} {page==='statistics'&&<RaceStatistics history={history} goTo={goTo} clearHistory={clearHistory} precision={precision}/>} {page==='learn'&&<Academy reducedMotion={preferences.reducedMotion} goToRace={()=>goTo('race')}/>} {page==='journey'&&<HeroJourney playerName={playerName} state={journey} tab={journeyTab} onTabChange={setJourneyTab} initialDifficulty={raceSettings.difficulty} initialPersonality={raceSettings.personality} onStartTournament={startTournament} onResumeTournament={resumeTournament} onGo={goTo} precision={precision}/>} {page==='settings'&&<SettingsPage preferences={preferences} update={setPreferences} reset={reset} playerName={playerName} onPlayerNameChange={value=>{if(setPlayerName(value))setToastMessage(`Player name updated to ${normalizePlayerName(value)}.`)}}/>}</main>
-      <footer className="app-footer"><span>© 2026 Cube Hero. Built for the love of cubing. <a href="/" className="app-site-link">Visit website ↗</a></span><span>Challenge the AI. Outrace your Ghost. Break your limits. <span className="footer-spark">✦</span></span></footer></div>
+      <footer className="app-footer"><span>© 2026 Cube Hero. Built for the love of cubing. {!isNativeApp()&&<a href="/" className="app-site-link">Visit website ↗</a>}</span><span>Challenge the AI. Outrace your Ghost. Break your limits. <span className="footer-spark">✦</span></span></footer></div>
     {/* The HIC-style dock is phone-only; keep the original desktop sidebar and full mobile drawer. */}
     <nav className="cube-mobile-dock" aria-label="Mobile quick navigation">
       {NAV.filter(item=>['home','race','solo','practice','learn'].includes(item.page)).map(({page:p,label,icon:Icon})=>{
