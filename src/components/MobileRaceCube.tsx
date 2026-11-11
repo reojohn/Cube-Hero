@@ -7,6 +7,7 @@ import type { Cubie } from '../lib/cubeTurning'
 import { moveIndexAt } from '../lib/aiPlan'
 import { mobileSliceTurn } from '../lib/mobileCubeTurn'
 import { buildSolidCubeFrames } from '../lib/mobileCubeFrames'
+import type { GraphicsQuality } from '../lib/graphicsQuality'
 
 /**
  * Mobile race cube: the same solid cubie geometry used by the desktop model,
@@ -25,6 +26,7 @@ type Props = {
   plan: AiPlan
   active: boolean
   startAt: number | null
+  quality?: Exclude<GraphicsQuality, 'low'>
 }
 
 type TurnFrame = { completed: number; offsetMs: number; startAt: number | null; plan: AiPlan | null }
@@ -38,7 +40,16 @@ const SolidMobileCubie = memo(function SolidMobileCubie({ piece }: { piece: Cubi
   </div>
 })
 
-const MobileRaceCube = memo(function MobileRaceCube({ scramble, plan, active, startAt }: Props) {
+/** Medium keeps all 26 opaque physical cubies but paints sticker colors directly
+ * on faces: fewer DOM elements and much cheaper styles than High. */
+const MediumMobileCubie = memo(function MediumMobileCubie({ piece }: { piece: Cubie }) {
+  return <div className="ai-turning-cubie ai-mobile-solid-cubie"
+    style={{ transform: `translate3d(${piece.x * 100}%, ${-piece.y * 100}%, calc(var(--cube-cell) * ${piece.z}))` }}>
+    {SIDES.map(face => <div key={face} className={`ai-turning-cubie-face ai-css-face-${face} ai-mobile-solid-face ch-medium-cubie-face${piece.stickers[face] ? ` sticker-${piece.stickers[face]}` : ''}`} aria-hidden="true" />)}
+  </div>
+})
+
+const MobileRaceCube = memo(function MobileRaceCube({ scramble, plan, active, startAt, quality = 'high' }: Props) {
   const [frame, setFrame] = useState<TurnFrame>({ completed: 0, offsetMs: 0, startAt: null, plan: null })
 
   useEffect(() => {
@@ -101,21 +112,22 @@ const MobileRaceCube = memo(function MobileRaceCube({ scramble, plan, active, st
     animationDelay: `-${offset}ms`,
   } as CSSProperties) : undefined
 
-  return <div className="ai-3d-cube-shell ai-physical-turn-shell ai-mobile-solid-shell">
+  const CubieRenderer = quality === 'medium' ? MediumMobileCubie : SolidMobileCubie
+  return <div className={`ai-3d-cube-shell ai-physical-turn-shell ai-mobile-solid-shell${quality === 'medium' ? ' ch-medium-cube-shell' : ''}`}>
     <div className="ai-css-cube-stage ai-physical-turn-stage ai-mobile-solid-stage" role="img"
       aria-label={`Solid three-dimensional cube following the real scramble-specific CFOP solution: ${completed} of ${plan.moves.length} moves completed${move ? `, turning ${move}` : ''}.`}>
-      <div className="ai-css-cube-aura" />
+      {quality === 'high' && <div className="ai-css-cube-aura" />}
       <div className="ai-physical-cube-camera ai-mobile-solid-camera">
         <div className="ai-physical-cube-body">
           <div className="ai-physical-layer ai-mobile-stationary-layer">
-            {stationaryPieces.map(piece => <SolidMobileCubie key={piece.id} piece={piece} />)}
+            {stationaryPieces.map(piece => <CubieRenderer key={piece.id} piece={piece} />)}
           </div>
           {turn && <div key={`${startAt}-${completed}-${move}`} className="ai-physical-layer ai-mobile-turn-layer" style={animatedStyle}>
-            {movingPieces.map(piece => <SolidMobileCubie key={piece.id} piece={piece} />)}
+            {movingPieces.map(piece => <CubieRenderer key={piece.id} piece={piece} />)}
           </div>}
         </div>
       </div>
-      <div className="ai-css-cube-floor" />
+      {quality === 'high' && <div className="ai-css-cube-floor" />}
     </div>
   </div>
 })

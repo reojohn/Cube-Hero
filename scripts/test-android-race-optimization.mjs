@@ -62,6 +62,6 @@ for (const file of ['src/components/RaceRoom.tsx','src/components/GhostRace.tsx'
   assert.ok(contents.includes('competitionRenderIntervalMs('))
   assert.ok(contents.includes('scheduleOpponentFinishRefreshes'), 'Android race page updates only on opponent finishes')
   assert.ok(contents.includes('shouldRenderAndroidOnFinishOnly'), 'Android pages skip frequent full-page race ticks')
-  assert.ok(contents.includes('<MobileRaceCube'))
+  assert.ok(contents.includes('<RaceCubeVisual'), 'both race pages use quality-aware cube selection')
 }
 console.log('PASS: Android full-page renders only at opponent finishes, shared frame-synchronized stopwatch drawing, iPhone and 3D cube turns preserved.')

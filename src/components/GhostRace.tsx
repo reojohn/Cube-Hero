@@ -3,8 +3,7 @@ import PlayerAvatar from './PlayerAvatar'
 import { memo, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowRight, Check, CircleHelp, Clock3, Copy, Ghost, Keyboard, LoaderCircle, Medal, RotateCcw, ShieldCheck, Sparkles, Timer, Trophy, Zap } from 'lucide-react'
-import AiCube3D from './AiCube3D'
-import MobileRaceCube from './MobileRaceCube'
+import RaceCubeVisual from './RaceCubeVisual'
 import LiveTimerText from './LiveTimerText'
 import { competitionRenderIntervalMs, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY, scheduleOpponentFinishRefreshes, shouldRenderAndroidOnFinishOnly } from '../lib/mobilePerformance'
 import InspectionModal from './InspectionModal'
@@ -20,12 +19,13 @@ import { GHOST_STORAGE_KEY, GHOST_QUALIFYING_SOLVES, bestGhostTime, emptyGhostDa
 import type { GhostAttempt, GhostData } from '../lib/ghost'
 import type { AiPlan } from '../lib/aiPlan'
 import { playGameSound } from '../lib/gameAudio'
+import type { GraphicsQuality } from '../lib/graphicsQuality'
 
 type Stage = 'scramble' | 'inspection' | 'ready' | 'running' | 'waiting' | 'result'
 type HoldSource = 'keyboard' | 'pointer'
 type Hold = { source: HoldSource; startedAt: number; pointerId?: number }
 type Outcome = { attempt: GhostAttempt; baselineMs: number | null; isNewBest: boolean; qualificationNumber: number }
-type Props = { precision: 2 | 3; sound: boolean; reducedMotion: boolean; onActiveChange: (active: boolean) => void }
+type Props = { precision: 2 | 3; sound: boolean; reducedMotion: boolean; graphics: GraphicsQuality; onActiveChange: (active: boolean) => void }
 const msNow = () => performance.now()
 
 function savedGhostData(): GhostData {
@@ -140,7 +140,7 @@ function GhostInspectReadyButton({ready,pulseAllowed,onClick}:{ready:boolean;pul
   </span>
 }
 
-export default function GhostRace({precision,sound,reducedMotion,onActiveChange}:Props){
+export default function GhostRace({precision,sound,reducedMotion,graphics,onActiveChange}:Props){
   const [data,setData]=useState<GhostData>(savedGhostData)
   const qualifying=data.qualifications.length<GHOST_QUALIFYING_SOLVES
   const qualifiedCount=data.qualifications.length
@@ -441,7 +441,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
   const isQualifyingResult=result?.mode==='qualifying'
   const duelWin=result?.officialMs!=null&&outcome?.baselineMs!=null&&result.officialMs<outcome.baselineMs
   const wins=data.duels.filter(x=>x.officialMs!==null&&x.opponentMs!==null&&x.officialMs<x.opponentMs).length
-  return <div className={`page-stack narrow-stack ghost-page ${stage==='running'||stage==='waiting'?'ch-performance-live':''}`}>
+  return <div className={`page-stack narrow-stack ghost-page ${stage==='running'||stage==='waiting'?'ch-performance-live':''} ch-graphics-${graphics}`}>
     <RaceMechanicsModal open={mechanicsModalOpen} mode="ghost" onClose={closeMechanics} />
     <GhostResetModal open={resetModalOpen} qualifyingSolves={qualifiedCount} duels={data.duels.length} onCancel={()=>setResetModalOpen(false)} onConfirm={resetGhost} />
     {inspectionModalOpen&&stage==='inspection'&&<InspectionModal
@@ -504,7 +504,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
         </section>
         {qualifying?<section className="surface ghost-locked-card"><div className="ghost-locked-symbol"><img className="ghost-assassin-logo" src="/ghost-assassin-emblem.png" alt="" decoding="async" /></div><h3>Meet your future rival</h3><p>Once you finish three valid solves, your fastest recorded time will power your animated ghost opponent.</p><div className="ghost-locked-progress"><span style={{width:`${qualifiedCount/GHOST_QUALIFYING_SOLVES*100}%`}}/></div><small>{GHOST_QUALIFYING_SOLVES-qualifiedCount} qualifying solve{GHOST_QUALIFYING_SOLVES-qualifiedCount===1?'':'s'} remaining</small></section>
           :<section className="surface ghost-opponent-card"><div className="ghost-racer-top"><span><Ghost size={22}/> YOUR GHOST</span><small>Personal best · {showTime(ghostPlan?.totalMs??baseline,precision)}</small></div>
-            {ghostPlan?(compactRendering?<MobileRaceCube scramble={scramble} plan={ghostPlan} active={stage==='running'||stage==='waiting'} startAt={startRef.current}/>:<AiCube3D scramble={scramble} plan={ghostPlan} elapsedMs={ghostElapsed}/>):<div className="ghost-loading-cube"><LoaderCircle size={31} className="spin-icon"/> Preparing cube…</div>}
+            {ghostPlan?<RaceCubeVisual scramble={scramble} plan={ghostPlan} elapsedMs={ghostElapsed} active={stage==='running'||stage==='waiting'} startAt={startRef.current} compact={compactRendering} graphics={graphics}/>:<div className="ghost-loading-cube"><LoaderCircle size={31} className="spin-icon"/> Preparing cube…</div>}
             <LiveTimerText className="ghost-opponent-time" timeMs={ghostElapsed} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={ghostPlan?.totalMs}/><span className="ghost-opponent-status">{ghostFinished?'GHOST FINISHED':stage==='running'||stage==='waiting'?'SOLVING THE SCRAMBLE':'WAITING AT THE START'}</span>
           </section>}
       </div>

@@ -55,6 +55,7 @@ const mainCjs = ts.transpileModule(main, {compilerOptions: {
 }}).outputText
 function PlayerGate() {}
 function CubeVsLoader() {}
+function StartupErrorBoundary() {}
 function startupRoute(pathname, hash = '', native = false) {
   let rendered
   const mocks = name => {
@@ -65,6 +66,7 @@ function startupRoute(pathname, hash = '', native = false) {
     if (name === './lib/nativePlatform') return {isNativeApp: () => native}
     if (name === './components/LocalPlayerProvider') return {__esModule: true, default: PlayerGate}
     if (name === './components/CubeVsLoader') return {__esModule: true, default: CubeVsLoader}
+    if (name === './components/StartupErrorBoundary') return {__esModule: true, default: StartupErrorBoundary}
     if (name === './localPlayer.css') return {}
     throw new Error(`Unexpected startup import: ${name}`)
   }
@@ -74,7 +76,7 @@ function startupRoute(pathname, hash = '', native = false) {
     {location: {pathname, hash}},
     {getElementById: () => ({}), documentElement:{classList:{add(){}}}},
   )
-  return rendered.props.children.props.children
+  return rendered.props.children.props.children.props.children
 }
 const nativeHome = startupRoute('/', '', true)
 assert.equal(nativeHome.type, PlayerGate, 'Capacitor native startup must open the arena instead of the web landing page')

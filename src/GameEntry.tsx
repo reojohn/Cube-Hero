@@ -12,6 +12,7 @@ import './mobile-performance.css'
 // Keep the accessible audio layout last so older theme/media rules cannot squash it.
 import './settings-audio.css'
 import './native-shell.css'
+import './graphics-quality.css'
 
 export default function GameEntry() {
   useEffect(() => {

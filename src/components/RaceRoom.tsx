@@ -2,8 +2,7 @@ import PlayerAvatar from './PlayerAvatar'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowRight, BrainCircuit, Check, ChevronLeft, CircleHelp, Clock3, Copy, Flag, Keyboard, Layers3, LoaderCircle, RotateCcw, ShieldCheck, Shuffle, SlidersHorizontal, Trophy, X } from 'lucide-react'
-import AiCube3D from './AiCube3D'
-import MobileRaceCube from './MobileRaceCube'
+import RaceCubeVisual from './RaceCubeVisual'
 import MobileAiPortrait from './MobileAiPortrait'
 import { AI_RIVALS, getRival } from '../lib/rivals'
 import LiveTimerText from './LiveTimerText'
@@ -18,10 +17,11 @@ import { includeEndedHold, inspectionElapsedMs } from '../lib/inspectionClock'
 import { createRecord, formatTime, generateScramble, getAiCount, getAiPersonality, inspectionPenalty, RACE_COUNT } from '../lib/racing'
 import type { InspectionPenalty, RaceRecord, RaceSession } from '../lib/racing'
 import { playGameSound } from '../lib/gameAudio'
+import type { GraphicsQuality } from '../lib/graphicsQuality'
 
 type Stage='scramble'|'ready'|'inspection'|'running'|'waiting'
 type HoldSource = 'keyboard' | 'pointer'
-type Props={session:RaceSession;goTo:(page:'race'|'room'|'results')=>void;onComplete:(record:RaceRecord)=>void;toast:(message:string)=>void;precision:2|3;sound:boolean;reducedMotion:boolean;onActiveChange:(value:boolean)=>void}
+type Props={session:RaceSession;goTo:(page:'race'|'room'|'results')=>void;onComplete:(record:RaceRecord)=>void;toast:(message:string)=>void;precision:2|3;sound:boolean;reducedMotion:boolean;graphics:GraphicsQuality;onActiveChange:(value:boolean)=>void}
 const msNow=()=>performance.now()
 
 type BeginnerMove = {
@@ -137,7 +137,7 @@ function InspectReadyButton({
   </span>
 }
 
-export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,reducedMotion,onActiveChange}:Props){
+export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,reducedMotion,graphics,onActiveChange}:Props){
   const [stage,setStage]=useState<Stage>('scramble')
   // Explicitly open the inspection dialog on the Inspect click, independently of the timer render.
   const [inspectionModalOpen,setInspectionModalOpen]=useState(false)
@@ -443,7 +443,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
   }
   function leave(){goTo('race')}
   const stageLabel=stage==='scramble'?'SCRAMBLE YOUR CUBE':stage==='ready'?'READY TO START':stage==='inspection'?'INSPECTION RUNNING':stage==='running'?'RACE IN PROGRESS':'YOU FINISHED — AI STILL SOLVING'
-  return <div className={`page-stack narrow-stack room-page phase2-room phase3-room ${stage==='running'||stage==='waiting'?'ch-performance-live':''}`}>
+  return <div className={`page-stack narrow-stack room-page phase2-room phase3-room ${stage==='running'||stage==='waiting'?'ch-performance-live':''} ch-graphics-${graphics}`}>
     <RaceMechanicsModal open={mechanicsModalOpen} mode="ai" onClose={()=>setMechanicsModalOpen(false)} />
     {inspectionModalOpen&&<InspectionModal elapsedMs={inspectionMs} penalty={currentPenalty} opponentLabel={`${aiCount>1?`${aiCount} AI rivals · `:''}Sub-${session.settings.difficulty} · ${personalityName}`} round={round} holding={holdStartedAt!==null} holdArmed={holdArmed} holdProgress={holdProgress} holdTooShort={holdTooShort} onHoldPointerDown={onHoldPointerDown} onHoldPointerUp={onHoldPointerUp} onHoldPointerCancel={onHoldPointerCancel}/> }
     <div className="room-heading"><div><button className="text-back" onClick={leave}><ChevronLeft size={17}/> Back to setup</button><h1>Race vs {aiCount===1?'AI':`${aiCount} AIs`} <span className="room-mid-dot">•</span> <span className="level-pill">Sub-{session.settings.difficulty}</span></h1><p>Round {round} of {total} · {personalityName} AI · {aiCount>1?`${aiCount} rivals, one shared scramble · `:''}CFOP-only solving</p></div><div style={{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end'}}><button className="btn btn-outline btn-sm" type="button" onClick={()=>setMechanicsModalOpen(true)}><CircleHelp size={16}/> Mechanics · How Race AI Works</button><button className="btn btn-outline btn-sm" onClick={leave}><X size={16}/> Leave Race</button></div></div>
@@ -463,13 +463,13 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
         </p>}</>}
     </section>
     <div className="racer-grid" ref={racersRef}><section className={`surface racer-panel human-panel ${stage==='running'?'racer-live':''} ${holdArmed?'stackmat-armed':holdStartedAt!==null?'stackmat-holding':''} ${stage==='ready'?'stackmat-touch-zone':''}`} onPointerDown={stage==='ready'?onHoldPointerDown:undefined} onPointerUp={stage==='ready'?onHoldPointerUp:undefined} onPointerCancel={stage==='ready'?onHoldPointerCancel:undefined} onLostPointerCapture={stage==='ready'?onHoldPointerCancel:undefined} onClick={stage==='running'?stopRace:undefined}><div className="racer-top"><div><PlayerAvatar className="cube-player-avatar--inline" decorative/><strong>YOU</strong></div><span className="racer-subtitle">Physical cube</span></div><div className="timer-preview-label">YOUR SOLVE TIME</div><LiveTimerText className="racer-timer" timeMs={playerStopped??(stage==='running'?elapsed:0)} precision={precision} running={stage==='running'} startAt={startRef.current}/><div className="timer-control"><Keyboard size={18}/><span>{stage==='running'?<><kbd>SPACE</kbd> or tap to stop</>:stage==='waiting'?'Solve recorded':holdArmed?'GREEN — RELEASE TO START':holdStartedAt!==null?'KEEP HOLDING…':<><kbd>SPACE</kbd> hold 1.5s, then release</>}</span></div>{stage==='ready'&&<div className="stackmat-arm-track" aria-label="Hold-to-start progress"><span style={{width:`${holdProgress}%`}}/></div>}<p>{stage==='waiting'?'You finished! Waiting for the last AI opponents.':stage==='running'?'Press Space or tap your timer to stop.':holdTooShort?'Too short — hold for 1.5 seconds before releasing.':stage==='ready'?'Hold Space or touch this panel for 1.5 seconds, then release.':'Scramble your real cube before beginning.'}</p></section>
-      <section className="surface racer-panel ai-panel"><div className="racer-top"><div><BrainCircuit size={22}/><strong>{aiCount===1?'AI OPPONENT':'AI OPPONENT 1'}</strong></div><span className="level-pill mini">Sub-{session.settings.difficulty} · {personalityName}</span></div>{session.settings.showCube&&plan?(compactRendering?<MobileRaceCube scramble={scramble} plan={plan} active={stage==='running'||stage==='waiting'} startAt={startRef.current}/>:<AiCube3D scramble={scramble} plan={plan} elapsedMs={aiElapsed}/>):<div className="cube-hidden"><Layers3 size={27}/><span>{plan?'Cube visual hidden':'Preparing solution…'}</span></div>}<LiveTimerText className="racer-timer ai-timer" aria-label="AI solve time" timeMs={aiElapsed} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={aiTarget}/></section>
+      <section className="surface racer-panel ai-panel"><div className="racer-top"><div><BrainCircuit size={22}/><strong>{aiCount===1?'AI OPPONENT':'AI OPPONENT 1'}</strong></div><span className="level-pill mini">Sub-{session.settings.difficulty} · {personalityName}</span></div>{session.settings.showCube&&plan?<RaceCubeVisual scramble={scramble} plan={plan} elapsedMs={aiElapsed} active={stage==='running'||stage==='waiting'} startAt={startRef.current} compact={compactRendering} graphics={graphics}/>:<div className="cube-hidden"><Layers3 size={27}/><span>{plan?'Cube visual hidden':'Preparing solution…'}</span></div>}<LiveTimerText className="racer-timer ai-timer" aria-label="AI solve time" timeMs={aiElapsed} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={aiTarget}/></section>
     {aiCount>1&&<section className="surface multi-ai-live" aria-label="Other racing AI opponents">
       <div className="multi-ai-live-heading"><div><span className="multi-ai-live-eyebrow">LIVE TOURNAMENT · SHARED SCRAMBLE</span><h3><BrainCircuit size={18}/> Other AI Racers</h3><p>AI 1 is featured above. Every rival has a separate solve clock.</p></div><span className="multi-ai-finish-count">{aiFinishedCount} / {aiCount} FINISHED</span></div>
       <div className="multi-ai-live-grid">{plans.slice(1).map((rival,i)=>{
         const time=startRef.current===null?0:Math.min(rival.totalMs,elapsed)
         const done=startRef.current!==null&&elapsed>=rival.totalMs
-        return <div className={`multi-ai-live-rival ${done?'finished':''}`} key={`ai-${i+2}`}><div className="multi-ai-rival-top"><span className="multi-ai-rival-avatar"><BrainCircuit size={15}/></span>{compactRendering?<span className="multi-ai-rival-name"><strong>AI {i+2}</strong><span>{mobileOpponentPortraits[i+1]?.name}</span></span>:<strong>AI {i+2}</strong>}<small>{done?'SOLVED':'RACING'}</small></div><div className="multi-ai-rival-body"><div className="multi-ai-rival-time">{compactRendering&&isAndroidBrowser()?<LiveTimerText className="multi-ai-rival-value" timeMs={time} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={rival.totalMs}/>:formatTime(time,precision)}<small>s</small></div>{compactRendering?<MobileAiPortrait rival={mobileOpponentPortraits[i+1]}/>:session.settings.showCube?<div className="multi-ai-rival-cube" aria-hidden="true"><AiCube3D scramble={scramble} plan={rival} elapsedMs={time}/></div>:<div className="multi-ai-rival-cube-placeholder" aria-hidden="true"><Layers3 size={22}/></div>}</div></div>
+        return <div className={`multi-ai-live-rival ${done?'finished':''}`} key={`ai-${i+2}`}><div className="multi-ai-rival-top"><span className="multi-ai-rival-avatar"><BrainCircuit size={15}/></span>{compactRendering?<span className="multi-ai-rival-name"><strong>AI {i+2}</strong><span>{mobileOpponentPortraits[i+1]?.name}</span></span>:<strong>AI {i+2}</strong>}<small>{done?'SOLVED':'RACING'}</small></div><div className="multi-ai-rival-body"><div className="multi-ai-rival-time">{compactRendering&&isAndroidBrowser()?<LiveTimerText className="multi-ai-rival-value" timeMs={time} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={rival.totalMs}/>:formatTime(time,precision)}<small>s</small></div>{compactRendering?<MobileAiPortrait rival={mobileOpponentPortraits[i+1]}/>:session.settings.showCube?<div className="multi-ai-rival-cube" aria-hidden="true"><RaceCubeVisual scramble={scramble} plan={rival} elapsedMs={time} active={stage==='running'||stage==='waiting'} startAt={startRef.current} compact={compactRendering} graphics={graphics}/></div>:<div className="multi-ai-rival-cube-placeholder" aria-hidden="true"><Layers3 size={22}/></div>}</div></div>
       })}</div>
     </section>}
     </div>

@@ -26,6 +26,7 @@
     "test:roster-perf": "node scripts/test-rival-roster-performance.mjs",
     "test:vercel": "node scripts/test-vercel-deploy.mjs",
     "test:mobile-cube": "node scripts/test-mobile-turning-cube.mjs",
+    "test:graphics": "node scripts/test-graphics-quality.mjs",
     "test:audio": "node scripts/test-game-audio.mjs",
     "android:setup": "node scripts/setup-android.mjs",
     "android:sync": "npm run build && npx --no-install cap sync android",

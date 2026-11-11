@@ -6,7 +6,7 @@ import {
   Home, Layers3, Menu, PanelLeftClose, PanelLeftOpen, RotateCcw, Settings2, ShieldCheck,
   Shuffle, SlidersHorizontal, Sparkles, Timer, Trophy,
   X, Zap, ChartNoAxesCombined, CheckCircle2, LockKeyhole,
-  Ghost, Award, Smartphone, TabletSmartphone, RefreshCw, RotateCw, Volume2,
+  Ghost, Award, Smartphone, TabletSmartphone, RefreshCw, RotateCw, Volume2, Cpu,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import CubeArt from './components/CubeArt'
@@ -42,9 +42,11 @@ import { canRequestOrientationLock, orientationPreference, requestOrientationPre
 import type { OrientationPreference, OrientationLockFeedback } from './lib/orientation'
 import { configureGameAudio, playGameSound, unlockGameAudio } from './lib/gameAudio'
 import { isNativeApp, listenForNativeBack, minimizeNativeApp } from './lib/nativePlatform'
+import { GRAPHICS_OPTIONS, graphicsQuality } from './lib/graphicsQuality'
+import type { GraphicsQuality } from './lib/graphicsQuality'
 
 type Page='home'|'race'|'room'|'results'|'practice'|'solo'|'statistics'|'learn'|'journey'|'settings'
-type Preferences={sound:boolean;soundVolume:number;cinematicSounds:boolean;timerSounds:boolean;reducedMotion:boolean;compact:boolean;precision:'2'|'3';orientation:OrientationPreference}
+type Preferences={sound:boolean;soundVolume:number;cinematicSounds:boolean;timerSounds:boolean;reducedMotion:boolean;compact:boolean;graphics:GraphicsQuality;precision:'2'|'3';orientation:OrientationPreference}
 const ROUTES:Page[]=['home','race','room','results','practice','solo','statistics','learn','journey','settings']
 const PERSONALITIES:{id:AiPersonality;label:string;hint:string;art:string}[]=[
   {id:'casual',label:'Casual',hint:'More mistakes & variation',art:'/ai-personalities/casual.png'},
@@ -61,7 +63,7 @@ const NAV:{page:Page;label:string;icon:LucideIcon}[]=[
   {page:'journey',label:'Hero Journey',icon:Award},
 ]
 const initialRace:RaceSettings={difficulty:'15',personality:'balanced',aiCount:1,raceLength:'single',inspection:true,showCube:true,breakdown:true,puzzle:'333'}
-const initialPreferences:Preferences={sound:false,soundVolume:55,cinematicSounds:true,timerSounds:true,reducedMotion:false,compact:false,precision:'2',orientation:'auto'}
+const initialPreferences:Preferences={sound:false,soundVolume:55,cinematicSounds:true,timerSounds:true,reducedMotion:false,compact:false,graphics:'high',precision:'2',orientation:'auto'}
 const PATH_LABELS:Record<Page,string>={home:'Overview',race:'Set up your race',room:'Live race arena',results:'Race results',practice:'YOU vs YOU · Ghost Race',solo:'Solo practice timer',statistics:'Your statistics',learn:'Learn speedcubing',journey:'Achievements & progression',settings:'Settings'}
 
 function readSaved<T extends object>(key:string,fallback:T):T {
@@ -256,6 +258,17 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
         <p className="ch-audio-hint">Sounds are generated on your device—no downloads or accounts. Mobile browsers play sound after the first interaction.</p>
       </div>
     </Surface>
+    <Surface className="settings-surface ch-graphics-settings" aria-label="Graphics settings">
+      <div className="settings-section-head"><span className="settings-header-icon"><Cpu size={20}/></span><div><h3>Graphics Settings</h3><p>Choose how Race AI and Ghost Race render their cubes. Lower settings can help slower Android phones keep the timers responsive.</p></div></div>
+      <div className="ch-graphics-grid" role="group" aria-label="Cube graphics quality">
+        {GRAPHICS_OPTIONS.map(option=><button type="button" key={option.value} className={`ch-graphics-option ch-graphics-option-${option.value}${graphicsQuality(preferences.graphics)===option.value?' selected':''}`} aria-pressed={graphicsQuality(preferences.graphics)===option.value} onClick={()=>change('graphics',option.value)}>
+          <span className="ch-graphics-option-top"><strong>{option.title}</strong>{graphicsQuality(preferences.graphics)===option.value&&<Check size={17} aria-hidden="true"/>}</span>
+          <span className="ch-graphics-tag">{option.recommendation}</span>
+          <small>{option.detail}</small>
+        </button>)}
+      </div>
+      <p className="ch-graphics-help"><ShieldCheck size={15} aria-hidden="true"/> Only the graphics change. Scrambles, AI speeds, inspection, ghost records and official times stay exactly the same. Your choice saves automatically on this device.</p>
+    </Surface>
     <Surface className="settings-surface ch-orientation-settings" aria-label="Mobile orientation preferences">
       <div className="settings-section-head"><span className="settings-header-icon"><TabletSmartphone size={20}/></span><div><h3>Mobile Orientation</h3><p>Choose how CubeHero fits your phone or installed mobile app.</p></div></div>
       <div className="ch-orientation-grid" role="group" aria-label="Preferred mobile app orientation">
@@ -443,9 +456,9 @@ export default function App(){
       <div className="sidebar-bottom"><button className={`nav-item settings-nav ${page==='settings'?'active':''}`} onClick={()=>goTo('settings')}><Settings2 size={20}/><span>Settings</span></button><div className="guest-profile"><PlayerAvatar className="guest-avatar"/><div><strong title={playerName}>{playerName}</strong><small>Welcome to Cube Hero</small></div><span className="online-dot"/></div></div>
     </aside>
     <div className="main-wrap"><header className="topbar"><div className="topbar-left"><button type="button" className="landscape-nav-toggle" aria-label={landscapeRailOpen?'Collapse landscape navigation':'Expand landscape navigation'} title={landscapeRailOpen?'Collapse sidebar':'Expand sidebar'} aria-controls="site-sidebar" aria-expanded={!landscapeRailCollapsed} onClick={()=>setLandscapeRailOpen(open=>!open)}>{landscapeRailOpen?<PanelLeftClose size={17} aria-hidden="true"/>:<PanelLeftOpen size={17} aria-hidden="true"/>}<span>{landscapeRailOpen?'Hide menu':'Show menu'}</span></button><button className="mobile-menu" aria-label="Open navigation menu" aria-expanded={menuOpen} aria-controls="site-sidebar" onClick={()=>setMenuOpen(true)}><Menu size={23}/></button><div className="topbar-page"><span>Cube Hero</span><ChevronRight size={14}/><strong>{PATH_LABELS[page]}</strong></div></div><div className="topbar-right"><div className="build-status"><span/> LOCAL RACING <small>· HERO JOURNEY</small></div><span className="topbar-rule"/><span className="cube-topbar-player" title={`Playing as ${playerName}`}><span>{playerName}</span><PlayerAvatar className="topbar-avatar"/></span></div></header>
-      <main className="main-content" id="main-content">{page==='home'&&<HomePage goTo={goTo} journey={journey}/>} {page==='race'&&<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>} {page==='room'&&(session?<RaceRoom key={`${session.id}:${session.records.length}`} session={session} goTo={goTo} onActiveChange={trackRaceActive} onComplete={completeRound} toast={setToastMessage} precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion}/>:<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>)} {page==='results'&&<>
+      <main className="main-content" id="main-content">{page==='home'&&<HomePage goTo={goTo} journey={journey}/>} {page==='race'&&<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>} {page==='room'&&(session?<RaceRoom key={`${session.id}:${session.records.length}`} session={session} goTo={goTo} onActiveChange={trackRaceActive} onComplete={completeRound} toast={setToastMessage} precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)}/>:<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>)} {page==='results'&&<>
         {currentTournament&&<section className="journey-results-summary"><div><span className="journey-eyebrow"><Trophy size={15}/> HERO JOURNEY · CHAMPIONSHIP</span><h3>Round {currentTournament.records.length} / 5 · You are #{tournamentPlayer?.place??'—'}</h3><p>{tournamentPlayer?.points??0} points · {currentTournament.records.length===5?'Championship complete!':'Your next race uses a new scramble.'}</p></div><button className="btn btn-primary btn-sm" onClick={()=>{setJourneyTab('tournaments');goTo('journey')}}><Award size={16}/> View standings <ArrowRight size={16}/></button></section>}
-        <RaceResults playerName={playerName} session={session} goTo={goTo} nextRound={nextRound} raceAgain={startRace} precision={precision}/></>} {page==='practice'&&<GhostRace precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive}/>} {page==='solo'&&<SoloTimer precision={precision} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive} onRaceClick={()=>goTo('race')}/>} {page==='statistics'&&<RaceStatistics history={history} goTo={goTo} clearHistory={clearHistory} precision={precision}/>} {page==='learn'&&<Academy reducedMotion={preferences.reducedMotion} goToRace={()=>goTo('race')}/>} {page==='journey'&&<HeroJourney playerName={playerName} state={journey} tab={journeyTab} onTabChange={setJourneyTab} initialDifficulty={raceSettings.difficulty} initialPersonality={raceSettings.personality} onStartTournament={startTournament} onResumeTournament={resumeTournament} onGo={goTo} precision={precision}/>} {page==='settings'&&<SettingsPage preferences={preferences} update={setPreferences} reset={reset} playerName={playerName} onPlayerNameChange={value=>{if(setPlayerName(value))setToastMessage(`Player name updated to ${normalizePlayerName(value)}.`)}}/>}</main>
+        <RaceResults playerName={playerName} session={session} goTo={goTo} nextRound={nextRound} raceAgain={startRace} precision={precision}/></>} {page==='practice'&&<GhostRace precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)} onActiveChange={trackRaceActive}/>} {page==='solo'&&<SoloTimer precision={precision} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive} onRaceClick={()=>goTo('race')}/>} {page==='statistics'&&<RaceStatistics history={history} goTo={goTo} clearHistory={clearHistory} precision={precision}/>} {page==='learn'&&<Academy reducedMotion={preferences.reducedMotion} goToRace={()=>goTo('race')}/>} {page==='journey'&&<HeroJourney playerName={playerName} state={journey} tab={journeyTab} onTabChange={setJourneyTab} initialDifficulty={raceSettings.difficulty} initialPersonality={raceSettings.personality} onStartTournament={startTournament} onResumeTournament={resumeTournament} onGo={goTo} precision={precision}/>} {page==='settings'&&<SettingsPage preferences={preferences} update={setPreferences} reset={reset} playerName={playerName} onPlayerNameChange={value=>{if(setPlayerName(value))setToastMessage(`Player name updated to ${normalizePlayerName(value)}.`)}}/>}</main>
       <footer className="app-footer"><span>© 2026 Cube Hero. Built for the love of cubing. {!isNativeApp()&&<a href="/" className="app-site-link">Visit website ↗</a>}</span><span>Challenge the AI. Outrace your Ghost. Break your limits. <span className="footer-spark">✦</span></span></footer></div>
     {/* The HIC-style dock is phone-only; keep the original desktop sidebar and full mobile drawer. */}
     <nav className="cube-mobile-dock" aria-label="Mobile quick navigation">
