@@ -1391,3 +1391,44 @@ button,select {touch-action:manipulation}
   .app-shell .cube-profile-edit-row {gap:7px}
   .app-shell .cube-profile-edit small {font-size:10px;line-height:1.35}
 }
+
+/* Mobile sound slider: dedicated full-width card fixes the old cramped
+   "Sound volume100%" row and narrow native input. Scoped to Settings only. */
+.app-shell .ch-audio-volume-control {
+  width:100%;min-width:0;max-width:100%;display:flex;flex-direction:column;
+  gap:9px;margin:2px 0 4px;padding:12px 13px 9px;
+  background:linear-gradient(145deg,#1c2541c9,#13192ec7);
+  border:1px solid #464269;border-radius:12px;
+}
+.app-shell .ch-audio-volume-control .ch-audio-volume-row {
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;column-gap:10px;width:100%;min-width:0;
+}
+.app-shell .ch-audio-volume-control .ch-audio-volume-row label {
+  min-width:0;display:inline-flex;align-items:center;gap:7px;
+  color:#e8e9fc;font-size:12px;font-weight:750;white-space:normal;
+}
+.app-shell .ch-audio-volume-control .ch-audio-volume-row svg {flex:0 0 17px;color:#b898ff}
+.app-shell .ch-audio-volume-control .ch-audio-volume-row output {
+  justify-self:end;min-width:40px;text-align:right;color:#d4bfff;
+  font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;
+}
+.app-shell .ch-audio-volume-control input.ch-audio-volume-slider {
+  display:block;flex:none;width:100%;max-width:100%;min-width:0;
+  height:24px;min-height:24px;padding:0;margin:0;
+  accent-color:#ab80ff;cursor:pointer;
+  -webkit-appearance:auto;appearance:auto;
+}
+.app-shell .ch-audio-volume-ends {
+  width:100%;display:flex;justify-content:space-between;
+  color:#9aa7c7;font-size:9px;line-height:1;
+}
+@media(max-width:600px){
+  .app-shell .ch-audio-settings{gap:9px;padding-top:10px;padding-bottom:10px}
+  .app-shell .ch-audio-volume-control{padding:10px 11px 8px;gap:7px;margin:0 0 2px}
+  .app-shell .ch-audio-volume-control .ch-audio-volume-row label{font-size:11px}
+  .app-shell .ch-audio-volume-control .ch-audio-volume-row output{font-size:12px}
+  .app-shell .ch-audio-control-row{display:flex;align-items:center;gap:10px}
+  .app-shell .ch-audio-control-row>div{min-width:0;flex:1 1 0}
+  .app-shell .ch-audio-control-row .switch{flex:0 0 36px;margin-left:auto}
+}

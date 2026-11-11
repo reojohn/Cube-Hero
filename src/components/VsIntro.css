@@ -793,18 +793,20 @@
   .cube-vs-back,.cube-vs-skip { min-height: 27px; }
 }
 
-/* A cropped personal photo is a real portrait rather than the transparent full-figure mascot.
-   Keep default artwork unchanged while presenting custom player photos inside a circular frame. */
+/* Uploaded photos are already cropped to a 1:1 square by AvatarCropDialog.
+   Display the SAME framed square as preset avatars in desktop/phone VS scenes.
+   Do not round uploaded photos into circles or apply a special size limit. */
 .cube-vs-portrait-stage .cube-vs-player-image--custom{
-  width:auto;height:min(92%,245px);max-width:90%;max-height:92%;aspect-ratio:1;
-  object-fit:cover;object-position:center;border-radius:50%;mix-blend-mode:normal;
-  border:3px solid #79d6ffb8;background:#111827;
-  box-shadow:0 0 0 8px #2d8dc91f,0 12px 35px #0008;filter:none;
+  display:block;width:auto;height:min(32dvh,310px);max-width:min(94%,340px);max-height:95%;
+  aspect-ratio:1;object-fit:cover;object-position:center;border-radius:12px;
+  border:1px solid #57c8f755;background:#122039;mix-blend-mode:normal;
+  box-shadow:0 12px 32px #0007;filter:none;
 }
+/* Multi-rival lineup should use the same square crop, too. */
 .cube-vs-contender--player .cube-vs-contender-art--custom>img{
   width:auto;height:min(92%,164px);max-width:92%;max-height:92%;aspect-ratio:1;
-  object-fit:cover;object-position:center;border-radius:50%;mix-blend-mode:normal;
-  border:2px solid #77d8f5bb;background:#111827;filter:none;
+  object-fit:cover;object-position:center;border-radius:10px;mix-blend-mode:normal;
+  border:1px solid #57c8f766;background:#122039;box-shadow:0 8px 18px #0007;filter:none;
 }
 
 /* ── Restored desktop head-to-head proportions ──────────────────────
@@ -831,9 +833,9 @@
     flex: 0 0 auto;
     padding-top: clamp(12px, 1.6vh, 19px);
   }
-  /* Preset/default mascot artwork gets the original large square presentation.
-     Only a user-uploaded cropped selfie continues to use the circular frame. */
-  .cube-vs-portrait-stage .cube-vs-player-image--preset {
+  /* Preset and uploaded portraits share exactly the same square framing. */
+  .cube-vs-portrait-stage .cube-vs-player-image--preset,
+  .cube-vs-portrait-stage .cube-vs-player-image--custom {
     display: block;
     width: auto;
     height: min(32dvh, 310px);
@@ -852,11 +854,11 @@
 }
 
 /* ── MOBILE VS PARITY (portrait + landscape) ───────────────────────────
-   Preset heroes are square illustrated character portraits, NOT cropped
-   uploads. The old --custom class was applied to presets on phones and made
-   them tiny circles. Custom photos alone retain the circular treatment. */
+   Built-in illustrations and cropped uploaded photos receive the SAME square
+   treatment so changing avatars cannot shift the matchup's proportions. */
 @media (max-width:1180px) {
-.cube-vs-portrait-stage .cube-vs-player-image--preset {
+.cube-vs-portrait-stage .cube-vs-player-image--preset,
+.cube-vs-portrait-stage .cube-vs-player-image--custom {
   display:block;
   width:min(94%,330px);
   height:auto;
@@ -873,8 +875,11 @@
   filter:none;
 }
 }
-/* Portrait 1v1: make the cards the centerpiece of the screen rather than a
-   short strip floating halfway down with a large gap above. */
+/* Portrait 1v1: return to the original cinematic, COMPACT matchup.
+   The earlier flex:1 / height:auto rules stretched each fighter for nearly the
+   entire screen, leaving the portraits stranded in the middle of empty cards.
+   A fixed responsive card HEIGHT preserves the desktop's artwork/title balance;
+   flexible vertical SPACE stays outside the cards, not inside them. */
 @media (orientation:portrait) and (max-width:600px) {
   .cube-vs-intro--head-to-head .cube-vs-frame {
     height:100dvh;
@@ -884,39 +889,58 @@
   }
   .cube-vs-intro--head-to-head .cube-vs-kicker {
     flex:0 0 auto;
-    margin:clamp(10px,2dvh,19px) auto clamp(9px,1.7dvh,16px);
+    margin: auto auto clamp(8px,1.4dvh,12px);
   }
   .cube-vs-intro--head-to-head .cube-vs-matchup {
-    flex:1 1 0;
-    height:auto;
-    min-height:270px;
-    max-height:none;
+    flex:0 0 auto;
+    height:clamp(265px,41dvh,345px);
+    min-height:0;
+    max-height:345px;
     grid-template-columns:minmax(0,1fr) clamp(25px,7vw,38px) minmax(0,1fr);
   }
   .cube-vs-intro--head-to-head .cube-vs-fighter {
-    padding:clamp(9px,1.5dvh,15px) clamp(6px,2vw,13px) clamp(10px,1.7dvh,16px);
+    height:100%;
+    padding:clamp(9px,1.5dvh,13px) clamp(6px,2vw,12px) clamp(10px,1.5dvh,14px);
+    justify-content:space-between;
   }
   .cube-vs-intro--head-to-head .cube-vs-portrait-stage {
-    flex:1 1 0;
+    flex:1 1 auto;
     min-height:0;
     margin:4px -3px;
     overflow:hidden;
   }
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--preset,
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--custom {
+    width:min(96%,168px);
+    height:auto;
+    max-width:96%;
+    max-height:100%;
+    object-fit:cover;
+    aspect-ratio:1;
+  }
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-rival-art {
+    width:100%;height:100%;max-height:100%;object-fit:contain;
+  }
   .cube-vs-intro--head-to-head .cube-vs-center {margin:0 -15px}
-  .cube-vs-intro--head-to-head .cube-vs-bottom {flex:0 0 auto;margin-top:0;padding-top:clamp(8px,1.6dvh,15px)}
-  .cube-vs-intro--head-to-head .cube-vs-player-image--custom {max-height:85%}
+  .cube-vs-intro--head-to-head .cube-vs-bottom {
+    flex:0 0 auto;
+    margin-top:auto;
+    padding-top:clamp(8px,1.6dvh,15px);
+  }
 }
-/* Phones with unusually short visible viewports can scroll for the controls;
-   never shrink buttons below an accessible touch size. */
-@media (orientation:portrait) and (max-width:600px) and (max-height:560px) {
-  .cube-vs-intro--head-to-head .cube-vs-frame {height:auto;min-height:100dvh}
-  .cube-vs-intro--head-to-head .cube-vs-matchup {flex:0 0 auto;height:290px;min-height:290px}
-  .cube-vs-intro--head-to-head .cube-vs-bottom {padding-bottom:12px}
+/* Short phones still show the full presentation, scrolling only when the
+   actual viewport cannot accommodate both matchup and touch controls. */
+@media (orientation:portrait) and (max-width:600px) and (max-height:590px) {
+  .cube-vs-intro--head-to-head .cube-vs-frame {height:100dvh;min-height:470px}
+  .cube-vs-intro--head-to-head .cube-vs-kicker {margin-top:auto}
+  .cube-vs-intro--head-to-head .cube-vs-matchup {height:clamp(242px,46dvh,280px);min-height:0}
+  .cube-vs-intro--head-to-head .cube-vs-bottom {margin-top:auto;padding-bottom:0}
 }
 /* On a rotated phone, retain the desktop-like pair of large panels and the
    central VS. Image dimensions follow available stage height, not phone width. */
 @media (orientation:landscape) and (min-width:601px) and (max-width:1180px) and (max-height:620px) {
-  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--preset {
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--preset,
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--custom {
     width:auto;
     height:94%;
     max-width:94%;
@@ -934,6 +958,30 @@
   .cube-vs-intro--head-to-head .cube-vs-fighter {padding:6px 8px}
   .cube-vs-intro--head-to-head .cube-vs-fighter-title {min-height:0;padding-top:3px}
   .cube-vs-intro--head-to-head .cube-vs-fighter-title h2 {font-size:19px}
-  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--preset {height:94%;width:auto;max-height:94%;max-width:94%}
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--preset,
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--custom {height:94%;width:auto;max-height:94%;max-width:94%}
   .cube-vs-intro--head-to-head .cube-vs-bottom {padding-top:6px}
+}
+
+/* Mobile landscape 1v1: don't stretch each fighter from header to footer.
+   Maintain the same compact, framed VS presentation when the phone rotates;
+   preserve slide/portrait/impact keyframe animations unchanged. */
+@media (orientation:landscape) and (min-width:601px) and (max-width:1180px) and (max-height:620px) {
+  .cube-vs-intro--head-to-head .cube-vs-matchup {
+    flex:0 0 auto;
+    height:clamp(170px,61dvh,252px);
+    min-height:0;
+    max-height:252px;
+    margin-top:auto;
+  }
+  .cube-vs-intro--head-to-head .cube-vs-bottom {margin-top:auto}
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--preset,
+  .cube-vs-intro--head-to-head .cube-vs-portrait-stage .cube-vs-player-image--custom {
+    width:auto;height:min(92%,196px);max-height:92%;max-width:94%;aspect-ratio:1;object-fit:cover;
+  }
+}
+@media (orientation:landscape) and (min-width:601px) and (max-width:1180px) and (max-height:300px) {
+  .cube-vs-intro--head-to-head .cube-vs-matchup {height:clamp(115px,53dvh,174px)}
+  .cube-vs-intro--head-to-head .cube-vs-fighter {padding:4px 8px}
+  .cube-vs-intro--head-to-head .cube-vs-fighter-title h2 {font-size:19px}
 }

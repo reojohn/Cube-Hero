@@ -245,8 +245,11 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
       <div className="settings-row"><div><strong>Compact layout</strong><p>Fit more cards into the available screen space.</p></div><Switch checked={preferences.compact} onChange={v=>change('compact',v)} label="Compact layout"/></div>
       <div className="settings-row"><div><strong>Game sound effects</strong><p>Sounds for inspection, racing, and personal bests. VS intros stay silent.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Enable game sound effects"/></div>
       <div className="ch-audio-settings" aria-label="Game sound configuration">
-        <div className="ch-audio-volume-row"><label htmlFor="cube-audio-volume"><Volume2 size={17} aria-hidden="true"/> Sound volume</label><strong>{preferences.soundVolume}%</strong></div>
-        <input id="cube-audio-volume" type="range" min="0" max="100" step="5" value={preferences.soundVolume} disabled={!preferences.sound} onChange={event=>change('soundVolume',Number(event.target.value))} aria-label="Game sound volume"/>
+        <div className="ch-audio-volume-control">
+          <div className="ch-audio-volume-row"><label htmlFor="cube-audio-volume"><Volume2 size={17} aria-hidden="true"/> <span>Sound volume</span></label><output htmlFor="cube-audio-volume">{preferences.soundVolume}%</output></div>
+          <input className="ch-audio-volume-slider" id="cube-audio-volume" type="range" min="0" max="100" step="5" value={preferences.soundVolume} disabled={!preferences.sound} onChange={event=>change('soundVolume',Number(event.target.value))} aria-label="Game sound volume" aria-valuetext={`${preferences.soundVolume} percent`}/>
+          <div className="ch-audio-volume-ends" aria-hidden="true"><span>Quiet</span><span>Loud</span></div>
+        </div>
         <div className="ch-audio-control-row"><div><strong>Timer and inspection sounds</strong><p>Hold ready, start, stop, and countdown beeps.</p></div><Switch checked={preferences.timerSounds} onChange={v=>change('timerSounds',v)} label="Timer and inspection sound effects"/></div>
         <button type="button" className="btn btn-outline btn-sm ch-audio-test" disabled={!preferences.sound||!preferences.soundVolume} onClick={()=>{unlockGameAudio();playGameSound('preview')}}><Volume2 size={16}/> Test sound</button>
         <p className="ch-audio-hint">Sounds are generated on your device—no downloads or accounts. Mobile browsers play sound after the first interaction.</p>

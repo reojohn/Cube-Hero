@@ -22,9 +22,11 @@ const defaults: GameAudioSettings = { enabled: false, volume: 55, cinematic: tru
 let settings = { ...defaults }
 let context: AudioContext | null = null
 let bus: GainNode | null = null
-// Previous 0.25 mix was barely audible on mobile, even at 100%.
-// 0.65 keeps start/stop cues distinct without making overlapping tones clip.
-const MASTER_GAIN = 0.65
+// The 0.65 mix was still quiet on phone speakers. A stronger master gives
+// roughly +6.7 dB at the same slider position. A downstream compressor catches
+// simultaneous cue peaks before they reach the device output, preventing harsh
+// clipping without reducing quiet beeps. Actual speaker volume is device-limited.
+const MASTER_GAIN = 1.4
 
 export function configureGameAudio(next: Partial<GameAudioSettings>): void {
   settings = { ...settings, ...next, volume: Math.min(100, Math.max(0, Number(next.volume ?? settings.volume) || 0)) }
@@ -40,7 +42,21 @@ function getContext(): AudioContext | null {
       context = new Constructor({ latencyHint: 'interactive' })
       bus = context.createGain()
       bus.gain.value = settings.volume / 100 * MASTER_GAIN
-      bus.connect(context.destination)
+      // Soft peak control keeps louder overlapping effects clean. This Web Audio
+      // node is built in on modern mobile and desktop browsers, with a direct
+      // fallback for older implementations.
+      if (typeof context.createDynamicsCompressor === 'function') {
+        const peakControl = context.createDynamicsCompressor()
+        peakControl.threshold.value = -9
+        peakControl.knee.value = 6
+        peakControl.ratio.value = 10
+        peakControl.attack.value = 0.003
+        peakControl.release.value = 0.14
+        bus.connect(peakControl)
+        peakControl.connect(context.destination)
+      } else {
+        bus.connect(context.destination)
+      }
     } catch { context = null; bus = null; return null }
   }
   return context

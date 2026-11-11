@@ -14,6 +14,8 @@ let instances = 0
 let starts = 0
 let resumes = 0
 let scheduled = 0
+let compressors = 0
+const gains = []
 class Param {
   value = 0
   setTargetAtTime(v) {this.value = v}
@@ -30,8 +32,18 @@ class FakeOsc {
 }
 class FakeGain {
   gain = new Param()
+  constructor() {gains.push(this)}
   connect(node) {return node}
   disconnect() {}
+}
+class FakeCompressor {
+  threshold = new Param()
+  knee = new Param()
+  ratio = new Param()
+  attack = new Param()
+  release = new Param()
+  constructor() {compressors++}
+  connect(node) {return node}
 }
 class AudioContext {
   constructor() { instances++ }
@@ -40,6 +52,7 @@ class AudioContext {
   destination = {}
   createOscillator() {return new FakeOsc()}
   createGain() {return new FakeGain()}
+  createDynamicsCompressor() {return new FakeCompressor()}
   resume() {this.state='running';resumes++;return Promise.resolve()}
 }
 const module = {exports:{}}
@@ -51,6 +64,8 @@ configureGameAudio({enabled:true,volume:55,cinematic:true,timer:true})
 unlockGameAudio()
 assert.equal(instances,1,'First user gesture unlocks exactly one audio engine')
 assert.equal(resumes,1)
+assert.equal(compressors,1,'Create a single peak compressor to protect louder mobile cues')
+assert.ok(Math.abs(gains[0].gain.value-.55*1.4)<0.001,'Initial 55% setting must use the boosted mix')
 for(const cue of ['preview','vs','inspect','arm','ready','start','stop','countdown','opponentFinish','victory','loss','personalBest','ghostFinish']) playGameSound(cue)
 assert.equal(instances,1,'Every cue reuses the same audio engine')
 assert.ok(starts >= 22 && scheduled===starts,'All cues schedule short audio nodes')
@@ -84,7 +99,8 @@ assert.match(ghost,/playGameSound\('opponentFinish'\)/)
 assert.match(solo,/playGameSound\('personalBest',\.18\)/)
 assert.doesNotMatch(vs,/playGameSound\('vs'\)/, 'VS intro must remain silent')
 assert.doesNotMatch(vs,/new Context\(/, 'VS should reuse the global sound engine')
-assert.match(source, /const MASTER_GAIN = 0\.65/, 'Mobile game cues should be audible at full volume')
+assert.match(source, /const MASTER_GAIN = 1\.4/, 'Boosted game cues should be louder than the previous 0.65 mix')
+assert.match(source, /createDynamicsCompressor/, 'Use Web Audio peak protection to avoid digital clipping with louder cues')
 assert.doesNotMatch(source,/setInterval\(/, 'Sound manager must never poll continuously')
 assert.doesNotMatch(source,/fetch\(/, 'Sound manager must not download audio')
 console.log('PASS: shared WebAudio, mute, volume, categories, no per-cue contexts, mobile unlock, all key race events, local settings and no recurring audio polling')
