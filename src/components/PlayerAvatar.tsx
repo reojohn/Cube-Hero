@@ -1,4 +1,4 @@
-import playerAvatarPng from '../assets/player-avatar.png'
+import playerAvatarPng from '../assets/player-avatars/default-cube-keeper.webp'
 import './PlayerAvatar.css'
 import { useLocalPlayer } from './LocalPlayerProvider'
 

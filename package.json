@@ -21,7 +21,7 @@
     "test:phase2": "node scripts/test-phase2-preservation.mjs && npm run test:art && npm run test:vs",
     "test:levelup": "node scripts/test-level-up.mjs",
     "test:profile": "node scripts/test-local-player.mjs",
-    "test:avatar": "node scripts/test-player-avatar.mjs",
+    "test:avatar": "node scripts/test-player-avatar.mjs && node scripts/test-avatar-presets.mjs",
     "test:solo": "node scripts/test-solo-timer.mjs",
     "test:roster-perf": "node scripts/test-rival-roster-performance.mjs",
     "test:vercel": "node scripts/test-vercel-deploy.mjs",

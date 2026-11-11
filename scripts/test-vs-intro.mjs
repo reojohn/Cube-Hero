@@ -22,7 +22,7 @@ const customRequire = name => {
   if (name === '../lib/rivalPortraits') return { prewarmRivalPortraits: () => {}, getRivalPortraitTheme: (_difficulty, accent, glow) => ({ '--rival-accent': accent, '--rival-glow': glow }) }
   if (name === './LocalPlayerProvider') return { useLocalPlayer: () => ({ avatarUrl: previewAvatarUrl }) }
   if (name === './RivalPortrait') return { __esModule: true, default: ({ rival }) => React.createElement('img', { src: `/rivals/Sub-${rival.difficulty}.webp`, alt: '' }) }
-  if (name === '../assets/player-avatar.png') return { __esModule: true, default: '/player-avatar.png' }
+  if (name === '../assets/player-avatars/default-cube-keeper.webp') return { __esModule: true, default: '/assets/default-cube-keeper.webp' }
   if (name === './VsIntro.css') return {}
   return require(name)
 }

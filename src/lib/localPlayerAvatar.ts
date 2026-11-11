@@ -1,5 +1,35 @@
 /** A cropped player portrait lives only in this browser. No remote upload. */
 export const PLAYER_AVATAR_STORAGE_KEY = 'cube-hero-local-player-avatar-v1'
+export const PLAYER_AVATAR_PRESET_STORAGE_KEY = 'cube-hero-local-player-avatar-preset-v1'
+export const PLAYER_AVATAR_PRESET_IDS = [
+  'default', 'emerald-druid', 'violet-starcube', 'golden-sunkeeper',
+  'cobalt-frost', 'crimson-rogue', 'neon-guardian', 'cosmic-dreamer',
+  'amber-desert', 'silver-moonkeeper', 'moss-traveler',
+] as const
+
+export function isPlayerAvatarPresetId(value: unknown): value is (typeof PLAYER_AVATAR_PRESET_IDS)[number] {
+  return typeof value === 'string' && PLAYER_AVATAR_PRESET_IDS.some(id => id === value)
+}
+
+/** The selected built-in style is stored as an ID, not as a large base64 image. */
+export function loadPlayerAvatarPreset(): string | null {
+  try {
+    const value = window.localStorage.getItem(PLAYER_AVATAR_PRESET_STORAGE_KEY)
+    return isPlayerAvatarPresetId(value) ? value : null
+  } catch { return null }
+}
+
+export function persistPlayerAvatarPreset(id: string): boolean {
+  if (!isPlayerAvatarPresetId(id)) return false
+  try { window.localStorage.setItem(PLAYER_AVATAR_PRESET_STORAGE_KEY, id); return true }
+  catch { return false }
+}
+
+export function removePlayerAvatarPreset(): boolean {
+  try { window.localStorage.removeItem(PLAYER_AVATAR_PRESET_STORAGE_KEY); return true }
+  catch { return false }
+}
+
 export const PLAYER_AVATAR_MAX_FILE_BYTES = 10 * 1024 * 1024
 export const PLAYER_AVATAR_EXPORT_SIZE = 320
 export const PLAYER_AVATAR_MAX_STORED_LENGTH = 800_000

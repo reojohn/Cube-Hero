@@ -13,3 +13,34 @@
  .cube-player-avatar.cube-avatar-settings-image{width:62px;height:62px}
  .cube-avatar-settings-actions .btn{flex:1;min-width:132px;justify-content:center}
 }
+
+/* Lightweight hero-avatar selection gallery, optimized for mouse and touch. */
+.cube-avatar-picker-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:20px 0 11px}
+.cube-avatar-picker-head strong{font-size:14px;color:#f4ecff}
+.cube-avatar-picker-head p{margin:4px 0 0;color:#aab7d1;font-size:11px;line-height:1.5}
+.cube-avatar-picker-head>span{flex-shrink:0;color:#c9adff;font-size:9px;font-weight:800;letter-spacing:.7px;border:1px solid #7458b166;border-radius:24px;padding:6px 9px;background:#53347d24}
+.cube-avatar-picker-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.cube-avatar-picker-card{font:inherit;appearance:none;cursor:pointer;min-width:0;display:flex;align-items:center;flex-direction:column;gap:4px;padding:7px 6px 9px;border-radius:12px;color:#f1eaff;border:1px solid #444b70;background:linear-gradient(155deg,#252540,#141a30);transition:border-color .15s ease,background-color .15s ease,box-shadow .15s ease}
+.cube-avatar-picker-card:hover{border-color:#a78aff;background:#2b2349}
+.cube-avatar-picker-card:focus-visible{outline:2px solid #85e4ff;outline-offset:3px}
+.cube-avatar-picker-card.is-selected{border-color:#b992ff;box-shadow:0 0 0 1px #8057e1,0 6px 22px #7541dd26;background:linear-gradient(150deg,#38305c,#24213b)}
+.cube-avatar-picker-photo{position:relative;display:block;overflow:hidden;aspect-ratio:1;width:100%;max-width:128px;border-radius:9px;background:#101727;border:1px solid #64729b30}
+.cube-avatar-picker-photo img{width:100%;height:100%;display:block;object-fit:cover}
+.cube-avatar-picker-check{position:absolute;right:3px;top:3px;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;color:white;background:#7d4cdb;box-shadow:0 1px 5px #07051bd9}
+.cube-avatar-picker-title{display:block;width:100%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:800;line-height:1.45;color:#f1ecff}
+.cube-avatar-picker-detail{width:100%;display:block;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#b9b4d5;line-height:1.2}
+.cube-avatar-picker-uploaded{border-style:dashed}
+.cube-avatar-settings-note{margin:11px 0 0;display:flex;align-items:flex-start;gap:7px;font-size:10px;line-height:1.5;color:#a6b4d1}
+.cube-avatar-settings-note svg{flex-shrink:0;margin-top:1px;color:#ad8af3}
+.cube-avatar-remove-photo{color:#e3b7c2}
+@media (max-width:750px){.cube-avatar-picker-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:540px){
+ .cube-avatar-picker-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .cube-avatar-picker-head{align-items:flex-start;flex-wrap:wrap}
+ .cube-avatar-picker-card{padding:6px 5px 8px}
+ .cube-avatar-picker-title{font-size:10px}
+ .cube-avatar-picker-detail{font-size:8px}
+ .cube-avatar-settings-actions .btn{min-width:0}
+}
+@media (max-width:350px){.cube-avatar-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.cube-avatar-picker-card{transition:none}}
