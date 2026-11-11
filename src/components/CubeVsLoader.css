@@ -1,0 +1,72 @@
+/* The loader is deliberately standalone: it never imports the game 3D engine. */
+html,body,#root{margin:0;width:100%}
+body{overflow-x:hidden}
+.cube-loader-page {
+  position:relative;isolation:isolate;box-sizing:border-box;
+  width:100%;height:100dvh;min-height:320px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(4px,2.5vh,24px);padding:72px 18px 32px;
+  color:#f7f8ff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:radial-gradient(circle at 50% 45%,#161f43 0%,#0a102b 46%,#060917 100%);
+}
+.cube-loader-backdrop{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.cube-loader-backdrop::before{
+  position:absolute;content:"";width:min(110vw,1020px);aspect-ratio:1;border-radius:50%;
+  top:48%;left:50%;transform:translate(-50%,-50%);
+  border:1px solid rgba(149,163,235,.12);
+  box-shadow:0 0 0 45px rgba(113,133,255,.025),0 0 0 125px rgba(160,100,255,.025);
+}
+.cube-loader-backdrop::after{
+  position:absolute;content:"";inset:0;
+  background:linear-gradient(115deg,transparent 30%,rgba(96,166,255,.035) 50%,transparent 70%),
+    radial-gradient(circle at 50% 45%,rgba(146,117,255,.055),transparent 42%);
+}
+.cube-loader-orbit{position:absolute;top:48%;left:50%;width:min(83vw,790px);aspect-ratio:1;border:1px solid rgba(163,160,255,.07);border-radius:50%;transform:translate(-50%,-50%)}
+.cube-loader-orbit-b{width:min(62vw,550px)}
+.cube-loader-branding{position:absolute;z-index:2;top:26px;left:28px;display:flex;align-items:center;gap:12px;letter-spacing:.1em}
+.cube-loader-brand-mark{width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(164,135,255,.3);border-radius:12px;background:linear-gradient(145deg,#24254d,#141934);color:#fff;font-size:18px}
+.cube-loader-branding strong{display:block;font-size:clamp(17px,2vw,27px);font-weight:900;letter-spacing:.16em}
+.cube-loader-branding small{display:block;margin-top:4px;font-size:10px;font-weight:700;letter-spacing:.16em;color:#b1bee3}
+.cube-loader-matchup{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:clamp(12px,3vw,40px);width:min(900px,100%)}
+.cube-loader-scene{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.cube-loader-glow{position:absolute;z-index:-1;width:min(34vw,260px);aspect-ratio:1;top:24%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,255,255,.13),rgba(107,143,255,.06) 38%,transparent 72%);filter:blur(13px)}
+.cube-loader-canvas{display:block;box-sizing:border-box;width:min(26vw,280px);height:auto;aspect-ratio:1;filter:drop-shadow(0 20px 20px rgba(0,0,0,.24))}
+.cube-loader-vs-wrap{display:flex;flex-direction:column;gap:11px;align-items:center;justify-content:center}
+.cube-loader-vs-line{width:1px;height:clamp(24px,7vw,66px);background:linear-gradient(transparent,rgba(197,202,255,.68),transparent)}
+.cube-loader-vs{color:#fff;font-weight:950;font-size:clamp(25px,5vw,58px);letter-spacing:.035em;text-shadow:0 0 24px rgba(255,255,255,.33),0 0 40px rgba(159,136,255,.42);animation:cube-loader-vs-pulse 1.7s ease-in-out infinite}
+.cube-loader-caption{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.cube-loader-caption-title{font-weight:850;font-size:clamp(17px,2.2vw,23px);letter-spacing:.02em}
+.cube-loader-caption-subtitle{font-size:clamp(10px,1.5vw,13px);color:#b0bddc;line-height:1.45}
+@keyframes cube-loader-vs-pulse{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.07);opacity:1}}
+@media(max-width:640px){
+  .cube-loader-page{padding:60px 10px 22px;gap:14px}
+  .cube-loader-branding{top:18px;left:18px;gap:9px}
+  .cube-loader-branding strong{font-size:17px}
+  .cube-loader-branding small{font-size:8px}
+  .cube-loader-brand-mark{width:32px;height:32px;border-radius:10px}
+  .cube-loader-matchup{gap:7px}
+  .cube-loader-canvas{width:min(34vw,170px)}
+  .cube-loader-vs-line{height:26px}
+  .cube-loader-vs{font-size:clamp(24px,8vw,36px)}
+  .cube-loader-cube-label{font-size:8px;letter-spacing:.14em}
+  .cube-loader-caption-title{font-size:17px}
+  .cube-loader-caption-subtitle{font-size:10px}
+}
+@media(max-width:350px){
+  .cube-loader-matchup{gap:1px}
+  .cube-loader-canvas{width:35vw}
+  .cube-loader-vs{font-size:23px}
+  .cube-loader-vs-line{height:18px}
+}
+@media(max-height:480px){
+  .cube-loader-page{padding:44px 10px 8px;gap:0}
+  .cube-loader-branding{top:8px;left:12px}
+  .cube-loader-branding strong{font-size:14px}
+  .cube-loader-branding small{font-size:8px}
+  .cube-loader-canvas{width:min(25vh,180px)}
+  .cube-loader-cube-label{font-size:8px}
+  .cube-loader-caption-title{font-size:13px}
+  .cube-loader-caption-subtitle{font-size:9px}
+  .cube-loader-vs-line{height:12px}
+}
+@media(prefers-reduced-motion:reduce){.cube-loader-vs{animation:none}}
