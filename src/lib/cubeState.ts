@@ -82,17 +82,38 @@ function faceIndex(face: Face, position: Vector): number {
   return row * 3 + col
 }
 
-/** Return the visible cube state after the shared scramble and N solution moves. */
-export function cubeFacesAt(scramble: string, solutionMoves: readonly string[] = [], completedMoves = 0): CubeFaces {
-  const stickers = makeSolvedStickers()
-  for (const move of scramble.trim().split(/\s+/).filter(Boolean)) turn(stickers, move)
-  for (const move of solutionMoves.slice(0, Math.max(0, Math.min(solutionMoves.length, completedMoves)))) turn(stickers, move)
+/** Materialize a snapshot; sticker coordinates are never shared with callers. */
+function facesFromStickers(stickers: readonly Sticker[]): CubeFaces {
   const output: CubeFaces = { U: Array(9), R: Array(9), F: Array(9), D: Array(9), L: Array(9), B: Array(9) }
   for (const piece of stickers) {
     const face = visibleFace(piece.normal)
     output[face][faceIndex(face, piece.position)] = piece.color
   }
   return output
+}
+
+/** Return the visible cube state after the shared scramble and N solution moves. */
+export function cubeFacesAt(scramble: string, solutionMoves: readonly string[] = [], completedMoves = 0): CubeFaces {
+  const stickers = makeSolvedStickers()
+  for (const move of scramble.trim().split(/\s+/).filter(Boolean)) turn(stickers, move)
+  for (let index = 0; index < Math.max(0, Math.min(solutionMoves.length, completedMoves)); index++) turn(stickers, solutionMoves[index])
+  return facesFromStickers(stickers)
+}
+
+/** Build every *verified* move-boundary pose with one pass over the solution.
+ * A mobile race reuses these snapshots instead of replaying the scramble and
+ * completed prefix on every turn. This is presentation-only: the solver and
+ * stopwatch retain their original source of truth.
+ */
+export function cubeFacesTimeline(scramble: string, solutionMoves: readonly string[]): CubeFaces[] {
+  const stickers = makeSolvedStickers()
+  for (const move of scramble.trim().split(/\s+/).filter(Boolean)) turn(stickers, move)
+  const frames = [facesFromStickers(stickers)]
+  for (const move of solutionMoves) {
+    turn(stickers, move)
+    frames.push(facesFromStickers(stickers))
+  }
+  return frames
 }
 
 /** All six faces are single-colored, regardless of legal whole-cube rotations. */

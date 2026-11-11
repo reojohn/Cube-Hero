@@ -1,12 +1,12 @@
 import { memo, useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { AiPlan } from '../lib/aiPlan'
-import { cubeFacesAt } from '../lib/cubeState'
 import type { Face } from '../lib/cubeState'
-import { cubiesFromFaces, inTurningLayer } from '../lib/cubeTurning'
+import { inTurningLayer } from '../lib/cubeTurning'
 import type { Cubie } from '../lib/cubeTurning'
 import { moveIndexAt } from '../lib/aiPlan'
 import { mobileSliceTurn } from '../lib/mobileCubeTurn'
+import { buildSolidCubeFrames } from '../lib/mobileCubeFrames'
 
 /**
  * Mobile race cube: the same solid cubie geometry used by the desktop model,
@@ -82,8 +82,9 @@ const MobileRaceCube = memo(function MobileRaceCube({ scramble, plan, active, st
   // Reset visual state when a new plan starts; never show the previous round.
   const completed = frame.plan === plan && frame.startAt === (active ? startAt : null)
     ? frame.completed : 0
-  const cubeFaces = useMemo(() => cubeFacesAt(scramble, plan.moves, completed), [scramble, plan.moves, completed])
-  const allPieces = useMemo(() => cubiesFromFaces(cubeFaces), [cubeFaces])
+  // Precompute once while preparing the opponent, not after each timed move.
+  const cubeFrames = useMemo(() => buildSolidCubeFrames(scramble, plan.moves), [scramble, plan.moves])
+  const allPieces = cubeFrames[completed] ?? cubeFrames[0]
   const move = active && startAt !== null && completed < plan.moves.length ? plan.moves[completed] : null
   const turn = useMemo(() => move ? mobileSliceTurn(move) : null, [move])
   const movingPieces = useMemo(() => turn

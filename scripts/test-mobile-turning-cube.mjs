@@ -4,7 +4,9 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { loadTestModules } from './ts-test-loader.mjs'
 const load = loadTestModules()
-const { cubeFacesAt } = await load('cubeState')
+const { cubeFacesAt, cubeFacesTimeline } = await load('cubeState')
+const { buildSolidCubeFrames } = await load('mobileCubeFrames')
+const { moveIndexAt } = await load('aiPlan')
 const { cubiesFromFaces, inTurningLayer, turnAt } = await load('cubeTurning')
 const { mobileSliceTurn, visibleStickerInLayer } = await load('mobileCubeTurn')
 
@@ -58,12 +60,14 @@ assert.match(component, /SIDES\.map\(face => <div/, 'every physical cubie has si
 assert.match(component, /ai-physical-cube-body/, 'mobile orientation matches desktop physical cube')
 assert.match(component, /stationaryPieces\.map/, 'all stationary cubies are retained')
 assert.match(component, /movingPieces\.map/, 'only the selected physical layer is animated')
-assert.match(component, /cubiesFromFaces\(cubeFaces\)/, '26 physical cubelets are generated from verified sticker state')
+assert.match(fs.readFileSync('src/lib/mobileCubeFrames.ts', 'utf8'), /cubiesFromFaces\(faces\)/, '26 physical cubelets are generated from verified sticker state')
 assert.doesNotMatch(component, /VISIBLE_FACES|ai-mobile-hidden-turn-sticker/, 'never leave empty holes in flat sticker planes')
 assert.match(styles, /@keyframes ch-mobile-physical-slice/, 'compositor-driven real rotation exists')
 assert.match(styles, /\.ai-mobile-solid-face\s*\{[^}]*background:/s, 'the turning cube has opaque plastic even behind uncolored faces')
 assert.match(styles, /reduce-motion[^}]+ai-mobile-turn-layer/s, 'reduced motion retains the physical turning layer')
-assert.match(component, /cubeFacesAt\(scramble, plan\.moves, completed\)/, 'verified move state')
+assert.match(component, /buildSolidCubeFrames\(scramble, plan\.moves\)/, 'verified snapshots are computed once for the plan')
+assert.match(component, /cubeFrames\[completed\]/, 'active cube pose is retrieved from cached frames')
+assert.doesNotMatch(component, /cubeFacesAt\(/, 'no scramble replay during timed turns')
 for (const move of ['R', 'F', 'U', 'M', 'x']) {
   const turn = mobileSliceTurn(move)
   const rotating = pieces.filter(piece => inTurningLayer(piece, turn.axis, turn.layers))
@@ -71,4 +75,26 @@ for (const move of ['R', 'F', 'U', 'M', 'x']) {
   assert.equal(rotating.length + stationary.length, 26, `${move}: whole cube remains solid`)
   assert.equal(new Set([...stationary, ...rotating].map(piece => piece.id)).size, 26, `${move}: no duplicate or missing cubies`)
 }
-console.log(`PASS: ${cases} real move geometries, 26 solid cubies, six plastic faces, timing, and no per-frame React animation.`)
+
+// All future states are calculated once, with identical sticker positions and
+// geometry to the original V4 renderer. Unchanged cubies reuse object refs.
+const sequence = ["R", "U'", "F2", "M", "x'", "l", "D2", "B", "S'", "y2"]
+for (const testScramble of [scramble, "", "R U R' U' F2 L D B2"]) {
+  const frames = cubeFacesTimeline(testScramble, sequence)
+  const solids = buildSolidCubeFrames(testScramble, sequence)
+  assert.equal(frames.length, sequence.length + 1)
+  assert.equal(solids.length, frames.length)
+  for (let count = 0; count <= sequence.length; count++) {
+    assert.deepEqual(frames[count], cubeFacesAt(testScramble, sequence, count), `exact state at move ${count}`)
+    assert.deepEqual(solids[count], cubiesFromFaces(frames[count]), `unchanged V4 physical geometry at move ${count}`)
+    assert.equal(solids[count].length, 26)
+  }
+  assert.ok(solids[0].some((cubie, i) => solids[1][i] === cubie), 'nonmoving cubies share references')
+}
+for (const times of [[100,200,300], [8,39,39.5,200], [300,750,1400]]) {
+  for (const elapsed of [-100,0,1,39,99,100,199,200,299,300,9999]) {
+    assert.equal(moveIndexAt({moveEndsMs: times}, elapsed),
+      times.filter(end => elapsed >= end).length, `binary search matches former move lookup at ${elapsed}`)
+  }
+}
+console.log(`PASS: ${cases} real move geometries, 26 solid cubies, six plastic faces, timing, and no per-frame React animation; cached exact move poses.`)

@@ -97,7 +97,16 @@ export function animationTimestamp(plan: AiPlan, raceElapsedMs: number): number 
 }
 
 export function moveIndexAt(plan: AiPlan, raceElapsedMs: number): number {
-  return plan.moveEndsMs.filter(end => raceElapsedMs >= end).length
+  // The move boundary times are sorted. Avoid allocating a filtered array
+  // on every mobile cube wake or when a backgrounded tab resumes mid-race.
+  let lo = 0
+  let hi = plan.moveEndsMs.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (raceElapsedMs >= plan.moveEndsMs[mid]) lo = mid + 1
+    else hi = mid
+  }
+  return lo
 }
 
 /** Reconstructs the exact deterministic turn cadence for a saved Phase 3 record.
