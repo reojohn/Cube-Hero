@@ -1324,3 +1324,19 @@ button,select {touch-action:manipulation}
 @media(max-width:740px){.ghost-banner{flex-direction:column;align-items:stretch}.ghost-banner-stat{align-items:flex-start;text-align:left}.ghost-arena{grid-template-columns:1fr}.ghost-player-card,.ghost-opponent-card,.ghost-locked-card{min-height:305px}.ghost-opponent-card .ai-3d-cube-shell{height:198px}.ghost-qualification-card{padding:13px 10px}.ghost-qualification-card strong{font-size:23px}}
 @media(max-width:420px){.ghost-heading h1{font-size:29px}.ghost-qualification-grid{gap:6px}.ghost-qualification-card{padding:11px 8px}.ghost-qualification-card strong{font-size:20px}.ghost-qualification-card>span:last-child{font-size:8px}.ghost-banner{padding:18px}.ghost-start-buttons .btn{width:100%}.ghost-scramble-panel{padding:17px 12px}.ghost-player-card,.ghost-opponent-card{padding:18px 14px}.ghost-player-time{font-size:55px}.ghost-racer-top small{font-size:9px}.ghost-history-panel{padding:18px 14px}.ghost-history-list>div{grid-template-columns:30px 1fr 1fr 48px;font-size:9px;gap:4px;padding:9px 7px}.ghost-history-list strong{font-size:11px}.ghost-inspection-strip{gap:8px;padding:13px 9px}.ghost-inspection-strip>div:first-child{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.ghost-page .spin-icon{animation:none}}
+
+/* Extra mobile AI racers display the same lightweight character portraits as
+   their VS intro instead of expensive 3D cubes or generic cube placeholders.
+   This element is only mounted on the compact/mobile rendering path. */
+.multi-ai-rival-name{display:flex;flex-direction:column;gap:2px;min-width:0}
+.multi-ai-rival-name>strong{line-height:1.18}
+.multi-ai-rival-name>span{font-size:9px;line-height:1.15;color:#c0b1de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.multi-ai-mobile-portrait{
+  display:grid;place-items:center;position:relative;isolation:isolate;
+  width:100%;aspect-ratio:1;max-height:82px;min-width:0;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--mobile-ai-accent,#9e83df) 46%,#394064);
+  border-radius:10px;background:linear-gradient(155deg,#283050,#141b30);
+  color:#bda7f7;
+}
+.multi-ai-mobile-portrait img{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;transform:none!important;filter:none!important}
+@media(max-width:430px){.app-shell .multi-ai-rival-name>span{font-size:8px}}

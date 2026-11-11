@@ -1,9 +1,11 @@
 import PlayerAvatar from './PlayerAvatar'
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowRight, BrainCircuit, Check, ChevronLeft, CircleHelp, Clock3, Copy, Flag, Keyboard, Layers3, LoaderCircle, RotateCcw, ShieldCheck, Shuffle, SlidersHorizontal, Trophy, X } from 'lucide-react'
 import AiCube3D from './AiCube3D'
 import MobileRaceCube from './MobileRaceCube'
+import MobileAiPortrait from './MobileAiPortrait'
+import { AI_RIVALS, getRival } from '../lib/rivals'
 import LiveTimerText from './LiveTimerText'
 import { competitionRenderIntervalMs, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY } from '../lib/mobilePerformance'
 import InspectionModal from './InspectionModal'
@@ -204,6 +206,15 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
   const aiCount=getAiCount(session.settings.aiCount)
   const aiPersonality=getAiPersonality(session.settings.personality)
   const personalityName=aiPersonality.charAt(0).toUpperCase()+aiPersonality.slice(1)
+  // Match the exact visual rival sequence used by VsIntro. Their Sub-level and
+  // solving behaviour remain the configured race difficulty for every AI.
+  // The small approved 160px portraits are only rendered in compact mobile mode.
+  const mobileOpponentPortraits=useMemo(()=>{
+    const featured=getRival(session.settings.difficulty)
+    const division=AI_RIVALS.filter(candidate=>candidate.division===featured.division)
+    const first=Math.max(0,division.findIndex(candidate=>candidate.difficulty===featured.difficulty))
+    return Array.from({length:aiCount},(_,index)=>division[(first+index)%division.length]??featured)
+  },[session.settings.difficulty,aiCount])
   const round=session.records.length+1
   function inspectionElapsedAt(now:number){
     return inspectionElapsedMs(inspectionRef.current,now,inspectionPausedTotalRef.current,inspectionPausedAtRef.current)
@@ -447,7 +458,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
       <div className="multi-ai-live-grid">{plans.slice(1).map((rival,i)=>{
         const time=startRef.current===null?0:Math.min(rival.totalMs,elapsed)
         const done=startRef.current!==null&&elapsed>=rival.totalMs
-        return <div className={`multi-ai-live-rival ${done?'finished':''}`} key={`ai-${i+2}`}><div className="multi-ai-rival-top"><span className="multi-ai-rival-avatar"><BrainCircuit size={15}/></span><strong>AI {i+2}</strong><small>{done?'SOLVED':'RACING'}</small></div><div className="multi-ai-rival-body"><div className="multi-ai-rival-time">{formatTime(time,precision)}<small>s</small></div>{session.settings.showCube&&!compactRendering?<div className="multi-ai-rival-cube" aria-hidden="true"><AiCube3D scramble={scramble} plan={rival} elapsedMs={time}/></div>:<div className="multi-ai-rival-cube-placeholder" aria-hidden="true"><Layers3 size={22}/></div>}</div></div>
+        return <div className={`multi-ai-live-rival ${done?'finished':''}`} key={`ai-${i+2}`}><div className="multi-ai-rival-top"><span className="multi-ai-rival-avatar"><BrainCircuit size={15}/></span>{compactRendering?<span className="multi-ai-rival-name"><strong>AI {i+2}</strong><span>{mobileOpponentPortraits[i+1]?.name}</span></span>:<strong>AI {i+2}</strong>}<small>{done?'SOLVED':'RACING'}</small></div><div className="multi-ai-rival-body"><div className="multi-ai-rival-time">{formatTime(time,precision)}<small>s</small></div>{compactRendering?<MobileAiPortrait rival={mobileOpponentPortraits[i+1]}/>:session.settings.showCube?<div className="multi-ai-rival-cube" aria-hidden="true"><AiCube3D scramble={scramble} plan={rival} elapsedMs={time}/></div>:<div className="multi-ai-rival-cube-placeholder" aria-hidden="true"><Layers3 size={22}/></div>}</div></div>
       })}</div>
     </section>}
     </div>
