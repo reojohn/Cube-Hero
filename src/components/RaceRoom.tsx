@@ -1,8 +1,9 @@
 import PlayerAvatar from './PlayerAvatar'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowRight, BrainCircuit, Check, ChevronLeft, CircleHelp, Clock3, Copy, Flag, Keyboard, Layers3, LoaderCircle, RotateCcw, ShieldCheck, Shuffle, SlidersHorizontal, Trophy, X } from 'lucide-react'
 import AiCube3D from './AiCube3D'
+import MobileRaceCube from './MobileRaceCube'
 import LiveTimerText from './LiveTimerText'
 import { competitionRenderIntervalMs, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY } from '../lib/mobilePerformance'
 import InspectionModal from './InspectionModal'
@@ -51,7 +52,7 @@ function parseBeginnerMoves(scramble:string):BeginnerMove[]{
     return {raw,face,suffix,faceLabel:info.label,faceArrow:info.arrow,turnSymbol,instruction:`${info.label} · ${turnLabel}`}
   })
 }
-function ScrambleBeginnerGuide({scramble}:{scramble:string}){
+const ScrambleBeginnerGuide = memo(function ScrambleBeginnerGuide({scramble}:{scramble:string}){
   const moves=parseBeginnerMoves(scramble)
   return <div className="ch-compact-helper" aria-label="Compact beginner scramble guide">
     <div className="ch-compact-heading">
@@ -72,8 +73,7 @@ function ScrambleBeginnerGuide({scramble}:{scramble:string}){
       </div>
     </div>
     <div className="ch-compact-hint">Read top → bottom, then move right. <span>Swipe sideways for the remaining moves →</span></div>
-  </div>
-}
+  </div>})
 
 /**
  * The inspect call-to-action uses the browser Web Animations API rather than
@@ -256,7 +256,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
   },[])
   useEffect(()=>{
     if(!['inspection','running','waiting'].includes(stage) && !(stage==='ready' && holdStartedAt!==null))return
-    const timer=window.setInterval(()=>setTick(msNow()),competitionRenderIntervalMs())
+    const timer=window.setInterval(()=>setTick(msNow()),competitionRenderIntervalMs(stage==='running'||stage==='waiting'))
     return()=>window.clearInterval(timer)
   },[stage,holdStartedAt])
   useEffect(()=>{
@@ -441,7 +441,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
         </p>}</>}
     </section>
     <div className="racer-grid" ref={racersRef}><section className={`surface racer-panel human-panel ${stage==='running'?'racer-live':''} ${holdArmed?'stackmat-armed':holdStartedAt!==null?'stackmat-holding':''} ${stage==='ready'?'stackmat-touch-zone':''}`} onPointerDown={stage==='ready'?onHoldPointerDown:undefined} onPointerUp={stage==='ready'?onHoldPointerUp:undefined} onPointerCancel={stage==='ready'?onHoldPointerCancel:undefined} onLostPointerCapture={stage==='ready'?onHoldPointerCancel:undefined} onClick={stage==='running'?stopRace:undefined}><div className="racer-top"><div><PlayerAvatar className="cube-player-avatar--inline" decorative/><strong>YOU</strong></div><span className="racer-subtitle">Physical cube</span></div><div className="timer-preview-label">YOUR SOLVE TIME</div><LiveTimerText className="racer-timer" timeMs={playerStopped??(stage==='running'?elapsed:0)} precision={precision} running={stage==='running'} startAt={startRef.current}/><div className="timer-control"><Keyboard size={18}/><span>{stage==='running'?<><kbd>SPACE</kbd> or tap to stop</>:stage==='waiting'?'Solve recorded':holdArmed?'GREEN — RELEASE TO START':holdStartedAt!==null?'KEEP HOLDING…':<><kbd>SPACE</kbd> hold 1.5s, then release</>}</span></div>{stage==='ready'&&<div className="stackmat-arm-track" aria-label="Hold-to-start progress"><span style={{width:`${holdProgress}%`}}/></div>}<p>{stage==='waiting'?'You finished! Waiting for the last AI opponents.':stage==='running'?'Press Space or tap your timer to stop.':holdTooShort?'Too short — hold for 1.5 seconds before releasing.':stage==='ready'?'Hold Space or touch this panel for 1.5 seconds, then release.':'Scramble your real cube before beginning.'}</p></section>
-      <section className="surface racer-panel ai-panel"><div className="racer-top"><div><BrainCircuit size={22}/><strong>{aiCount===1?'AI OPPONENT':'AI OPPONENT 1'}</strong></div><span className="level-pill mini">Sub-{session.settings.difficulty} · {personalityName}</span></div>{session.settings.showCube&&plan?<AiCube3D scramble={scramble} plan={plan} elapsedMs={aiElapsed}/>:<div className="cube-hidden"><Layers3 size={27}/><span>{plan?'Cube visual hidden':'Preparing solution…'}</span></div>}<LiveTimerText className="racer-timer ai-timer" aria-label="AI solve time" timeMs={aiElapsed} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={aiTarget}/></section>
+      <section className="surface racer-panel ai-panel"><div className="racer-top"><div><BrainCircuit size={22}/><strong>{aiCount===1?'AI OPPONENT':'AI OPPONENT 1'}</strong></div><span className="level-pill mini">Sub-{session.settings.difficulty} · {personalityName}</span></div>{session.settings.showCube&&plan?(compactRendering?<MobileRaceCube scramble={scramble} plan={plan} active={stage==='running'||stage==='waiting'} startAt={startRef.current}/>:<AiCube3D scramble={scramble} plan={plan} elapsedMs={aiElapsed}/>):<div className="cube-hidden"><Layers3 size={27}/><span>{plan?'Cube visual hidden':'Preparing solution…'}</span></div>}<LiveTimerText className="racer-timer ai-timer" aria-label="AI solve time" timeMs={aiElapsed} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={aiTarget}/></section>
     {aiCount>1&&<section className="surface multi-ai-live" aria-label="Other racing AI opponents">
       <div className="multi-ai-live-heading"><div><span className="multi-ai-live-eyebrow">LIVE TOURNAMENT · SHARED SCRAMBLE</span><h3><BrainCircuit size={18}/> Other AI Racers</h3><p>AI 1 is featured above. Every rival has a separate solve clock.</p></div><span className="multi-ai-finish-count">{aiFinishedCount} / {aiCount} FINISHED</span></div>
       <div className="multi-ai-live-grid">{plans.slice(1).map((rival,i)=>{

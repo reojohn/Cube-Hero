@@ -11,6 +11,7 @@ export const MOBILE_PERFORMANCE_QUERY = [
 
 export const DESKTOP_COMPETITION_TICK_MS = 30
 export const MOBILE_COMPETITION_TICK_MS = 90
+export const MOBILE_RACING_TICK_MS = 240
 
 export function isCompactPerformanceViewport(): boolean {
   return typeof window !== 'undefined' &&
@@ -19,6 +20,11 @@ export function isCompactPerformanceViewport(): boolean {
 }
 
 /** Only UI redraws slow down. Stopwatch and rival finishing times still use performance.now(). */
-export function competitionRenderIntervalMs(): number {
-  return isCompactPerformanceViewport() ? MOBILE_COMPETITION_TICK_MS : DESKTOP_COMPETITION_TICK_MS
+export function competitionRenderIntervalMs(racing = false): number {
+  // During racing, the visible stopwatch has its own lightweight display loop,
+  // and the featured mobile cube has its own isolated playback. Parent React
+  // updates are needed only for coarse status/finish changes.
+  return isCompactPerformanceViewport()
+    ? (racing ? MOBILE_RACING_TICK_MS : MOBILE_COMPETITION_TICK_MS)
+    : DESKTOP_COMPETITION_TICK_MS
 }

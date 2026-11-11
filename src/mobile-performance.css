@@ -44,3 +44,40 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* The mobile race cube has just 3 visible 3x3 sticker faces (27 elements),
+   rather than 26 physical cubelets with 6 surfaces each. Render no blur,
+   bobbing or individually transitioning stickers while the timer runs. */
+@media (max-width: 740px),
+       (orientation: landscape) and (max-height: 620px) and (max-width: 1180px),
+       (pointer: coarse) and (max-width: 1180px) {
+  .app-shell .ai-mobile-sticker-stage {
+    --cube-size: 133px;
+    --cube-half: 66.5px;
+    min-height: 180px;
+    perspective: 600px;
+  }
+  .app-shell .ai-mobile-sticker-cube {
+    animation: none !important;
+    will-change: auto;
+  }
+  .app-shell .ai-mobile-sticker-cube .ai-css-facelet {
+    transition: none;
+    border-radius: 1px;
+    box-shadow: none;
+  }
+  .app-shell .ai-mobile-sticker-cube .ai-css-cube-face {
+    box-shadow: none;
+  }
+  .app-shell .ai-mobile-sticker-shell {
+    filter: none;
+    isolation: auto;
+  }
+}
+@media (max-width: 390px) {
+  .app-shell .ai-mobile-sticker-stage {
+    --cube-size: 118px;
+    --cube-half: 59px;
+    min-height: 167px;
+  }
+}

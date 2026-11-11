@@ -1,11 +1,12 @@
 import './GhostRace.css'
 import PlayerAvatar from './PlayerAvatar'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowRight, Check, CircleHelp, Clock3, Copy, Ghost, Keyboard, LoaderCircle, Medal, RotateCcw, ShieldCheck, Sparkles, Timer, Trophy, Zap } from 'lucide-react'
 import AiCube3D from './AiCube3D'
+import MobileRaceCube from './MobileRaceCube'
 import LiveTimerText from './LiveTimerText'
-import { competitionRenderIntervalMs } from '../lib/mobilePerformance'
+import { competitionRenderIntervalMs, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY } from '../lib/mobilePerformance'
 import InspectionModal from './InspectionModal'
 import RaceMechanicsModal from './RaceMechanicsModal'
 import { hasSeenMechanics, markMechanicsSeen } from '../lib/mechanicsVisit'
@@ -71,7 +72,7 @@ function parseBeginnerMoves(scramble:string):BeginnerMove[]{
     return {raw,face,suffix,faceLabel:info.label,faceArrow:info.arrow,turnSymbol,instruction:`${info.label} · ${turnLabel}`}
   })
 }
-function ScrambleBeginnerGuide({scramble}:{scramble:string}){
+const ScrambleBeginnerGuide = memo(function ScrambleBeginnerGuide({scramble}:{scramble:string}){
   const moves=parseBeginnerMoves(scramble)
   return <div className="ch-compact-helper" aria-label="Compact beginner scramble guide">
     <div className="ch-compact-heading">
@@ -93,7 +94,7 @@ function ScrambleBeginnerGuide({scramble}:{scramble:string}){
     </div>
     <div className="ch-compact-hint">Read top → bottom, then move right. <span>Swipe sideways for the remaining moves →</span></div>
   </div>
-}
+})
 function GhostInspectReadyButton({ready,pulseAllowed,onClick}:{ready:boolean;pulseAllowed:boolean;onClick:()=>void}){
   const buttonRef=useRef<HTMLButtonElement|null>(null)
   const firstRingRef=useRef<HTMLSpanElement|null>(null)
@@ -187,6 +188,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
   const closeMechanics=()=>{markMechanicsSeen('ghost');setMechanicsModalOpen(false)}
   const [resetModalOpen,setResetModalOpen]=useState(false)
   const [tick,setTick]=useState(msNow)
+  const [compactRendering,setCompactRendering]=useState(isCompactPerformanceViewport)
   const [holdStartedAt,setHoldStartedAt]=useState<number|null>(null)
   const [shortHold,setShortHold]=useState(false)
   const [stoppedRaw,setStoppedRaw]=useState<number|null>(null)
@@ -236,8 +238,14 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
     return()=>media.removeEventListener('change',change)
   },[])
   useEffect(()=>{
+    const query=window.matchMedia(MOBILE_PERFORMANCE_QUERY)
+    const refresh=()=>setCompactRendering(query.matches)
+    query.addEventListener('change',refresh)
+    return()=>query.removeEventListener('change',refresh)
+  },[])
+  useEffect(()=>{
     if(!active&&holdStartedAt===null)return
-    const interval=window.setInterval(()=>setTick(msNow()),competitionRenderIntervalMs())
+    const interval=window.setInterval(()=>setTick(msNow()),competitionRenderIntervalMs(stage==='running'||stage==='waiting'))
     return()=>window.clearInterval(interval)
   },[active,holdStartedAt])
   useEffect(()=>{
@@ -263,8 +271,10 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
   // Qualifying rounds give this work ample time before the first ghost duel.
   // The cache is shared across visits to this page and never bypasses CFOP verification.
   useEffect(()=>{
-    if(qualifying || ghostStatus==='ready')ghostPrefetch.prewarm()
-  },[qualifying,ghostStatus])
+    // Solving a future scramble in a background worker during a live duel
+    // competes with the stopwatch and cube renderer on low-end phones.
+    if(qualifying || stage==='result')ghostPrefetch.prewarm()
+  },[qualifying,stage])
 
   // Generate a real verified CFOP solution for each NEW ghost duel scramble.
   // The player's qualifying solves need no computed solution or animated opponent.
@@ -496,7 +506,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
         </section>
         {qualifying?<section className="surface ghost-locked-card"><div className="ghost-locked-symbol"><img className="ghost-assassin-logo" src="/ghost-assassin-emblem.png" alt="" decoding="async" /></div><h3>Meet your future rival</h3><p>Once you finish three valid solves, your fastest recorded time will power your animated ghost opponent.</p><div className="ghost-locked-progress"><span style={{width:`${qualifiedCount/GHOST_QUALIFYING_SOLVES*100}%`}}/></div><small>{GHOST_QUALIFYING_SOLVES-qualifiedCount} qualifying solve{GHOST_QUALIFYING_SOLVES-qualifiedCount===1?'':'s'} remaining</small></section>
           :<section className="surface ghost-opponent-card"><div className="ghost-racer-top"><span><Ghost size={22}/> YOUR GHOST</span><small>Personal best · {showTime(ghostPlan?.totalMs??baseline,precision)}</small></div>
-            {ghostPlan?<AiCube3D scramble={scramble} plan={ghostPlan} elapsedMs={ghostElapsed}/>:<div className="ghost-loading-cube"><LoaderCircle size={31} className="spin-icon"/> Preparing cube…</div>}
+            {ghostPlan?(compactRendering?<MobileRaceCube scramble={scramble} plan={ghostPlan} active={stage==='running'||stage==='waiting'} startAt={startRef.current}/>:<AiCube3D scramble={scramble} plan={ghostPlan} elapsedMs={ghostElapsed}/>):<div className="ghost-loading-cube"><LoaderCircle size={31} className="spin-icon"/> Preparing cube…</div>}
             <LiveTimerText className="ghost-opponent-time" timeMs={ghostElapsed} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={ghostPlan?.totalMs}/><span className="ghost-opponent-status">{ghostFinished?'GHOST FINISHED':stage==='running'||stage==='waiting'?'SOLVING THE SCRAMBLE':'WAITING AT THE START'}</span>
           </section>}
       </div>
