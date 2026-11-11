@@ -5,7 +5,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import ts from 'typescript'
 const ROOT = 'src/lib'
-const NAMES = ['cubeMoves', 'cubeState', 'cubeTurning', 'cfop', 'racing', 'aiPlan', 'ghost', 'rivals']
+const NAMES = ['cubeMoves', 'cubeState', 'cubeTurning', 'mobileCubeTurn', 'cfop', 'racing', 'aiPlan', 'ghost', 'rivals']
 export function loadTestModules() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'cubehero-modules-'))
   for (const name of NAMES) {

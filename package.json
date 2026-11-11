@@ -23,7 +23,8 @@
     "test:profile": "node scripts/test-local-player.mjs",
     "test:solo": "node scripts/test-solo-timer.mjs",
     "test:roster-perf": "node scripts/test-rival-roster-performance.mjs",
-    "test:vercel": "node scripts/test-vercel-deploy.mjs"
+    "test:vercel": "node scripts/test-vercel-deploy.mjs",
+    "test:mobile-cube": "node scripts/test-mobile-turning-cube.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
