@@ -17,15 +17,12 @@ import { ARM_DELAY_MS, armProgressPercent, isValidStartRelease } from '../lib/st
 import { includeEndedHold, inspectionElapsedMs } from '../lib/inspectionClock'
 import { createRecord, formatTime, generateScramble, getAiCount, getAiPersonality, inspectionPenalty, RACE_COUNT } from '../lib/racing'
 import type { InspectionPenalty, RaceRecord, RaceSession } from '../lib/racing'
+import { playGameSound } from '../lib/gameAudio'
 
 type Stage='scramble'|'ready'|'inspection'|'running'|'waiting'
 type HoldSource = 'keyboard' | 'pointer'
 type Props={session:RaceSession;goTo:(page:'race'|'room'|'results')=>void;onComplete:(record:RaceRecord)=>void;toast:(message:string)=>void;precision:2|3;sound:boolean;reducedMotion:boolean;onActiveChange:(value:boolean)=>void}
 const msNow=()=>performance.now()
-function beep(enabled:boolean,freq=700){
-  if(!enabled)return
-  try {const audio=new AudioContext();const o=audio.createOscillator();const gain=audio.createGain();o.connect(gain);gain.connect(audio.destination);o.frequency.value=freq;gain.gain.value=.035;o.start();o.stop(audio.currentTime+.075);o.onended=()=>void audio.close()} catch {/* audio not supported */}
-}
 
 type BeginnerMove = {
   raw:string
@@ -206,6 +203,28 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
   const holdElapsedMs=holdStartedAt===null?0:Math.max(0,tick-holdStartedAt)
   const holdProgress=armProgressPercent(holdStartedAt,tick)
   const holdArmed=holdStartedAt!==null && holdElapsedMs>=ARM_DELAY_MS
+  const inspectionSoundSecond=useRef(-1)
+  const announcedAiFinishes=useRef(0)
+  useEffect(()=>{
+    if(stage!=='inspection') {inspectionSoundSecond.current=-1;return}
+    const second=Math.ceil((15_000-inspectionMs)/1000)
+    if(second>=1&&second<=3&&inspectionSoundSecond.current!==second){
+      inspectionSoundSecond.current=second
+      if(sound)playGameSound('countdown')
+    }
+  },[stage,inspectionMs,sound])
+  useEffect(()=>{
+    if(holdArmed && (stage==='ready'||stage==='inspection') && sound)playGameSound('ready')
+  },[holdArmed,stage,sound])
+  useEffect(()=>{
+    if((stage!=='running'&&stage!=='waiting')||startRef.current===null){
+      announcedAiFinishes.current=0
+      return
+    }
+    const count=plans.filter(rival=>tick-startRef.current!>=rival.totalMs).length
+    if(count>announcedAiFinishes.current&&sound)playGameSound('opponentFinish')
+    announcedAiFinishes.current=count
+  },[stage,plans,tick,sound])
   const currentPenalty=stage==='inspection'?inspectionPenalty(inspectionMs):penalty
   const elapsed=startRef.current===null?0:Math.max(0,tick-startRef.current)
   const aiTarget=plan?.totalMs??0
@@ -272,13 +291,14 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
   function completeRace(rawMs:number,pen:InspectionPenalty){
     if(completeRef.current||!plan||!plans.length)return
     completeRef.current=true
-    beep(sound,930)
     // Keep aiMs as the fastest opponent for legacy statistics and the
     // single-opponent results panel. Every opponent is stored separately.
     const fastest=plans.reduce((best,item)=>item.totalMs<best.totalMs?item:best,plans[0])
     const fastestIndex=plans.indexOf(fastest)
     const opponents=plans.map((item,index)=>({id:`AI ${index+1}`,ms:item.totalMs}))
-    onComplete(createRecord(session,scramble,rawMs,pen,fastest.totalMs,{solution:fastest.solution,moveCount:fastest.moves.length,qtm:fastest.qtm,segmentsMs:fastest.segmentsMs,method:fastest.method,cfopStages:fastest.cfopMarkers?.map(({id,moves})=>({id,moves})),opponents,variantKey:fastestIndex?`AI-${fastestIndex+1}`:''}))
+    const record=createRecord(session,scramble,rawMs,pen,fastest.totalMs,{solution:fastest.solution,moveCount:fastest.moves.length,qtm:fastest.qtm,segmentsMs:fastest.segmentsMs,method:fastest.method,cfopStages:fastest.cfopMarkers?.map(({id,moves})=>({id,moves})),opponents,variantKey:fastestIndex?`AI-${fastestIndex+1}`:''})
+    if(sound)playGameSound(record.win?'victory':'loss',.19)
+    onComplete(record)
   }
   function startInspection(){
     if(!plan || startRef.current!==null)return
@@ -289,7 +309,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
     inspectionPausedTotalRef.current=0
     setTick(inspectionRef.current)
     setStage('inspection')
-    beep(sound,580)
+    if(sound)playGameSound('inspect')
   }
   function markReady(){if(plan)setStage('ready')}
   // Stackmat-style start: the first press freezes inspection and ARMS the timer.
@@ -307,7 +327,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
     setHoldTooShort(false)
     setInspectionModalOpen(false)
     setTick(now);setStage('running')
-    beep(sound,770)
+    if(sound)playGameSound('start')
   }
   function startHold(source:HoldSource,pointerId?:number){
     if(!plan || startRef.current!==null || !['ready','inspection'].includes(stage) || activeHold.current)return
@@ -317,6 +337,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
     setHoldStartedAt(at)
     setHoldTooShort(false)
     setTick(at)
+    if(sound)playGameSound('arm')
   }
   function finishHold(source:HoldSource,pointerId?:number){
     const held=activeHold.current
@@ -379,7 +400,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
     stoppedRef.current=raw
     setPlayerStopped(raw)
     setTick(msNow())
-    beep(sound,490)
+    if(sound)playGameSound('stop')
     if(raw>=lastAiFinishMs)completeRace(raw,penaltyRef.current)
     else setStage('waiting')
   }

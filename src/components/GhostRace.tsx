@@ -19,6 +19,7 @@ import type { InspectionPenalty } from '../lib/racing'
 import { GHOST_STORAGE_KEY, GHOST_QUALIFYING_SOLVES, bestGhostTime, emptyGhostData, makeGhostPlan, officialGhostTime, parseGhostData } from '../lib/ghost'
 import type { GhostAttempt, GhostData } from '../lib/ghost'
 import type { AiPlan } from '../lib/aiPlan'
+import { playGameSound } from '../lib/gameAudio'
 
 type Stage = 'scramble' | 'inspection' | 'ready' | 'running' | 'waiting' | 'result'
 type HoldSource = 'keyboard' | 'pointer'
@@ -31,17 +32,7 @@ function savedGhostData(): GhostData {
   try { return parseGhostData(JSON.parse(localStorage.getItem(GHOST_STORAGE_KEY) || 'null')) }
   catch { return emptyGhostData() }
 }
-function tone(enabled:boolean, frequency:number){
-  if(!enabled)return
-  try {
-    const audio = new AudioContext()
-    const oscillator=audio.createOscillator(), gain=audio.createGain()
-    oscillator.connect(gain); gain.connect(audio.destination)
-    gain.gain.value=.03; oscillator.frequency.value=frequency
-    oscillator.start(); oscillator.stop(audio.currentTime+.08)
-    oscillator.onended=()=>void audio.close()
-  } catch {/* Audio is optional. */}
-}
+
 const showTime=(ms:number|null,precision:2|3)=>ms===null?'DNF':`${formatTime(ms,precision)}s`
 
 
@@ -197,6 +188,26 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
   const ghostElapsed=ghostPlan ? (stage==='result'?ghostPlan.totalMs:Math.min(ghostPlan.totalMs,rawElapsed)) : 0
   const ghostFinished=ghostPlan!==null&&startRef.current!==null&&rawElapsed>=ghostPlan.totalMs
   const targetReady=qualifying||(ghostStatus==='ready'&&ghostPlan!==null)
+  const inspectionSoundSecond=useRef(-1)
+  const ghostSoundAnnounced=useRef(false)
+  useEffect(()=>{
+    if(stage!=='inspection'){inspectionSoundSecond.current=-1;return}
+    const second=Math.ceil((15_000-inspectionMs)/1000)
+    if(second>=1&&second<=3&&inspectionSoundSecond.current!==second){
+      inspectionSoundSecond.current=second
+      if(sound)playGameSound('countdown')
+    }
+  },[stage,inspectionMs,sound])
+  useEffect(()=>{
+    if(armed && (stage==='ready'||stage==='inspection') && sound)playGameSound('ready')
+  },[armed,stage,sound])
+  useEffect(()=>{
+    if(stage!=='running'&&stage!=='waiting'){ghostSoundAnnounced.current=false;return}
+    if(ghostFinished&&!ghostSoundAnnounced.current){
+      ghostSoundAnnounced.current=true
+      if(sound)playGameSound('opponentFinish')
+    }
+  },[stage,ghostFinished,sound])
   const pulseAllowed=!reducedMotion&&!reducedBySystem
 
   useEffect(()=>{
@@ -276,7 +287,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
     const at=msNow()
     inspectionRef.current=at;pauseRef.current=null;pauseTotalRef.current=0
     setTick(at);setInspectionModalOpen(true);setStage('inspection')
-    tone(sound,580)
+    if(sound)playGameSound('inspect')
   }
   function resumeInspection(now:number){
     if(pauseRef.current===null)return
@@ -290,7 +301,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
     startRef.current=now;pauseRef.current=null
     activeHold.current=null;setHoldStartedAt(null);setShortHold(false)
     setInspectionModalOpen(false);setTick(now);setStage('running')
-    tone(sound,770)
+    if(sound)playGameSound('start')
   }
   function startHold(source:HoldSource,pointerId?:number){
     if(!targetReady||!['inspection','ready'].includes(stage)||activeHold.current)return
@@ -298,6 +309,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
     activeHold.current={source,startedAt:at,pointerId}
     if(stage==='inspection'&&inspectionRef.current!==null)pauseRef.current=at
     setHoldStartedAt(at);setShortHold(false);setTick(at)
+    if(sound)playGameSound('arm')
   }
   function finishHold(source:HoldSource,pointerId?:number){
     const held=activeHold.current
@@ -342,7 +354,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
     if(qualifying){
       if(officialMs!==null)setData(prev=>({...prev,qualifications:[...prev.qualifications,attempt].slice(0,GHOST_QUALIFYING_SOLVES)}))
     }else setData(prev=>({...prev,duels:[...prev.duels,attempt].slice(-300)}))
-    setInspectionModalOpen(false);setStage('result');tone(sound,newBest?1100:880)
+    setInspectionModalOpen(false);setStage('result');if(sound)playGameSound(newBest?'personalBest':qualifying?'ghostFinish':officialMs!==null&&baseline!==null&&officialMs<baseline?'victory':'loss',.18)
   }
   useEffect(()=>{
     if(stage!=='result')return
@@ -353,7 +365,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
     if(stage!=='running'||startRef.current===null||stoppedRef.current!==null)return
     const raw=msNow()-startRef.current
     if(raw<350)return
-    stoppedRef.current=raw;setStoppedRaw(raw);setTick(msNow());tone(sound,490)
+    stoppedRef.current=raw;setStoppedRaw(raw);setTick(msNow());if(sound)playGameSound('stop')
     if(qualifying||!ghostPlan||raw>=ghostPlan.totalMs)finishRound(raw)
     else setStage('waiting')
   }

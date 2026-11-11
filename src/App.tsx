@@ -6,7 +6,7 @@ import {
   Home, Layers3, Menu, PanelLeftClose, PanelLeftOpen, RotateCcw, Settings2, ShieldCheck,
   Shuffle, SlidersHorizontal, Sparkles, Timer, Trophy,
   X, Zap, ChartNoAxesCombined, CheckCircle2, LockKeyhole,
-  Ghost, Award, Smartphone, TabletSmartphone, RefreshCw, RotateCw,
+  Ghost, Award, Smartphone, TabletSmartphone, RefreshCw, RotateCw, Volume2,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import CubeArt from './components/CubeArt'
@@ -40,9 +40,10 @@ import { getAiCount, MAX_AI_OPPONENTS, newId, RACE_COUNT, isRaceRecord, aiExpect
 import type { RaceRecord, RaceSession, RaceSettings, Difficulty, RaceLength, AiPersonality } from './lib/racing'
 import { canRequestOrientationLock, orientationPreference, requestOrientationPreference } from './lib/orientation'
 import type { OrientationPreference, OrientationLockFeedback } from './lib/orientation'
+import { configureGameAudio, playGameSound, unlockGameAudio } from './lib/gameAudio'
 
 type Page='home'|'race'|'room'|'results'|'practice'|'solo'|'statistics'|'learn'|'journey'|'settings'
-type Preferences={sound:boolean;reducedMotion:boolean;compact:boolean;precision:'2'|'3';orientation:OrientationPreference}
+type Preferences={sound:boolean;soundVolume:number;cinematicSounds:boolean;timerSounds:boolean;reducedMotion:boolean;compact:boolean;precision:'2'|'3';orientation:OrientationPreference}
 const ROUTES:Page[]=['home','race','room','results','practice','solo','statistics','learn','journey','settings']
 const PERSONALITIES:{id:AiPersonality;label:string;hint:string;art:string}[]=[
   {id:'casual',label:'Casual',hint:'More mistakes & variation',art:'/ai-personalities/casual.png'},
@@ -59,7 +60,7 @@ const NAV:{page:Page;label:string;icon:LucideIcon}[]=[
   {page:'journey',label:'Hero Journey',icon:Award},
 ]
 const initialRace:RaceSettings={difficulty:'15',personality:'balanced',aiCount:1,raceLength:'single',inspection:true,showCube:true,breakdown:true,puzzle:'333'}
-const initialPreferences:Preferences={sound:false,reducedMotion:false,compact:false,precision:'2',orientation:'auto'}
+const initialPreferences:Preferences={sound:false,soundVolume:55,cinematicSounds:true,timerSounds:true,reducedMotion:false,compact:false,precision:'2',orientation:'auto'}
 const PATH_LABELS:Record<Page,string>={home:'Overview',race:'Set up your race',room:'Live race arena',results:'Race results',practice:'YOU vs YOU · Ghost Race',solo:'Solo practice timer',statistics:'Your statistics',learn:'Learn speedcubing',journey:'Achievements & progression',settings:'Settings'}
 
 function readSaved<T extends object>(key:string,fallback:T):T {
@@ -215,7 +216,14 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
   },[])
   useEffect(()=>{setDraftName(playerName)},[playerName])
   const saveName=(event:React.FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!isValidPlayerName(draftName))return;onPlayerNameChange(normalizePlayerName(draftName));setNameSaved(true)}
-  const change=<K extends keyof Preferences>(key:K,v:Preferences[K])=>update({...preferences,[key]:v})
+  const change=<K extends keyof Preferences>(key:K,v:Preferences[K])=>{
+    const next={...preferences,[key]:v}
+    update(next)
+    if(key==='sound'||key==='soundVolume'||key==='timerSounds'||key==='cinematicSounds'){
+      configureGameAudio({enabled:next.sound,volume:next.soundVolume,timer:next.timerSounds,cinematic:next.cinematicSounds})
+      if(next.sound)unlockGameAudio()
+    }
+  }
   const selectedOrientation=orientationPreference(preferences.orientation)
   const chooseOrientation=(choice:OrientationPreference)=>{
     change('orientation',choice)
@@ -235,7 +243,15 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
     <Surface className="settings-surface"><div className="settings-section-head"><span className="settings-header-icon"><SlidersHorizontal size={20}/></span><div><h3>Experience</h3><p>Adjust how your arena behaves.</p></div></div>
       <div className="settings-row"><div><strong>Interface animations</strong><p>Reduce decorative movement for accessibility.</p></div><Switch checked={preferences.reducedMotion} onChange={v=>change('reducedMotion',v)} label="Reduce animations"/></div>
       <div className="settings-row"><div><strong>Compact layout</strong><p>Fit more cards into the available screen space.</p></div><Switch checked={preferences.compact} onChange={v=>change('compact',v)} label="Compact layout"/></div>
-      <div className="settings-row"><div><strong>Race sound effects</strong><p>Play short tones when starting or stopping a race.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Sound effects preference"/></div>
+      <div className="settings-row"><div><strong>Game sound effects</strong><p>Sounds for inspection, racing, VS introductions, and personal bests.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Enable game sound effects"/></div>
+      <div className="ch-audio-settings" aria-label="Game sound configuration">
+        <div className="ch-audio-volume-row"><label htmlFor="cube-audio-volume"><Volume2 size={17} aria-hidden="true"/> Sound volume</label><strong>{preferences.soundVolume}%</strong></div>
+        <input id="cube-audio-volume" type="range" min="0" max="100" step="5" value={preferences.soundVolume} disabled={!preferences.sound} onChange={event=>change('soundVolume',Number(event.target.value))} aria-label="Game sound volume"/>
+        <div className="ch-audio-control-row"><div><strong>Cinematic VS sounds</strong><p>Whoosh and matchup impact cues.</p></div><Switch checked={preferences.cinematicSounds} onChange={v=>change('cinematicSounds',v)} label="Cinematic VS sound effects"/></div>
+        <div className="ch-audio-control-row"><div><strong>Timer and inspection sounds</strong><p>Hold ready, start, stop, and countdown beeps.</p></div><Switch checked={preferences.timerSounds} onChange={v=>change('timerSounds',v)} label="Timer and inspection sound effects"/></div>
+        <button type="button" className="btn btn-outline btn-sm ch-audio-test" disabled={!preferences.sound||!preferences.soundVolume} onClick={()=>{unlockGameAudio();playGameSound('preview')}}><Volume2 size={16}/> Test sound</button>
+        <p className="ch-audio-hint">Sounds are generated on your device—no downloads or accounts. Mobile browsers play sound after the first interaction.</p>
+      </div>
     </Surface>
     <Surface className="settings-surface ch-orientation-settings" aria-label="Mobile orientation preferences">
       <div className="settings-section-head"><span className="settings-header-icon"><TabletSmartphone size={20}/></span><div><h3>Mobile Orientation</h3><p>Choose how CubeHero fits your phone or installed mobile app.</p></div></div>
@@ -327,6 +343,17 @@ export default function App(){
   useEffect(()=>{const handleHash=()=>{setVsPendingSession(null);setPage(getCurrentPage());setMenuOpen(false)};window.addEventListener('hashchange',handleHash);return()=>window.removeEventListener('hashchange',handleHash)},[])
   useEffect(()=>{if(page==='journey')aiPrefetch.prewarm()},[page])
   useEffect(()=>{document.documentElement.classList.toggle('reduce-motion',preferences.reducedMotion);document.documentElement.classList.toggle('compact-mode',preferences.compact);return()=>{document.documentElement.classList.remove('reduce-motion','compact-mode')}},[preferences.reducedMotion,preferences.compact])
+  useEffect(()=>{
+    configureGameAudio({enabled:preferences.sound,volume:preferences.soundVolume,cinematic:preferences.cinematicSounds,timer:preferences.timerSounds})
+  },[preferences.sound,preferences.soundVolume,preferences.cinematicSounds,preferences.timerSounds])
+  useEffect(()=>{
+    // Unlock using actual user gestures so iOS/Android can play the later race cues.
+    const activate=()=>unlockGameAudio()
+    const keyboard=(event:KeyboardEvent)=>{if(event.code==='Space'||event.code==='Enter')activate()}
+    document.addEventListener('pointerdown',activate,{capture:true})
+    document.addEventListener('keydown',keyboard,{capture:true})
+    return()=>{document.removeEventListener('pointerdown',activate,true);document.removeEventListener('keydown',keyboard,true)}
+  },[])
   useEffect(()=>{if(!toastMessage)return;const id=window.setTimeout(()=>setToastMessage(''),3000);return()=>window.clearTimeout(id)},[toastMessage])
   useEffect(()=>{
     if(!menuOpen)return
@@ -339,6 +366,7 @@ export default function App(){
   const goTo=(to:Page)=>{if(((page==='room'&&to!=='room'&&to!=='results')||(page==='practice'&&to!=='practice')||(page==='solo'&&to!=='solo'))&&activeRaceRef.current){if(!window.confirm('Leave the running race? This unfinished round will not be saved.'))return;activeRaceRef.current=false}setVsPendingSession(null);setPage(to);setMenuOpen(false);window.location.hash=`/${to}`;window.scrollTo({top:0,behavior:'instant'})}
   const startRace=()=>{
     if(vsPendingSession)return
+    unlockGameAudio()
     const prepared:RaceSession={id:newId(),settings:{...raceSettings,aiCount:getAiCount(raceSettings.aiCount),difficulty:isDifficulty(raceSettings.difficulty)?raceSettings.difficulty:'15'},records:[]}
     // No session is saved, no CFOP work starts, and no inspection timer runs during VS.
     setVsPendingSession(prepared)
@@ -362,6 +390,7 @@ export default function App(){
     else goTo('race')
   }
   const startTournament=(selection:{difficulty:Difficulty;personality:AiPersonality;aiCount:number})=>{
+    unlockGameAudio()
     const active=activeTournament(journey)
     if(active&&!window.confirm('Start a new tournament? Your unfinished championship will be marked as abandoned.'))return
     const raceSession:RaceSession={id:newId(),settings:{...raceSettings,difficulty:selection.difficulty,personality:selection.personality,aiCount:getAiCount(selection.aiCount),raceLength:'ao5',inspection:true,showCube:true,puzzle:'333'},records:[]}

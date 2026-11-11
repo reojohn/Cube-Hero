@@ -5,6 +5,7 @@ import { generateScramble, formatTime, newId } from '../lib/racing'
 import { ARM_DELAY_MS } from '../lib/stackmat'
 import { SOLO_TIMER_STORAGE_KEY, SOLO_SOLVE_LIMIT, officialSoloMs, parseSoloSolves, soloAverageOf, soloBest, soloMean } from '../lib/soloTimer'
 import type { SoloPenalty, SoloSolve } from '../lib/soloTimer'
+import { playGameSound } from '../lib/gameAudio'
 import './SoloTimer.css'
 
 type Phase = 'idle'|'inspection'|'holding'|'running'|'stopped'
@@ -97,6 +98,9 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
   const pressedKeysRef = useRef(false)
   const phaseRef = useRef<Phase>('idle')
   const latestScrambleRef = useRef(scramble)
+  const bestBeforeRef = useRef<number|null>(null)
+  useEffect(()=>{bestBeforeRef.current=soloBest(solves)},[solves])
+  const inspectionSoundSecond=useRef(-1)
   const padRef = useRef<HTMLButtonElement|null>(null)
   phaseRef.current = phase
   latestScrambleRef.current = scramble
@@ -136,6 +140,9 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
     const elapsedInspection=inspectionRef.current===null ? 0 : startRef.current-inspectionRef.current
     const penalty:SoloPenalty=inspectionRef.current===null?'none':elapsedInspection>17_000?'dnf':elapsedInspection>15_000?'plus2':'none'
     const solve:SoloSolve={id:newId(),createdAt:Date.now(),rawMs:ms,scramble:latestScrambleRef.current,penalty}
+    playGameSound('stop')
+    const final=officialSoloMs(solve)
+    if(final!==null&&(bestBeforeRef.current===null||final<bestBeforeRef.current))playGameSound('personalBest',.18)
     setSolves(previous=>[...previous,solve].slice(-SOLO_SOLVE_LIMIT))
     setDisplayResult(solve)
     startRef.current=null;inspectionRef.current=null
@@ -154,6 +161,7 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
     setHoldSince(at)
     setPhase('holding')
     setTick(at)
+    playGameSound('arm')
   },[stop])
   const finishHold=useCallback((source:'pointer'|'keyboard')=>{
     if(holdInputRef.current!==source || holdSinceRef.current===null)return
@@ -164,6 +172,7 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
     startRef.current=clock()
     setTick(startRef.current)
     setPhase('running')
+    playGameSound('start')
   },[])
 
   useEffect(()=>{
@@ -216,6 +225,7 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
     inspectionRef.current=clock();setTick(inspectionRef.current)
     setDisplayResult(null)
     setPhase('inspection')
+    playGameSound('inspect')
   }
   const cancelInspection=()=>{
     if(phase==='running'||phase==='holding')return
@@ -258,6 +268,17 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
   const held=holdSince===null?0:Math.max(0,tick-holdSince)
   const armed=phase==='holding' && held>=ARM_DELAY_MS
   const inspectionElapsed=inspectionRef.current===null?0:Math.max(0,tick-inspectionRef.current)
+  useEffect(()=>{
+    if(phase==='holding'&&armed)playGameSound('ready')
+  },[phase,armed])
+  useEffect(()=>{
+    if(phase!=='inspection'){inspectionSoundSecond.current=-1;return}
+    const second=Math.ceil((15_000-inspectionElapsed)/1000)
+    if(second>=1&&second<=3&&inspectionSoundSecond.current!==second){
+      inspectionSoundSecond.current=second
+      playGameSound('countdown')
+    }
+  },[phase,inspectionElapsed])
   const inspecting=phase==='inspection'||(phase==='holding' && inspectionRef.current!==null)
   const lastOfficial=displayResult?officialSoloMs(displayResult):undefined
   const display=phase==='running'?formatTime(elapsed,precision)

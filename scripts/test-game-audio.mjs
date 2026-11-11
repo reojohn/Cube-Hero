@@ -1,0 +1,89 @@
+/** Shared audio engine/entrypoint regression without a browser or external sound assets. */
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+const { transpileModule, ModuleKind, ScriptTarget } = require('typescript')
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const read = file => fs.readFileSync(path.join(root, file), 'utf8')
+const source = read('src/lib/gameAudio.ts')
+const js = transpileModule(source, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
+let instances = 0
+let starts = 0
+let resumes = 0
+let scheduled = 0
+class Param {
+  value = 0
+  setTargetAtTime(v) {this.value = v}
+  setValueAtTime(v) {this.value = v}
+  exponentialRampToValueAtTime(v) {this.value = v}
+}
+class FakeOsc {
+  frequency = new Param()
+  type = 'sine'
+  connect(node) {return node}
+  disconnect() {}
+  start(at) {assert.ok(at >= 0);starts++}
+  stop(at) {assert.ok(at > 0);scheduled++}
+}
+class FakeGain {
+  gain = new Param()
+  connect(node) {return node}
+  disconnect() {}
+}
+class AudioContext {
+  constructor() { instances++ }
+  state = 'suspended'
+  currentTime = 0
+  destination = {}
+  createOscillator() {return new FakeOsc()}
+  createGain() {return new FakeGain()}
+  resume() {this.state='running';resumes++;return Promise.resolve()}
+}
+const module = {exports:{}}
+new Function('window','module','exports',js)({AudioContext},module,module.exports)
+const {configureGameAudio,unlockGameAudio,playGameSound} = module.exports
+playGameSound('start')
+assert.equal(instances,0,'Muted must not create an AudioContext')
+configureGameAudio({enabled:true,volume:55,cinematic:true,timer:true})
+unlockGameAudio()
+assert.equal(instances,1,'First user gesture unlocks exactly one audio engine')
+assert.equal(resumes,1)
+for(const cue of ['preview','vs','inspect','arm','ready','start','stop','countdown','opponentFinish','victory','loss','personalBest','ghostFinish']) playGameSound(cue)
+assert.equal(instances,1,'Every cue reuses the same audio engine')
+assert.ok(starts >= 22 && scheduled===starts,'All cues schedule short audio nodes')
+configureGameAudio({enabled:true,cinematic:false,timer:false})
+const before=starts
+for(const cue of ['vs','inspect','arm','ready','start','stop','countdown']) playGameSound(cue)
+assert.equal(starts,before,'Cinematic and timer category toggles mute their cues')
+playGameSound('victory')
+assert.ok(starts>before,'Outcome sounds still play with timer and VS toggles off')
+configureGameAudio({enabled:true,volume:0})
+const after=starts
+playGameSound('victory')
+assert.equal(starts,after,'Volume zero is silent')
+configureGameAudio({enabled:false,volume:100})
+playGameSound('preview')
+assert.equal(starts,after,'Master mute silences every cue')
+
+const app=read('src/App.tsx')
+const room=read('src/components/RaceRoom.tsx')
+const ghost=read('src/components/GhostRace.tsx')
+const solo=read('src/components/SoloTimer.tsx')
+const vs=read('src/components/VsIntro.tsx')
+assert.match(app,/useSavedState\('cube-hero-preferences-v1',initialPreferences\)/,'Keep existing settings/localStorage key')
+for(const part of ['soundVolume','cinematicSounds','timerSounds','Test sound','unlockGameAudio','configureGameAudio']) assert.ok(app.includes(part),`Missing settings control: ${part}`)
+for(const [name, component] of [['Race AI',room],['Ghost',ghost],['Solo',solo]]){
+  for (const cue of ['inspect','arm','ready','start','stop','countdown']) assert.ok(component.includes(`playGameSound('${cue}')`),`${name} missing ${cue} cue`)
+  assert.doesNotMatch(component,/new AudioContext\(/,`${name} must not create a new AudioContext per beep`)
+}
+assert.match(room,/playGameSound\('opponentFinish'\)/)
+assert.match(ghost,/playGameSound\('opponentFinish'\)/)
+assert.match(solo,/playGameSound\('personalBest',\.18\)/)
+assert.match(vs,/playGameSound\('vs'\)/)
+assert.doesNotMatch(vs,/new Context\(/, 'VS should reuse the global sound engine')
+assert.doesNotMatch(source,/setInterval\(/, 'Sound manager must never poll continuously')
+assert.doesNotMatch(source,/fetch\(/, 'Sound manager must not download audio')
+console.log('PASS: shared WebAudio, mute, volume, categories, no per-cue contexts, mobile unlock, all key race events, local settings and no recurring audio polling')

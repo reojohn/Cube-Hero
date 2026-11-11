@@ -8,6 +8,7 @@ import { prewarmRivalPortraits, getRivalPortraitTheme } from '../lib/rivalPortra
 import RivalPortrait from './RivalPortrait'
 import playerAvatar from '../assets/player-avatars/default-cube-keeper.webp'
 import { useLocalPlayer } from './LocalPlayerProvider'
+import { playGameSound } from '../lib/gameAudio'
 import './VsIntro.css'
 
 /** The intro intentionally does NOT render RaceRoom or create a running timer.
@@ -25,42 +26,6 @@ type Props = {
   onBack: () => void
 }
 
-function playEntranceSound(): () => void {
-  // Tiny synthesised whoosh + impact, no remote audio asset/download.
-  // WebAudio is optional: a browser may deny playback, so visuals never depend on it.
-  const Context = window.AudioContext
-  if (!Context) return () => {}
-  let audio: AudioContext | null = null
-  let impactTimer: number | null = null
-  try {
-    audio = new Context()
-    if (audio.state === 'suspended') void audio.resume().catch(() => {})
-    const instance = audio
-    const cue = (frequency: number, duration: number, wave: OscillatorType, peak = 0.025) => {
-      if (instance.state === 'closed') return
-      const now = instance.currentTime
-      const osc = instance.createOscillator()
-      const gain = instance.createGain()
-      osc.type = wave
-      osc.frequency.setValueAtTime(frequency * 1.4, now)
-      osc.frequency.exponentialRampToValueAtTime(Math.max(frequency * 0.65, 30), now + duration)
-      gain.gain.setValueAtTime(0.0001, now)
-      gain.gain.exponentialRampToValueAtTime(peak, now + 0.025)
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-      osc.connect(gain).connect(instance.destination)
-      osc.start(now)
-      osc.stop(now + duration + 0.025)
-    }
-    cue(480, .28, 'sine', .018)
-    impactTimer = window.setTimeout(() => {
-      try { cue(135, .36, 'triangle', .037); cue(650, .24, 'sine', .013) } catch { /* sound is optional */ }
-    }, 650)
-  } catch { /* audio unavailable, never block a race */ }
-  return () => {
-    if (impactTimer !== null) window.clearTimeout(impactTimer)
-    if (audio) void audio.close().catch(() => {})
-  }
-}
 
 export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, onBack, playerName = 'Guest Cuber' }: Props) {
   const {avatarUrl} = useLocalPlayer()
@@ -88,6 +53,7 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
   enterRef.current = onEnterArena
   backRef.current = onBack
   const finishedRef = useRef(false)
+  const introSoundPlayedRef = useRef(false)
   const backButtonRef = useRef<HTMLButtonElement>(null)
   const skipButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -132,9 +98,11 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
   }, [motionOff])
 
   useEffect(() => {
-    if (!sound || motionOff) return
-    return playEntranceSound()
-  }, [sound, motionOff])
+    if (sound && !introSoundPlayedRef.current) {
+      introSoundPlayedRef.current = true
+      playGameSound('vs')
+    }
+  }, [sound])
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
@@ -249,7 +217,7 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
           <div className="cube-vs-progress" aria-hidden="true"><span key={motionOff ? 'short' : 'full'}/></div>
           <div className="cube-vs-actions">
             <button type="button" ref={backButtonRef} className="cube-vs-back" onClick={back}><ChevronLeft size={18}/> Back to setup</button>
-            <span className="cube-vs-next-note"><Volume2 size={14} aria-hidden="true"/> {sound && !motionOff ? 'INTRO SOUND ON' : 'INTRO SOUND OFF'}</span>
+            <span className="cube-vs-next-note"><Volume2 size={14} aria-hidden="true"/> {sound ? 'INTRO SOUND ON' : 'INTRO SOUND OFF'}</span>
             <button type="button" ref={skipButtonRef} className="cube-vs-skip" onClick={enter}>Enter arena now <ArrowRight size={17}/></button>
           </div>
         </div>
