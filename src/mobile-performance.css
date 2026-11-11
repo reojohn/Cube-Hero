@@ -99,3 +99,85 @@
   .app-shell .ai-mobile-turn-layer { animation: none !important; transform: none !important; will-change: auto; }
 }
 .reduce-motion .ai-mobile-turn-layer { animation: none !important; transform: none !important; will-change: auto; }
+
+/* Mobile interaction polish: avoid desktop's smooth document scroll on route
+   changes, and keep button feedback quick without affecting race animations. */
+@media (max-width:740px),
+       (orientation:landscape) and (max-height:620px) and (max-width:1180px),
+       (pointer:coarse) and (max-width:1180px) {
+  html { scroll-behavior:auto !important; }
+  .app-shell button:not(:disabled),
+  .app-shell select:not(:disabled) {
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .app-shell .nav-item,
+  .app-shell .cube-dock-link,
+  .app-shell .btn,
+  .app-shell .feature-card,
+  .app-shell .difficulty-option,
+  .app-shell .personality-option,
+  .app-shell .multi-ai-choice {
+    transition-duration:85ms !important;
+  }
+  .app-shell :is(.nav-item,.cube-dock-link,.btn,.feature-card,.difficulty-option,.personality-option,.multi-ai-choice):active:not(:disabled) {
+    transition:none !important;
+  }
+}
+/* Prevent synthetic touch-hover from leaving a transformed, slow-to-clear
+   button after a tap. This does not affect the cube, VS or Inspect rings. */
+@media (hover:none) and (pointer:coarse) {
+  .app-shell :is(.btn,.nav-item,.feature-card,.difficulty-option,.personality-option,.multi-ai-choice):hover:not(:disabled) {
+    transform:none !important;
+  }
+}
+/* The inspection CTA contains a full-label button AND decorative echo rings.
+   In portrait it must not squeeze its adjacent New Scramble button: each
+   action gets a complete, easily tappable row with a visible label. */
+@media (orientation:portrait) and (max-width:740px) {
+  .app-shell .scramble-actions {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    justify-items:stretch;
+    gap:12px;
+    width:100%;
+    min-width:0;
+    padding-inline:5px;
+    box-sizing:border-box;
+  }
+  .app-shell .scramble-actions > .scramble-new-button {
+    display:inline-flex;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    min-height:46px;
+    flex:none;
+    align-items:center;
+    justify-content:center;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    box-sizing:border-box;
+  }
+  .app-shell .scramble-actions > .inspect-cta-wrap {
+    display:flex !important;
+    width:100%;
+    min-width:0;
+    max-width:100% !important;
+    justify-self:stretch;
+    box-sizing:border-box;
+  }
+  .app-shell .scramble-actions > .inspect-cta-wrap > .btn {
+    display:inline-flex;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    min-height:50px;
+    flex:1 1 auto;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    line-height:1.3;
+    box-sizing:border-box;
+  }
+}

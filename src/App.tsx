@@ -299,8 +299,10 @@ export default function App(){
   const trackRaceActive=useCallback((value:boolean)=>{activeRaceRef.current=value},[])
   useEffect(()=>{try{localStorage.setItem('cube-hero-history-v2',JSON.stringify(history.slice(-2000)))}catch{/* storage unavailable */}},[history])
   useEffect(()=>{try{localStorage.setItem(JOURNEY_STORAGE_KEY,JSON.stringify(journey))}catch{/* local-only optional */}},[journey])
-  // Import stable, unique activity IDs once. Academy and Ghost Race notify this
-  // parent after their own local saves, without altering their gameplay logic.
+  // Import stable, unique activity IDs when records or learning progress change.
+  // Do not resync the whole Hero Journey just because a navigation button was
+  // tapped: Academy and Ghost Race already dispatch JOURNEY_UPDATED_EVENT
+  // after saving their progress. This avoids synchronous work on every route.
   useEffect(()=>{
     const sync=()=>{const {ghost,academy}=loadJourneySources();setJourney(prev=>syncJourney(prev,history,ghost,academy))}
     sync()
@@ -308,7 +310,7 @@ export default function App(){
     const onStorage=(event:StorageEvent)=>{if([GHOST_STORAGE_KEY,ACADEMY_STORAGE_KEY,JOURNEY_STORAGE_KEY].includes(event.key??''))sync()}
     window.addEventListener('storage',onStorage)
     return()=>{window.removeEventListener(JOURNEY_UPDATED_EVENT,sync);window.removeEventListener('storage',onStorage)}
-  },[history,page])
+  },[history])
 
   // XP may come from completed AI races, Ghost Race, Academy or tournament rewards.
   // Watch the real persisted Hero Journey level, never page visits or button presses.
@@ -332,7 +334,7 @@ export default function App(){
     window.addEventListener('keydown',onKeyDown)
     return()=>{document.body.style.overflow=previousOverflow;window.removeEventListener('keydown',onKeyDown)}
   },[menuOpen])
-  const goTo=(to:Page)=>{if(((page==='room'&&to!=='room'&&to!=='results')||(page==='practice'&&to!=='practice')||(page==='solo'&&to!=='solo'))&&activeRaceRef.current){if(!window.confirm('Leave the running race? This unfinished round will not be saved.'))return;activeRaceRef.current=false}setVsPendingSession(null);setPage(to);setMenuOpen(false);window.location.hash=`/${to}`;window.scrollTo({top:0,behavior:'auto'})}
+  const goTo=(to:Page)=>{if(((page==='room'&&to!=='room'&&to!=='results')||(page==='practice'&&to!=='practice')||(page==='solo'&&to!=='solo'))&&activeRaceRef.current){if(!window.confirm('Leave the running race? This unfinished round will not be saved.'))return;activeRaceRef.current=false}setVsPendingSession(null);setPage(to);setMenuOpen(false);window.location.hash=`/${to}`;window.scrollTo({top:0,behavior:'instant'})}
   const startRace=()=>{
     if(vsPendingSession)return
     const prepared:RaceSession={id:newId(),settings:{...raceSettings,aiCount:getAiCount(raceSettings.aiCount),difficulty:isDifficulty(raceSettings.difficulty)?raceSettings.difficulty:'15'},records:[]}
