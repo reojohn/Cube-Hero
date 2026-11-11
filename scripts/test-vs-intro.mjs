@@ -15,10 +15,12 @@ const app = fs.readFileSync(path.join(dir, '../src/App.tsx'), 'utf8')
 const { AI_RIVALS, getRival } = await loadTestModules()('rivals')
 const js = transpileModule(source, { compilerOptions: { module: ModuleKind.CommonJS, jsx: JsxEmit.ReactJSX, target: ScriptTarget.ES2022 } }).outputText
 const mod = { exports: {} }
+let previewAvatarUrl = null
 const customRequire = name => {
   if (name === '../lib/racing') return { getAiCount: n => Math.max(1, Math.min(10, n || 1)) }
   if (name === '../lib/rivals') return { getRival, AI_RIVALS }
   if (name === '../lib/rivalPortraits') return { prewarmRivalPortraits: () => {}, getRivalPortraitTheme: (_difficulty, accent, glow) => ({ '--rival-accent': accent, '--rival-glow': glow }) }
+  if (name === './LocalPlayerProvider') return { useLocalPlayer: () => ({ avatarUrl: previewAvatarUrl }) }
   if (name === './RivalPortrait') return { __esModule: true, default: ({ rival }) => React.createElement('img', { src: `/rivals/Sub-${rival.difficulty}.webp`, alt: '' }) }
   if (name === '../assets/player-avatar.png') return { __esModule: true, default: '/player-avatar.png' }
   if (name === './VsIntro.css') return {}
@@ -74,6 +76,14 @@ for (const count of [2,3,4,5,6,7,8,9,10]) {
     assert.ok(html.includes(`--vs-landscape-rows:${landscapeRacers <= 6 ? 1 : 2}`), 'Landscape lineup has at most two rows')
   }
 }
+previewAvatarUrl = 'data:image/jpeg;base64,AAAA'
+const customHtml = renderToStaticMarkup(React.createElement(VsIntro, {
+  settings: { difficulty: '15', personality: 'balanced', aiCount: 5 },
+  sound: false, reducedMotion: true, onEnterArena() {}, onBack() {},
+}))
+assert.match(customHtml, /cube-vs-contender-art--custom/, 'Custom avatar appears in the multi-rival VS cards')
+assert.match(customHtml, /src="data:image\/jpeg;base64,AAAA"/, 'The saved photo is rendered in VS instead of the default mascot')
+previewAvatarUrl = null
 assert.ok(app.includes('setVsPendingSession(prepared)'), 'Start Race should prepare a session but not mount RaceRoom')
 assert.ok(app.includes('setSession(prepared)'), 'Only after intro does the prepared session become active')
 assert.ok(app.includes("goTo('room')"), 'Completion navigates to RaceRoom')

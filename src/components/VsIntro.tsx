@@ -7,6 +7,7 @@ import { AI_RIVALS, getRival } from '../lib/rivals'
 import { prewarmRivalPortraits, getRivalPortraitTheme } from '../lib/rivalPortraits'
 import RivalPortrait from './RivalPortrait'
 import playerAvatar from '../assets/player-avatar.png'
+import { useLocalPlayer } from './LocalPlayerProvider'
 import './VsIntro.css'
 
 /** The intro intentionally does NOT render RaceRoom or create a running timer.
@@ -62,6 +63,8 @@ function playEntranceSound(): () => void {
 }
 
 export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, onBack, playerName = 'Guest Cuber' }: Props) {
+  const {avatarUrl} = useLocalPlayer()
+  const playerPortrait = avatarUrl || playerAvatar
   const rival = getRival(settings.difficulty)
   const opponentCount = getAiCount(settings.aiCount)
   const isTournament = opponentCount > 1
@@ -178,7 +181,7 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
             <div className="cube-vs-tournament-lineup" role="list" aria-label={`You versus ${opponentCount} independent AI opponents`} style={{ '--vs-lineup-columns': Math.min(opponentCount + 1, 6), '--vs-tablet-columns': Math.min(opponentCount + 1, 4), '--vs-mobile-columns': opponentCount === 3 ? 2 : 3, '--vs-mobile-rows': Math.ceil((opponentCount + 1) / (opponentCount === 3 ? 2 : 3)), '--vs-landscape-columns': opponentCount + 1 <= 6 ? opponentCount + 1 : Math.ceil((opponentCount + 1) / 2), '--vs-landscape-rows': opponentCount + 1 <= 6 ? 1 : 2 } as CSSProperties}>
               <article className="cube-vs-contender cube-vs-contender--player" role="listitem" aria-label="YOU, player competitor">
                 <div className="cube-vs-contender-top"><ShieldCheck size={13}/> PLAYER</div>
-                <div className="cube-vs-contender-art"><span className="cube-vs-contender-aura" aria-hidden="true"/><img src={playerAvatar} width={512} height={512} alt="" draggable={false} decoding="async" fetchPriority="high"/></div>
+                <div className={`cube-vs-contender-art${avatarUrl?' cube-vs-contender-art--custom':''}`}><span className="cube-vs-contender-aura" aria-hidden="true"/><img src={playerPortrait} width={512} height={512} alt="" draggable={false} decoding="async" fetchPriority="high"/></div>
                 <div className="cube-vs-contender-info"><strong>YOU</strong><span title={playerName}>{playerName}</span></div>
               </article>
               {opponents.map(({ id, portrait }, index) => (
@@ -215,7 +218,7 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
             <div className="cube-vs-portrait-stage cube-vs-portrait-stage--player">
               <span className="cube-vs-halo" aria-hidden="true"/>
               <span className="cube-vs-halo-ring" aria-hidden="true"/>
-              <img className="cube-vs-player-image" src={playerAvatar} width={512} height={512} alt="Cube Hero player mascot" draggable={false} decoding="async" fetchPriority="high"/>
+              <img className={`cube-vs-player-image${avatarUrl?' cube-vs-player-image--custom':''}`} src={playerPortrait} width={512} height={512} alt="Cube Hero player mascot" draggable={false} decoding="async" fetchPriority="high"/>
             </div>
             <div className="cube-vs-fighter-title"><span>THE CHALLENGER</span><h2>YOU</h2><p title={playerName}>{playerName}</p></div>
           </section>

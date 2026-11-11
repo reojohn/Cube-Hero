@@ -792,3 +792,17 @@
   .cube-vs-actions { margin-top: 4px; }
   .cube-vs-back,.cube-vs-skip { min-height: 27px; }
 }
+
+/* A cropped personal photo is a real portrait rather than the transparent full-figure mascot.
+   Keep default artwork unchanged while presenting custom player photos inside a circular frame. */
+.cube-vs-portrait-stage .cube-vs-player-image--custom{
+  width:auto;height:min(92%,245px);max-width:90%;max-height:92%;aspect-ratio:1;
+  object-fit:cover;object-position:center;border-radius:50%;mix-blend-mode:normal;
+  border:3px solid #79d6ffb8;background:#111827;
+  box-shadow:0 0 0 8px #2d8dc91f,0 12px 35px #0008;filter:none;
+}
+.cube-vs-contender--player .cube-vs-contender-art--custom>img{
+  width:auto;height:min(92%,164px);max-width:92%;max-height:92%;aspect-ratio:1;
+  object-fit:cover;object-position:center;border-radius:50%;mix-blend-mode:normal;
+  border:2px solid #77d8f5bb;background:#111827;filter:none;
+}

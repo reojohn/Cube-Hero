@@ -16,6 +16,7 @@ import RaceResults from './components/RaceResults'
 import RaceStatistics from './components/RaceStatistics'
 import RivalSelect from './components/RivalSelect'
 import PlayerAvatar from './components/PlayerAvatar'
+import AvatarSettings from './components/AvatarSettings'
 import { useLocalPlayer } from './components/LocalPlayerProvider'
 import { isValidPlayerName, normalizePlayerName, PLAYER_NAME_MAX_LENGTH } from './lib/localPlayer'
 import VsIntro from './components/VsIntro'
@@ -223,7 +224,8 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
     void requestOrientationPreference(choice).then(setOrientationFeedback)
   }
   return <div className="page-stack narrow-stack"><SectionHead eyebrow="MAKE IT YOURS" title="Settings & Preferences" description="Personalize the Cube Hero interface. Your changes save automatically to this browser."/>
-    <Surface className="settings-surface cube-profile-settings"><div className="settings-section-head"><span className="settings-header-icon"><PlayerAvatar decorative/></span><div><h3>Local Player Profile</h3><p>Your cuber name appears across races and Hero Journey. No account required.</p></div></div>
+    <Surface className="settings-surface cube-profile-settings"><div className="settings-section-head"><span className="settings-header-icon"><PlayerAvatar decorative/></span><div><h3>Local Player Profile</h3><p>Your photo and cuber name appear across races, VS matchups, and Hero Journey. No account required.</p></div></div>
+      <AvatarSettings/>
       <form className="cube-profile-edit" onSubmit={saveName}>
         <label htmlFor="cube-settings-name">Your cuber name</label>
         <div className="cube-profile-edit-row"><input id="cube-settings-name" autoComplete="nickname" maxLength={PLAYER_NAME_MAX_LENGTH} value={draftName} onChange={e=>{setDraftName(e.target.value);setNameSaved(false)}} aria-describedby="cube-settings-name-help"/><button type="submit" className="btn btn-primary btn-sm" disabled={!isValidPlayerName(draftName)||normalizePlayerName(draftName)===playerName}><Check size={16}/> Save name</button></div>

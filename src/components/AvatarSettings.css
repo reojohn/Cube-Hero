@@ -1,0 +1,15 @@
+.cube-avatar-settings{margin-top:18px;padding:15px;border:1px solid #4a456a;border-radius:13px;background:linear-gradient(145deg,#1b2340,#181b33)}
+.cube-avatar-settings-preview{display:flex;align-items:center;gap:15px;min-width:0}
+.cube-avatar-settings-preview>div{min-width:0}
+.cube-avatar-settings-preview strong{font-size:13px;color:#f3f0ff}
+.cube-avatar-settings-preview p{font-size:11px;color:#c1b5d6;margin:4px 0}
+.cube-avatar-settings-preview small{font-size:10px;color:#96a6c4;line-height:1.4}
+.cube-player-avatar.cube-avatar-settings-image{width:72px;height:72px;border-width:2px;border-color:#9b74f3;box-shadow:0 0 20px #7046da38}
+.cube-avatar-settings-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+.cube-avatar-settings-actions .btn{min-height:43px}
+.cube-avatar-settings-feedback{color:#c5f3d5;font-size:11px;line-height:1.5;margin-top:10px}
+@media(max-width:430px){
+ .cube-avatar-settings{padding:12px}
+ .cube-player-avatar.cube-avatar-settings-image{width:62px;height:62px}
+ .cube-avatar-settings-actions .btn{flex:1;min-width:132px;justify-content:center}
+}
