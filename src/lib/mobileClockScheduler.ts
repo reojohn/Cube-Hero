@@ -8,12 +8,12 @@
  */
 type ClockDraw = (now: number) => void
 
-const activeClocks = new Set<ClockDraw>()
+const activeClocks = new Map<ClockDraw, number>()
 let frameId: number | null = null
 let previousPaint = -Infinity
 
 function paintClocks(now: number): void {
-  for (const draw of activeClocks) draw(now)
+  for (const draw of activeClocks.keys()) draw(now)
 }
 
 function queueFrame(): void {
@@ -33,7 +33,11 @@ function onFrame(): void {
   // clocks into one paint approximately every 33 ms instead of overwhelming
   // Android's main thread with hundreds of text/layout updates per second.
   const now = performance.now()
-  const minInterval = activeClocks.size > 4 ? 32 : 0
+  // Low remains full-refresh for users whose phones can already display it
+  // smoothly. Medium/High use a 30 Hz *display* budget to leave CPU/GPU time
+  // for physical slice motion. Timekeeping and official finish times never
+  // depend on this optional paint interval.
+  const minInterval = Math.max(activeClocks.size > 4 ? 32 : 0, ...activeClocks.values())
   if (now - previousPaint >= minInterval) {
     previousPaint = now
     paintClocks(now)
@@ -53,9 +57,9 @@ function syncVisibility(): void {
   queueFrame()
 }
 
-export function subscribeAndroidStopwatch(draw: ClockDraw): () => void {
+export function subscribeAndroidStopwatch(draw: ClockDraw, minPaintIntervalMs = 0): () => void {
   const firstClock = activeClocks.size === 0
-  activeClocks.add(draw)
+  activeClocks.set(draw, Math.max(0, minPaintIntervalMs))
   if (firstClock) {
     document.addEventListener('visibilitychange', syncVisibility)
     window.addEventListener('pageshow', syncVisibility)

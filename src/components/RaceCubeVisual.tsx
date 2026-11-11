@@ -2,6 +2,7 @@ import type { AiPlan } from '../lib/aiPlan'
 import type { GraphicsQuality } from '../lib/graphicsQuality'
 import AiCube3D from './AiCube3D'
 import LowRaceCube from './LowRaceCube'
+import MediumRaceCube from './MediumRaceCube'
 import MobileRaceCube from './MobileRaceCube'
 
 type Props = {
@@ -19,7 +20,10 @@ export default function RaceCubeVisual({ scramble, plan, elapsedMs, active, star
   if (graphics === 'low') {
     return <LowRaceCube scramble={scramble} plan={plan} active={active} startAt={startAt} />
   }
-  if (graphics === 'medium' || compact) {
+  if (graphics === 'medium') {
+    return <MediumRaceCube scramble={scramble} plan={plan} active={active} startAt={startAt} />
+  }
+  if (compact) {
     return <MobileRaceCube scramble={scramble} plan={plan} active={active} startAt={startAt} quality={graphics} />
   }
   // High on desktop stays exactly the existing high-fidelity renderer.

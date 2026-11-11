@@ -91,4 +91,15 @@ for (const [index, times] of draws.entries()) {
 }
 for (const stop of stops) stop()
 assert.equal(pending.size, 0)
+// Medium and High have a real paint budget, rather than repainting at the
+// same rate as the 3D compositor. The clock value itself is still monotonic.
+const mediumTimes = []
+const stopMedium = subscribeAndroidStopwatch(t => mediumTimes.push(t), 33)
+const mediumStartingCount = mediumTimes.length
+for (let i = 1; i <= 15; i++) step(2120 + i * 16)
+assert.ok(mediumTimes.length > mediumStartingCount + 3, 'Medium stopwatch stays responsive')
+assert.ok(mediumTimes.length < mediumStartingCount + 10, 'Medium uses fewer text paints than 60fps Low')
+assert.ok(mediumTimes.every((time, index) => index === 0 || time > mediumTimes[index - 1]), 'time samples never move backwards')
+stopMedium()
+assert.equal(pending.size, 0, 'quality-aware stopwatch cleans up')
 console.log('PASS: Android stopwatch frame sync, single rAF, multi-AI budget, resume catch-up, and cleanup.')

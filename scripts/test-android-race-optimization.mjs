@@ -35,7 +35,7 @@ assert.match(loader, /minimumFrameMs = android \? 1000 \/ 40 : 0/)
 
 const timer = read('src/components/LiveTimerText.tsx')
 const clocks = read('src/lib/mobileClockScheduler.ts')
-assert.match(timer, /subscribeAndroidStopwatch\(drawValue\)/, 'Android uses shared frame-synced clock')
+assert.match(timer, /subscribeAndroidStopwatch\(drawValue, graphics === 'low' \? 0 : 33\)/, 'Android uses shared frame-synced clock')
 assert.doesNotMatch(timer, /setInterval/, 'Android stopwatch does not use low-frequency timeout painting')
 assert.match(clocks, /window\.requestAnimationFrame\(onFrame\)/, 'one shared Android animation-frame loop')
 assert.match(clocks, /activeClocks\.size > 4 \? 32 : 0/, 'many opponents have an adaptive text budget')

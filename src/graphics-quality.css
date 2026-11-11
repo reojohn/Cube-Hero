@@ -51,19 +51,42 @@
 .ch-low-sticker-cube .ai-css-facelet { border: none; box-shadow: none; border-radius: 1.5px; }
 .ch-low-cube-shell { background: none !important; }
 
-/* Medium: fully solid physical slices are still animated, but sticker color
-   lives on each face itself (no extra 50+ sticker children or detailed gloss).
-   High retains the original 26 cubies + six faces + individual 3D stickers. */
-.ch-medium-cube-shell { background: none !important; }
+/* Medium v2: keep only 27 static flat stickers in the scene. During each
+   verified move, animate ONLY its physical cubies (usually nine pieces), with
+   the real exterior sticker surfaces and opaque cut faces. No permanent
+   26-piece CSS 3D assembly, which was almost as costly as High on Android. */
+.ch-medium-cube-shell { background: none !important; filter: none !important; isolation: auto; }
+.ch-medium-stage { --cube-half: calc(var(--cube-size) / 2); }
 .ch-medium-cube-shell .ai-mobile-solid-camera { animation: none !important; }
-.ch-medium-cube-shell .ch-medium-cubie-face { border: 1px solid #070a13; box-shadow: none; border-radius: 1px; background: #111725; }
-.ch-medium-cube-shell .ch-medium-cubie-face.sticker-U { background: #ffda47; }
-.ch-medium-cube-shell .ch-medium-cubie-face.sticker-D { background: #f5f5ff; }
-.ch-medium-cube-shell .ch-medium-cubie-face.sticker-F { background: #3185fd; }
-.ch-medium-cube-shell .ch-medium-cubie-face.sticker-B { background: #19cf86; }
-.ch-medium-cube-shell .ch-medium-cubie-face.sticker-R { background: #f1435b; }
-.ch-medium-cube-shell .ch-medium-cubie-face.sticker-L { background: #ff9447; }
-.ch-medium-cube-shell .ai-mobile-turn-layer { animation-timing-function: linear; }
+.ch-medium-static-faces { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+.ch-medium-static-face { box-shadow: none; border-width: 1px; gap: 2px; padding: 3px; border-radius: 1px; }
+.ch-medium-static-face .ai-css-facelet { transition: none; box-shadow: none; border: 0; border-radius: 1px; }
+.ch-medium-sticker-in-motion { visibility: hidden; }
+.ch-medium-moving-cubie { pointer-events: none; }
+.ch-medium-cube-shell .ch-medium-moving-face {
+  box-shadow: none; border: 1px solid #090b12; border-radius: 1px;
+  background: #111725;
+}
+.ch-medium-cube-shell .ch-medium-moving-face.sticker-U { background: #ffda47; }
+.ch-medium-cube-shell .ch-medium-moving-face.sticker-D { background: #f5f5ff; }
+.ch-medium-cube-shell .ch-medium-moving-face.sticker-F { background: #3185fd; }
+.ch-medium-cube-shell .ch-medium-moving-face.sticker-B { background: #19cf86; }
+.ch-medium-cube-shell .ch-medium-moving-face.sticker-R { background: #f1435b; }
+.ch-medium-cube-shell .ch-medium-moving-face.sticker-L { background: #ff9447; }
+/* Six distinct, real physical poses per turn instead of computing a new GPU
+   3D scene on every refresh frame. The total rotation angle and move-end
+   timestamps remain EXACTLY the same as High. */
+.ch-medium-cube-shell .ch-medium-turn-layer { animation-timing-function: steps(6, end); }
+/* Do not waste GPU time on costly background chrome during a live Medium race. */
+.ch-graphics-medium.ch-performance-live .ai-css-cube-aura,
+.ch-graphics-medium.ch-performance-live .ai-css-cube-floor { display: none !important; }
+.ch-graphics-medium.ch-performance-live .racer-timer,
+.ch-graphics-medium.ch-performance-live .ghost-player-time,
+.ch-graphics-medium.ch-performance-live .ghost-opponent-time,
+.ch-graphics-medium.ch-performance-live .multi-ai-rival-value {
+  font-variant-numeric: tabular-nums;
+  contain: layout style;
+}
 
 /* Low/medium only: trim nonessential live effects around the timers. */
 .ch-graphics-low.ch-performance-live .racer-panel,

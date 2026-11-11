@@ -8,7 +8,7 @@ export const GRAPHICS_OPTIONS: readonly {
   recommendation: string
 }[] = [
   { value: 'low', title: 'Low', detail: 'Sticker colors update between moves. No physical turns.', recommendation: 'Best performance' },
-  { value: 'medium', title: 'Medium', detail: 'Real 3D layer turns with simpler cube surfaces.', recommendation: 'Balanced' },
+  { value: 'medium', title: 'Medium', detail: 'Real 3D turns; only the moving layer is rendered as physical pieces, with reduced animation frames.', recommendation: 'Balanced' },
   { value: 'high', title: 'High', detail: 'Full detailed pieces and rotating layers, as before.', recommendation: 'Best visuals' },
 ]
 

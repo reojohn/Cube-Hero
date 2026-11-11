@@ -38,7 +38,8 @@ for (const [elapsed, expected] of [[0, 0], [149, 0], [150, 1], [441, 2], [1230, 
 }
 const read = p => fs.readFileSync(p, 'utf8')
 const low = read('src/components/LowRaceCube.tsx')
-const mid = read('src/components/MobileRaceCube.tsx')
+const mid = read('src/components/MediumRaceCube.tsx')
+const mobileHigh = read('src/components/MobileRaceCube.tsx')
 const select = read('src/components/RaceCubeVisual.tsx')
 const app = read('src/App.tsx')
 const room = read('src/components/RaceRoom.tsx')
@@ -48,12 +49,15 @@ assert.match(low, /moveIndexAt\(plan, elapsed\)/, 'Low follows the actual stopwa
 assert.match(low, /plan\.moveEndsMs\[completed\] - elapsed/, 'Low updates at real move boundaries')
 assert.doesNotMatch(low, /requestAnimationFrame|setInterval|cubiesFromFaces/, 'Low has no frame loop or physical cube geometry')
 assert.match(low, /VISIBLE_FACES: readonly Face\[\] = \['U', 'R', 'F'\]/, 'Low renders only 27 visible squares')
-assert.match(mid, /const MediumMobileCubie/, 'Medium has simplified physical pieces')
-assert.match(mid, /const CubieRenderer = quality === 'medium' \? MediumMobileCubie : SolidMobileCubie/, 'High keeps its original detailed cubelets')
-assert.match(mid, /SIDES\.map\(face => <div/, 'Medium retains six opaque sides per piece to avoid black gaps')
-assert.match(mid, /ai-mobile-turn-layer/, 'Medium rotates the true physical layer')
+assert.match(mid, /MEDIUM_STATIC_FACES\.map/, 'Medium uses 3 static sticker planes')
+assert.match(mid, /mediumMovingFaces\(piece, axis\)/, 'Medium draws only sticker and cut surfaces for moving cubies')
+assert.match(mid, /pieces\.filter\(piece => inTurningLayer/, 'Medium only renders the active slice as 3D geometry')
+assert.match(mid, /ai-mobile-turn-layer/, 'Medium still physically rotates real pieces')
+assert.doesNotMatch(mid, /stationaryPieces|SolidMobileCubie|AiCube3D/, 'Medium does not build a permanent 26-piece scene')
+assert.match(mobileHigh, /const SolidMobileCubie/, 'High retains all six faces per piece')
 assert.match(select, /graphics === 'low'/)
-assert.match(select, /graphics === 'medium' \|\| compact/)
+assert.match(select, /graphics === 'medium'/)
+assert.match(select, /<MediumRaceCube/, 'Medium has distinct lightweight renderer')
 assert.match(select, /return <AiCube3D/, 'High desktop remains the existing renderer')
 assert.match(app, /graphics:'high'/, 'existing default stays High')
 assert.match(app, /GRAPHICS_OPTIONS\.map/, 'three selectable graphics options')
@@ -65,4 +69,31 @@ for (const [source, name] of [[room, 'Race AI'], [ghost, 'Ghost Race']]) {
 }
 assert.doesNotMatch(read('src/lib/aiPlan.ts'), /graphicsQuality|GraphicsQuality/, 'AI pacing is unrelated to visual quality')
 assert.doesNotMatch(read('src/lib/ghost.ts'), /graphicsQuality|GraphicsQuality/, 'Ghost progress is unrelated to visual quality')
-console.log('PASS: Low/Medium/High selection, real cube state at each move, same AI/ghost timing, independent rendering, persisted default.')
+// Verify the Medium geometry never needs a full 26x6 assembly and retains
+// all correct colored sticker faces on moving pieces, including inner cut caps.
+const { cubiesFromFaces, inTurningLayer } = await load('cubeTurning')
+const { mediumMovingFaces, MEDIUM_STATIC_FACES } = await load('mediumCubeGeometry')
+const { mobileSliceTurn } = await load('mobileCubeTurn')
+const renderedFaces = []
+for (const notation of ['R', "U'", 'F2', 'L', 'D', 'B', 'M', 'E', 'S', 'Rw', 'Uw']) {
+  const turn = mobileSliceTurn(notation)
+  const pieces = cubiesFromFaces(simpleFrames[0])
+  const selected = pieces.filter(piece => inTurningLayer(piece, turn.axis, turn.layers))
+  assert.ok(selected.length > 0, `${notation}: physical cubies turn`)
+  let count = 0
+  for (const piece of selected) {
+    const faces = mediumMovingFaces(piece, turn.axis)
+    count += faces.length
+    for (const side of Object.keys(piece.stickers)) {
+      assert.ok(faces.includes(side), `${notation}: preserves exterior sticker ${side}`)
+    }
+    const caps = turn.axis === 'X' ? ['L','R'] : turn.axis === 'Y' ? ['U','D'] : ['F','B']
+    for (const cap of caps) assert.ok(faces.includes(cap), `${notation}: cut face ${cap} is sealed`)
+  }
+  renderedFaces.push(count)
+  assert.ok(count < 156, `${notation}: significantly less than High's 156 live faces`)
+}
+assert.deepEqual(MEDIUM_STATIC_FACES, ['U','R','F'])
+assert.match(read('src/graphics-quality.css'), /steps\(6, end\)/, 'Medium uses six physical poses per slice')
+assert.match(read('src/components/LiveTimerText.tsx'), /graphics === 'low' \? 0 : 33/, 'Android medium timers use 30Hz display budget')
+console.log('PASS: Low/Medium/High selection; Medium moving-face budget', renderedFaces, '; unchanged solve/timing.')

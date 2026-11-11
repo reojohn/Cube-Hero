@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from 'react'
 import { formatTime } from '../lib/racing'
+import type { GraphicsQuality } from '../lib/graphicsQuality'
 import { isAndroidBrowser, isCompactPerformanceViewport } from '../lib/mobilePerformance'
 import { subscribeAndroidStopwatch } from '../lib/mobileClockScheduler'
 
@@ -9,7 +10,7 @@ import { subscribeAndroidStopwatch } from '../lib/mobileClockScheduler'
  * not from an interval tick count. Race completion uses the original clocks.
  */
 function LiveTimerText({
-  className, timeMs, precision, running, startAt, limitMs, 'aria-label': ariaLabel,
+  className, timeMs, precision, running, startAt, limitMs, graphics = 'high', 'aria-label': ariaLabel,
 }: {
   className: string
   timeMs: number
@@ -17,6 +18,7 @@ function LiveTimerText({
   running: boolean
   startAt: number | null
   limitMs?: number
+  graphics?: GraphicsQuality
   'aria-label'?: string
 }) {
   const textRef = useRef<HTMLDivElement>(null)
@@ -41,7 +43,7 @@ function LiveTimerText({
     // are still measured by the same independent monotonic time source.
     let stopAndroidClock: (() => void) | undefined
     if (isAndroidBrowser() && isCompactPerformanceViewport()) {
-      stopAndroidClock = subscribeAndroidStopwatch(drawValue)
+      stopAndroidClock = subscribeAndroidStopwatch(drawValue, graphics === 'low' ? 0 : 33)
       return () => stopAndroidClock?.()
     }
     let frameId = 0
@@ -55,7 +57,7 @@ function LiveTimerText({
     }
     frameId = requestAnimationFrame(update)
     return () => cancelAnimationFrame(frameId)
-  }, [running, startAt, limitMs, precision])
+  }, [running, startAt, limitMs, precision, graphics])
 
   return <div ref={textRef} className={className} aria-live="off" aria-label={ariaLabel}>
     {formatTime(timeMs, precision)}
@@ -73,5 +75,6 @@ export default memo(LiveTimerText, (previous, next) => {
     previous.precision === next.precision &&
     previous.limitMs === next.limitMs &&
     previous.className === next.className &&
-    previous['aria-label'] === next['aria-label']
+    previous['aria-label'] === next['aria-label'] &&
+    previous.graphics === next.graphics
 })
