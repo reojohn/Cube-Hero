@@ -1196,11 +1196,19 @@ button,select {touch-action:manipulation}
 .multi-ai-place.is-player{border-color:#38b98a;background:#102b2c}
 .multi-ai-place.first-place{box-shadow:inset 0 0 0 1px #c49a4340}
 .multi-ai-place-number{font-weight:850;font-size:14px;color:#bca3ff;min-width:32px}
-.multi-ai-place-icon{display:grid;place-items:center;width:30px;height:30px;background:#332950;color:#c7adf7;border-radius:8px;flex-shrink:0}
+.multi-ai-place-icon{display:grid;place-items:center;width:30px;height:30px;background:#332950;color:#c7adf7;border-radius:8px;flex-shrink:0;overflow:hidden}
 .multi-ai-place.is-player .multi-ai-place-icon{color:#63ebac;background:#184536}
-.multi-ai-place>strong{color:#e9ecfa;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multi-ai-place-name{display:flex;flex-direction:column;min-width:0;gap:1px}
+.multi-ai-place-name>strong{color:#e9ecfa;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multi-ai-place-name>small{font-size:9px;color:#b8afd3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .multi-ai-place-time{font-weight:820;font-variant-numeric:tabular-nums;font-size:13px;color:#f6f5ff;margin-left:auto;white-space:nowrap}
 .multi-ai-trophy{color:#efbd57;flex-shrink:0}
+
+.result-ai-avatar{width:20px;height:20px;border-radius:50%;overflow:hidden;box-shadow:none}
+.rival-mini-portrait{display:grid;place-items:center;width:100%;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(155deg,#283050,#141b30);color:#bda7f7}
+.rival-mini-portrait img{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;transform:none!important;filter:none!important}
+.multi-ai-place-icon .rival-mini-portrait{background:linear-gradient(155deg,#302654,#1b2038)}
+.multi-ai-place.first-place .multi-ai-place-icon .rival-mini-portrait{box-shadow:inset 0 0 0 1px rgba(239,189,87,.18)}
 @media(max-width:1000px){.multi-ai-live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:740px){.multi-ai-picker{padding:15px}.multi-ai-choices{grid-template-columns:repeat(5,minmax(0,1fr))}.multi-ai-picker-heading{flex-wrap:wrap}.multi-ai-count{margin-left:auto}.multi-ai-live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.multi-ai-results-list{grid-template-columns:1fr}}
 @media(max-width:420px){.multi-ai-icon{width:40px;height:40px}.multi-ai-picker-heading h3{font-size:14px}.multi-ai-live-grid{gap:7px}.multi-ai-live-rival{padding:10px}.multi-ai-rival-body{grid-template-columns:minmax(0,1fr) 76px;gap:8px}.multi-ai-rival-time{font-size:22px}.multi-ai-rival-top strong{font-size:11px}.multi-ai-rival-top small{font-size:8px}.multi-ai-rival-cube,.multi-ai-rival-cube-placeholder{width:76px;height:66px}.multi-ai-rival-cube .ai-3d-cube-shell{height:62px}.multi-ai-rival-cube .ai-css-cube-stage{--cube-size:44px;--cube-half:22px;min-height:58px}.multi-ai-rival-cube .ai-physical-turn-stage{--cube-size:46px}}

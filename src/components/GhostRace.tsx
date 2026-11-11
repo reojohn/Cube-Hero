@@ -96,45 +96,25 @@ const ScrambleBeginnerGuide = memo(function ScrambleBeginnerGuide({scramble}:{sc
   </div>
 })
 function GhostInspectReadyButton({ready,pulseAllowed,onClick}:{ready:boolean;pulseAllowed:boolean;onClick:()=>void}){
-  const buttonRef=useRef<HTMLButtonElement|null>(null)
   const firstRingRef=useRef<HTMLSpanElement|null>(null)
   const secondRingRef=useRef<HTMLSpanElement|null>(null)
-  const chipRef=useRef<HTMLSpanElement|null>(null)
   useEffect(()=>{
     if(!ready||!pulseAllowed)return
-    const button=buttonRef.current
-    if(!button||typeof button.animate!=='function')return
     const animations:Animation[]=[]
-    animations.push(button.animate([
-      {offset:0,transform:'scale(1)',filter:'brightness(1)',boxShadow:'0 0 13px rgba(135,67,255,.43)'},
-      {offset:.19,transform:'scale(1.115)',filter:'brightness(1.4)',boxShadow:'0 0 35px 11px rgba(186,83,255,.84)'},
-      {offset:.39,transform:'scale(1.01)',filter:'brightness(1.04)',boxShadow:'0 0 15px rgba(135,67,255,.45)'},
-      {offset:.62,transform:'scale(1.085)',filter:'brightness(1.33)',boxShadow:'0 0 30px 8px rgba(164,78,255,.73)'},
-      {offset:.85,transform:'scale(1)',filter:'brightness(1)',boxShadow:'0 0 15px rgba(135,67,255,.45)'},
-      {offset:1,transform:'scale(1)',filter:'brightness(1)',boxShadow:'0 0 13px rgba(135,67,255,.43)'},
-    ],{duration:1350,iterations:Infinity,easing:'ease-in-out'}))
     for (const [index,ring] of [firstRingRef.current,secondRingRef.current].entries()){
-      if(!ring)continue
+      if(!ring||typeof ring.animate!=='function')continue
       animations.push(ring.animate([
-        {offset:0,opacity:0,transform:'scale(.98)'},
-        {offset:.18,opacity:.93,transform:'scale(1.05)'},
-        {offset:.70,opacity:.0,transform:'scale(1.28)'},
-        {offset:1,opacity:0,transform:'scale(1.3)'},
-      ],{duration:1350,iterations:Infinity,delay:index*675,easing:'ease-out'}))
-    }
-    if(chipRef.current){
-      animations.push(chipRef.current.animate([
-        {transform:'scale(1)',backgroundColor:'#fff1a5'},
-        {transform:'scale(1.13)',backgroundColor:'#ffffff'},
-        {transform:'scale(1)',backgroundColor:'#fff1a5'},
-      ],{duration:675,iterations:Infinity,easing:'ease-in-out'}))
+        {offset:0,opacity:0,transform:'scale(.985)'},
+        {offset:.22,opacity:.75,transform:'scale(1.01)'},
+        {offset:1,opacity:0,transform:'scale(1.16)'},
+      ],{duration:1700,iterations:Infinity,delay:index*850,easing:'ease-out'}))
     }
     return()=>{for(const animation of animations)animation.cancel()}
   },[ready,pulseAllowed])
   const ringStyle={
     position:'absolute' as const,
-    inset:'-5px',
-    border:'3px solid #c88fff',
+    inset:'-4px',
+    border:'2px solid #c88fff',
     borderRadius:'12px',
     opacity:0,
     pointerEvents:'none' as const,
@@ -146,7 +126,6 @@ function GhostInspectReadyButton({ready,pulseAllowed,onClick}:{ready:boolean;pul
       <span ref={secondRingRef} aria-hidden="true" style={{...ringStyle,borderColor:'#8265ff'}}/>
     </>}
     <button
-      ref={buttonRef}
       type="button"
       disabled={!ready}
       className="btn btn-primary ghost-inspect-cta"
@@ -159,14 +138,13 @@ function GhostInspectReadyButton({ready,pulseAllowed,onClick}:{ready:boolean;pul
         boxShadow:'0 0 15px rgba(154,64,255,.48)',
         color:'#fff',
         minHeight:'43px',
-        transformOrigin:'center center',
         whiteSpace:'normal',
       }:{position:'relative',zIndex:1}}
       onClick={onClick}
       title={ready ? 'Ready to inspect — click when your cube is scrambled' : 'Waiting for the verified CFOP ghost'}
     >
       <Check size={18}/> I&apos;m Scrambled — Inspect <ArrowRight size={17}/>
-      {ready&&<span ref={chipRef} aria-hidden="true" style={{display:'inline-flex',alignItems:'center',padding:'4px 6px',borderRadius:'5px',fontWeight:900,fontSize:'9px',letterSpacing:'.4px',background:'#fff1a5',color:'#251039',border:'1px solid #fff5c8'}}>READY</span>}
+      {ready&&<span aria-hidden="true" style={{display:'inline-flex',alignItems:'center',padding:'4px 6px',borderRadius:'5px',fontWeight:900,fontSize:'9px',letterSpacing:'.4px',background:'#fff1a5',color:'#251039',border:'1px solid #fff5c8'}}>READY</span>}
     </button>
   </span>
 }
@@ -492,7 +470,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
           {!qualifying&&<div className={`ghost-solver-state ${ghostStatus==='error'?'error':''}`} role="status">{ghostStatus==='loading'?<><LoaderCircle size={16} className="spin-icon"/> Finalizing your verified CFOP ghost…</>:ghostStatus==='error'?<><CircleHelp size={16}/> {ghostError} <button type="button" onClick={()=>setSolverRetry(n=>n+1)}>Retry</button></>:<><ShieldCheck size={16}/> Verified CFOP ghost ready · Same scramble, personal-best time</>}</div>}
           <div className="ghost-start-buttons"><button type="button" className="btn btn-outline" onClick={()=>setScramble(qualifying?generateScramble():ghostPrefetch.takeNext())}><RotateCcw size={17}/> New Scramble</button>
             <GhostInspectReadyButton ready={targetReady} pulseAllowed={pulseAllowed} onClick={startInspection}/></div>
-          {!pulseAllowed&&targetReady&&<p className="inspect-motion-note">Button pulse is paused because reduced animations are enabled in Cube Hero Settings or in your OS/browser motion preferences.</p>}
+          {!pulseAllowed&&targetReady&&<p className="inspect-motion-note">Ready highlight motion is paused because reduced animations are enabled in Cube Hero Settings or in your OS/browser motion preferences.</p>}
         </div>}
       </section>
       <div className={`ghost-arena ${qualifying?'solo':''}`} ref={arenaRef}>
