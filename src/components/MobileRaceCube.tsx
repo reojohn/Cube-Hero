@@ -6,20 +6,19 @@ import type { Face } from '../lib/cubeState'
 import { cubiesFromFaces, inTurningLayer } from '../lib/cubeTurning'
 import type { Cubie } from '../lib/cubeTurning'
 import { moveIndexAt } from '../lib/aiPlan'
-import { mobileSliceTurn, visibleStickerInLayer } from '../lib/mobileCubeTurn'
+import { mobileSliceTurn } from '../lib/mobileCubeTurn'
 
 /**
- * Race-only lightweight *turning* cube for phones.
+ * Mobile race cube: the same solid cubie geometry used by the desktop model,
+ * but no React/requestAnimationFrame loop during a turn. The selected slice
+ * rotates as a single CSS-composited layer and the verified cube state is
+ * committed at the real move boundary.
  *
- * Three static sticker planes (27 squares) stay mounted while just the active
- * physical slice rotates using one compositor-driven CSS transform. Unlike
- * the desktop renderer, we never mount all 26 cubelets / 156 cubie surfaces.
- * React wakes only at a verified move boundary, not on every animation frame.
- * It follows the exact AI/ghost plan relative to performance.now(), and the
- * official race clocks/results are never tied to the visual animation.
+ * Keeping all six plastic/sticker sides of every cubie is important: V3 mixed
+ * flat face planes with isolated rotating stickers, exposing black holes when
+ * the turn uncovered a face that did not exist in the flat representation.
  */
-const VISIBLE_FACES: readonly Face[] = ['U', 'F', 'R']
-const ALL_FACES: readonly Face[] = ['U', 'R', 'F', 'D', 'L', 'B']
+const SIDES: readonly Face[] = ['U', 'R', 'F', 'D', 'L', 'B']
 
 type Props = {
   scramble: string
@@ -30,15 +29,12 @@ type Props = {
 
 type TurnFrame = { completed: number; offsetMs: number; startAt: number | null; plan: AiPlan | null }
 
-const MobileTurnCubelet = memo(function MobileTurnCubelet({ piece }: { piece: Cubie }) {
-  // Only build outward sticker faces. Interior cubie faces are not needed on
-  // the tiny mobile model (the dark backing planes provide the cube body).
-  return <div className="ai-turning-cubie ai-mobile-turn-cubie"
+const SolidMobileCubie = memo(function SolidMobileCubie({ piece }: { piece: Cubie }) {
+  return <div className="ai-turning-cubie ai-mobile-solid-cubie"
     style={{ transform: `translate3d(${piece.x * 100}%, ${-piece.y * 100}%, calc(var(--cube-cell) * ${piece.z}))` }}>
-    {ALL_FACES.map(face => piece.stickers[face] ?
-      <div key={face} className={`ai-turning-cubie-face ai-css-face-${face}`} aria-hidden="true">
-        <span className={`ai-turning-sticker sticker-${piece.stickers[face]}`} />
-      </div> : null)}
+    {SIDES.map(face => <div key={face} className={`ai-turning-cubie-face ai-css-face-${face} ai-mobile-solid-face`} aria-hidden="true">
+      {piece.stickers[face] && <span className={`ai-turning-sticker sticker-${piece.stickers[face]}`} />}
+    </div>)}
   </div>
 })
 
@@ -64,8 +60,8 @@ const MobileRaceCube = memo(function MobileRaceCube({ scramble, plan, active, st
       setFrame(previous => previous.completed === completed && previous.startAt === startAt && previous.plan === plan
         ? previous : { completed, offsetMs: Math.max(0, elapsed - priorEnd), startAt, plan })
 
-      // No per-frame JavaScript or React animation loop. Wake precisely at the
-      // next move's real timestamp, even on very fast Sub-6 rivals.
+      // React wakes only on actual move boundaries. A delayed wake catches up
+      // to the high-resolution race clock instead of slowing the opponent.
       if (completed < plan.moves.length) {
         timer = window.setTimeout(sync, Math.max(5, plan.moveEndsMs[completed] - elapsed + 2))
       }
@@ -81,19 +77,20 @@ const MobileRaceCube = memo(function MobileRaceCube({ scramble, plan, active, st
       window.clearTimeout(timer)
       document.removeEventListener('visibilitychange', visibilityChanged)
     }
-  }, [active, startAt, plan, scramble])
+  }, [active, startAt, plan])
 
-  // On a new round, never accidentally show a prior round's final cube state.
+  // Reset visual state when a new plan starts; never show the previous round.
   const completed = frame.plan === plan && frame.startAt === (active ? startAt : null)
     ? frame.completed : 0
   const cubeFaces = useMemo(() => cubeFacesAt(scramble, plan.moves, completed), [scramble, plan.moves, completed])
+  const allPieces = useMemo(() => cubiesFromFaces(cubeFaces), [cubeFaces])
   const move = active && startAt !== null && completed < plan.moves.length ? plan.moves[completed] : null
   const turn = useMemo(() => move ? mobileSliceTurn(move) : null, [move])
-  const movingPieces = useMemo(() => {
-    if (!turn) return []
-    return cubiesFromFaces(cubeFaces).filter(piece =>
-      inTurningLayer(piece, turn.axis, turn.layers) && ALL_FACES.some(face => Boolean(piece.stickers[face])))
-  }, [cubeFaces, turn])
+  const movingPieces = useMemo(() => turn
+    ? allPieces.filter(piece => inTurningLayer(piece, turn.axis, turn.layers)) : [], [allPieces, turn])
+  const stationaryPieces = useMemo(() => turn
+    ? allPieces.filter(piece => !inTurningLayer(piece, turn.axis, turn.layers)) : allPieces, [allPieces, turn])
+
   const priorEnd = completed ? plan.moveEndsMs[completed - 1] : 0
   const duration = completed < plan.moveEndsMs.length ? Math.max(1, plan.moveEndsMs[completed] - priorEnd) : 1
   const offset = frame.plan === plan && frame.startAt === startAt ? Math.min(frame.offsetMs, duration) : 0
@@ -103,19 +100,21 @@ const MobileRaceCube = memo(function MobileRaceCube({ scramble, plan, active, st
     animationDelay: `-${offset}ms`,
   } as CSSProperties) : undefined
 
-  return <div className="ai-3d-cube-shell ai-mobile-sticker-shell ai-mobile-turning-shell">
-    <div className="ai-css-cube-stage ai-mobile-sticker-stage" role="img"
-      aria-label={`Lightweight physically turning cube showing the real scramble-specific CFOP solution: ${completed} of ${plan.moves.length} moves completed${move ? `, turning ${move}` : ''}.`}>
-      <div className="ai-css-cube ai-mobile-sticker-cube">
-        {VISIBLE_FACES.map(face => <div className={`ai-css-cube-face ai-css-face-${face}`} key={face}>
-          {cubeFaces[face].map((color, index) => <span
-            className={`ai-css-facelet sticker-${color}${turn && visibleStickerInLayer(face, index, turn.axis, turn.layers) ? ' ai-mobile-hidden-turn-sticker' : ''}`}
-            key={index} />)}
-        </div>)}
-        {turn && <div key={`${startAt}-${completed}-${move}`} className="ai-mobile-turn-layer" style={animatedStyle}>
-          {movingPieces.map(piece => <MobileTurnCubelet key={piece.id} piece={piece} />)}
-        </div>}
+  return <div className="ai-3d-cube-shell ai-physical-turn-shell ai-mobile-solid-shell">
+    <div className="ai-css-cube-stage ai-physical-turn-stage ai-mobile-solid-stage" role="img"
+      aria-label={`Solid three-dimensional cube following the real scramble-specific CFOP solution: ${completed} of ${plan.moves.length} moves completed${move ? `, turning ${move}` : ''}.`}>
+      <div className="ai-css-cube-aura" />
+      <div className="ai-physical-cube-camera ai-mobile-solid-camera">
+        <div className="ai-physical-cube-body">
+          <div className="ai-physical-layer ai-mobile-stationary-layer">
+            {stationaryPieces.map(piece => <SolidMobileCubie key={piece.id} piece={piece} />)}
+          </div>
+          {turn && <div key={`${startAt}-${completed}-${move}`} className="ai-physical-layer ai-mobile-turn-layer" style={animatedStyle}>
+            {movingPieces.map(piece => <SolidMobileCubie key={piece.id} piece={piece} />)}
+          </div>}
+        </div>
       </div>
+      <div className="ai-css-cube-floor" />
     </div>
   </div>
 })

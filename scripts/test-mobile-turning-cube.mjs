@@ -1,5 +1,5 @@
-/** Check that the lightweight turning cube paints the same stickers as the
- * desktop physical model, without animating every cubelet on each frame. */
+/** Guard real cubie layer turns (including inner plastic faces) and low-cost
+ * timing. No frame-by-frame React updates or gaps in the cube body. */
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { loadTestModules } from './ts-test-loader.mjs'
@@ -49,9 +49,26 @@ const component = fs.readFileSync('src/components/MobileRaceCube.tsx', 'utf8')
 const styles = fs.readFileSync('src/mobile-performance.css', 'utf8')
 assert.match(component, /setTimeout\(sync/, 'move-boundary scheduled animation')
 assert.doesNotMatch(component, /setInterval\(/, 'no constant interval/re-render loop')
+assert.doesNotMatch(component, /requestAnimationFrame\(/, 'no per-frame cube redraw')
 assert.match(component, /animationDuration:.*duration/, 'animation uses the original move duration')
 assert.match(component, /animationDelay:.*offset/, 'move stays synchronized if a frame is late')
-assert.match(component, /inTurningLayer\(/, 'only the rotating layer mounts cubelets')
-assert.match(styles, /@keyframes ch-mobile-physical-slice/, 'GPU-side slice rotation exists')
+assert.match(component, /inTurningLayer\(/, 'rotates precisely the selected layer')
+assert.match(component, /const SIDES: readonly Face\[\] = \[.*'U'.*'R'.*'F'.*'D'.*'L'.*'B'.*\]/, 'six real cubie faces, not an empty shell')
+assert.match(component, /SIDES\.map\(face => <div/, 'every physical cubie has six solid plastic faces')
+assert.match(component, /ai-physical-cube-body/, 'mobile orientation matches desktop physical cube')
+assert.match(component, /stationaryPieces\.map/, 'all stationary cubies are retained')
+assert.match(component, /movingPieces\.map/, 'only the selected physical layer is animated')
+assert.match(component, /cubiesFromFaces\(cubeFaces\)/, '26 physical cubelets are generated from verified sticker state')
+assert.doesNotMatch(component, /VISIBLE_FACES|ai-mobile-hidden-turn-sticker/, 'never leave empty holes in flat sticker planes')
+assert.match(styles, /@keyframes ch-mobile-physical-slice/, 'compositor-driven real rotation exists')
+assert.match(styles, /\.ai-mobile-solid-face\s*\{[^}]*background:/s, 'the turning cube has opaque plastic even behind uncolored faces')
+assert.match(styles, /reduce-motion[^}]+ai-mobile-turn-layer/s, 'reduced motion retains the physical turning layer')
 assert.match(component, /cubeFacesAt\(scramble, plan\.moves, completed\)/, 'verified move state')
-console.log(`PASS: ${cases} actual lightweight mobile slice turns, sticker masking, timing, and no per-frame React animations.`)
+for (const move of ['R', 'F', 'U', 'M', 'x']) {
+  const turn = mobileSliceTurn(move)
+  const rotating = pieces.filter(piece => inTurningLayer(piece, turn.axis, turn.layers))
+  const stationary = pieces.filter(piece => !inTurningLayer(piece, turn.axis, turn.layers))
+  assert.equal(rotating.length + stationary.length, 26, `${move}: whole cube remains solid`)
+  assert.equal(new Set([...stationary, ...rotating].map(piece => piece.id)).size, 26, `${move}: no duplicate or missing cubies`)
+}
+console.log(`PASS: ${cases} real move geometries, 26 solid cubies, six plastic faces, timing, and no per-frame React animation.`)

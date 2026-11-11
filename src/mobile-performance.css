@@ -45,54 +45,44 @@
   }
 }
 
-/* The mobile race cube has just 3 visible 3x3 sticker faces (27 elements),
-   rather than 26 physical cubelets with 6 surfaces each. Render no blur,
-   bobbing or individually transitioning stickers while the timer runs. */
+/* V4: solid cubie geometry, identical to desktop's physical pieces, but with
+   no per-frame React redraw. The active slice is a single compositor animation.
+   Six opaque faces per cubie close the holes that appeared in V3's sticker planes. */
 @media (max-width: 740px),
        (orientation: landscape) and (max-height: 620px) and (max-width: 1180px),
        (pointer: coarse) and (max-width: 1180px) {
-  .app-shell .ai-mobile-sticker-stage {
+  .app-shell .ai-mobile-solid-stage {
     --cube-size: 133px;
-    --cube-half: 66.5px;
+    --cube-cell: calc(var(--cube-size) / 3);
+    --cube-half-cell: calc(var(--cube-cell) / 2);
     min-height: 180px;
-    perspective: 600px;
+    perspective: 640px;
   }
-  .app-shell .ai-mobile-sticker-cube {
-    animation: none !important;
-    will-change: auto;
-  }
-  .app-shell .ai-mobile-sticker-cube .ai-css-facelet {
-    transition: none;
-    border-radius: 1px;
+  .app-shell .ai-mobile-solid-camera { animation: none !important; }
+  .app-shell .ai-mobile-solid-face {
     box-shadow: none;
+    border-width: 1px;
+    background: #111725;
   }
-  .app-shell .ai-mobile-sticker-cube .ai-css-cube-face {
+  .app-shell .ai-mobile-solid-face .ai-turning-sticker {
     box-shadow: none;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+    border-radius: 2px;
   }
-  .app-shell .ai-mobile-sticker-shell {
+  .app-shell .ai-mobile-solid-shell {
     filter: none;
     isolation: auto;
   }
 }
 @media (max-width: 390px) {
-  .app-shell .ai-mobile-sticker-stage {
+  .app-shell .ai-mobile-solid-stage {
     --cube-size: 118px;
-    --cube-half: 59px;
     min-height: 167px;
   }
 }
 
-/* V3: physical slice turns on the lightweight mobile cube.
-   Static stickers are cleared just for the moving layer while a handful of
-   outward-facing cubie stickers rotate as a single GPU-composited group.
-   The CSS animation runs without React or JS animation-frame updates. */
-.app-shell .ai-mobile-sticker-stage {
-  --cube-cell: calc(var(--cube-size) / 3);
-  --cube-half-cell: calc(var(--cube-cell) / 2 + .7px);
-}
 .app-shell .ai-mobile-turn-layer {
-  position: absolute;
-  inset: 0;
   transform-style: preserve-3d;
   pointer-events: none;
   animation-name: ch-mobile-physical-slice;
@@ -100,33 +90,12 @@
   animation-fill-mode: both;
   will-change: transform;
 }
-.app-shell .ai-mobile-hidden-turn-sticker {
-  visibility: hidden;
-}
-.app-shell .ai-mobile-turn-cubie {
-  pointer-events: none;
-}
-.app-shell .ai-mobile-turn-cubie .ai-turning-cubie-face {
-  box-shadow: none;
-  border-width: 1px;
-}
-.app-shell .ai-mobile-turn-cubie .ai-turning-sticker {
-  box-shadow: none;
-  width: calc(100% - 3px);
-  height: calc(100% - 3px);
-}
 @keyframes ch-mobile-physical-slice {
   from { transform: rotateX(0deg); }
   to { transform: var(--ch-mobile-slice-end); }
 }
+/* Reduced motion must keep the slice VISIBLE at its starting position. */
 @media (prefers-reduced-motion: reduce) {
-  .app-shell .ai-mobile-turn-layer { animation: none; }
+  .app-shell .ai-mobile-turn-layer { animation: none !important; transform: none !important; will-change: auto; }
 }
-.reduce-motion .ai-mobile-turn-layer { animation: none !important; }
-/* Reduced-motion users keep the correct sticker state without transient gaps. */
-@media (prefers-reduced-motion: reduce) {
-  .app-shell .ai-mobile-turn-layer { display: none; }
-  .app-shell .ai-mobile-hidden-turn-sticker { visibility: visible; }
-}
-.reduce-motion .ai-mobile-turn-layer { display: none !important; }
-.reduce-motion .ai-mobile-hidden-turn-sticker { visibility: visible !important; }
+.reduce-motion .ai-mobile-turn-layer { animation: none !important; transform: none !important; will-change: auto; }
