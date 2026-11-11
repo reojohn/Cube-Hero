@@ -9,6 +9,8 @@ import './home-premium.css'
 import './ai-personality-portraits.css'
 import './mobile-landscape.css'
 import './mobile-performance.css'
+// Keep the accessible audio layout last so older theme/media rules cannot squash it.
+import './settings-audio.css'
 
 export default function GameEntry() {
   useEffect(() => {

@@ -103,4 +103,11 @@ assert.match(source, /const MASTER_GAIN = 1\.4/, 'Boosted game cues should be lo
 assert.match(source, /createDynamicsCompressor/, 'Use Web Audio peak protection to avoid digital clipping with louder cues')
 assert.doesNotMatch(source,/setInterval\(/, 'Sound manager must never poll continuously')
 assert.doesNotMatch(source,/fetch\(/, 'Sound manager must not download audio')
+const gameEntry=read('src/GameEntry.tsx')
+const volumeCss=read('src/settings-audio.css')
+assert.ok(gameEntry.includes("import './settings-audio.css'"), 'new audio layout must be included in the game')
+assert.ok(gameEntry.indexOf("import './settings-audio.css'")>gameEntry.indexOf("import './mobile-performance.css'"), 'audio layout must be imported after mobile theme overrides')
+for (const fragment of ['.ch-audio-volume-row output','.ch-audio-volume-slider::-webkit-slider-thumb','.ch-audio-volume-ends','width: 100%'])
+  assert.ok(volumeCss.includes(fragment),`audio layout must preserve ${fragment}`)
+
 console.log('PASS: shared WebAudio, mute, volume, categories, no per-cue contexts, mobile unlock, all key race events, local settings and no recurring audio polling')

@@ -1,0 +1,171 @@
+/* CubeHero launch: stable, cross-browser volume control for desktop + phones.
+   Kept after all themes and responsive styles: the earlier sound-volume layout
+   could collapse the label, percentage and slider into a single narrow line. */
+.app-shell .settings-surface .ch-audio-settings {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 16px 0 20px;
+  border-top: 1px solid rgba(135, 150, 197, .22);
+}
+.app-shell .settings-surface .ch-audio-volume-control {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 15px 17px 11px;
+  border: 1px solid rgba(151, 124, 240, .26);
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(31, 39, 70, .95), rgba(22, 28, 51, .92));
+}
+.app-shell .settings-surface .ch-audio-volume-control .ch-audio-volume-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 16px;
+  min-width: 0;
+  width: 100%;
+}
+.app-shell .settings-surface .ch-audio-volume-control .ch-audio-volume-row label {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  color: #f0efff;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 750;
+  white-space: normal;
+}
+.app-shell .settings-surface .ch-audio-volume-control .ch-audio-volume-row label svg {
+  flex-shrink: 0;
+  color: #c7a4ff;
+}
+.app-shell .settings-surface .ch-audio-volume-control .ch-audio-volume-row output {
+  display: block;
+  flex: 0 0 auto;
+  min-width: 48px;
+  margin-left: auto;
+  color: #dec9ff;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 850;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Native track implementations differ between Android Chromium / iOS Safari.
+   Style the slider directly to keep a consistent large, usable hit target. */
+.app-shell .settings-surface .ch-audio-volume-control input.ch-audio-volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 30px;
+  min-height: 30px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-x;
+}
+.app-shell .settings-surface .ch-audio-volume-control input.ch-audio-volume-slider::-webkit-slider-runnable-track {
+  height: 7px;
+  border: 1px solid #66709b;
+  border-radius: 999px;
+  background: #394366;
+}
+.app-shell .settings-surface .ch-audio-volume-control input.ch-audio-volume-slider::-moz-range-track {
+  height: 7px;
+  border: 1px solid #66709b;
+  border-radius: 999px;
+  background: #394366;
+}
+.app-shell .settings-surface .ch-audio-volume-control input.ch-audio-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 21px;
+  height: 21px;
+  margin-top: -8px;
+  border: 2px solid #f5eeff;
+  border-radius: 50%;
+  background: #a67bff;
+  box-shadow: 0 0 0 3px rgba(146, 95, 253, .18);
+}
+.app-shell .settings-surface .ch-audio-volume-control input.ch-audio-volume-slider::-moz-range-thumb {
+  width: 19px;
+  height: 19px;
+  border: 2px solid #f5eeff;
+  border-radius: 50%;
+  background: #a67bff;
+  box-shadow: 0 0 0 3px rgba(146, 95, 253, .18);
+}
+.app-shell .settings-surface .ch-audio-volume-control input.ch-audio-volume-slider:focus-visible {
+  outline: 2px solid #d6bbff;
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+.app-shell .settings-surface .ch-audio-volume-control input.ch-audio-volume-slider:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+.app-shell .settings-surface .ch-audio-volume-control .ch-audio-volume-ends {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  margin: -6px 0 0;
+  color: #a9b5d6;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.app-shell .settings-surface .ch-audio-control-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 0;
+}
+.app-shell .settings-surface .ch-audio-control-row > div:first-child {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.app-shell .settings-surface .ch-audio-control-row .switch {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.app-shell .settings-surface .ch-audio-test {
+  align-self: flex-start;
+  min-height: 39px;
+}
+.app-shell .settings-surface .ch-audio-hint {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .app-shell .settings-surface .ch-audio-settings { gap: 10px; padding: 11px 0 14px; }
+  .app-shell .settings-surface .ch-audio-volume-control { padding: 12px 12px 10px; gap: 10px; }
+  .app-shell .settings-surface .ch-audio-volume-control .ch-audio-volume-row label { font-size: 12px; }
+  .app-shell .settings-surface .ch-audio-volume-control .ch-audio-volume-row output { font-size: 13px; }
+  .app-shell .settings-surface .ch-audio-control-row { min-height: 43px; }
+}

@@ -54,6 +54,7 @@ const mainCjs = ts.transpileModule(main, {compilerOptions: {
   jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true,
 }}).outputText
 function PlayerGate() {}
+function CubeVsLoader() {}
 function startupRoute(pathname, hash = '') {
   let rendered
   const mocks = name => {
@@ -62,6 +63,7 @@ function startupRoute(pathname, hash = '') {
     if (name === 'react-dom/client') return {createRoot: () => ({render(tree) {rendered = tree}})}
     if (name === './lib/siteRouting') return {isGameLocation}
     if (name === './components/LocalPlayerProvider') return {__esModule: true, default: PlayerGate}
+    if (name === './components/CubeVsLoader') return {__esModule: true, default: CubeVsLoader}
     if (name === './localPlayer.css') return {}
     throw new Error(`Unexpected startup import: ${name}`)
   }

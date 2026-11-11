@@ -272,7 +272,7 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
       <p className="ch-orientation-note">Your preference is saved locally. Some browsers—especially iPhone Safari—cannot force screen rotation. Landscape mode uses a compact, touch-friendly layout when your device is horizontal.</p>
     </Surface>
     <Surface className="settings-surface"><div className="settings-section-head"><span className="settings-header-icon"><Timer size={20}/></span><div><h3>Timer Preferences</h3><p>Choose how precisely race times are displayed.</p></div></div><div className="settings-row"><div><strong>Timer precision</strong><p>Number of decimal places displayed.</p></div><div className="select-wrap setting-select"><select value={preferences.precision} onChange={e=>change('precision',e.target.value as Preferences['precision'])}><option value="2">2 decimals</option><option value="3">3 decimals</option></select><ChevronDown size={16}/></div></div></Surface>
-    <Surface className="settings-surface"><div className="settings-section-head"><span className="settings-header-icon"><ShieldCheck size={20}/></span><div><h3>Local Data</h3><p>No account is necessary for this prototype.</p></div></div><div className="settings-row"><div><strong>Reset interface preferences</strong><p>Return experience, timer, and race preferences to their defaults.</p></div><button className="btn btn-outline btn-sm" onClick={reset}><RotateCcw size={16}/> Reset</button></div></Surface>
+    <Surface className="settings-surface"><div className="settings-section-head"><span className="settings-header-icon"><ShieldCheck size={20}/></span><div><h3>Local Data</h3><p>No account is required. Your settings and progress are stored on this device.</p></div></div><div className="settings-row"><div><strong>Reset interface preferences</strong><p>Return experience, timer, and race preferences to their defaults.</p></div><button className="btn btn-outline btn-sm" onClick={reset}><RotateCcw size={16}/> Reset</button></div></Surface>
     <div className="small-center-note"><LockKeyhole size={15}/> Settings are stored in this browser only. No personal data is uploaded.</div>
   </div>
 }
@@ -343,7 +343,9 @@ export default function App(){
   },[journey])
   useEffect(()=>{try{if(session)localStorage.setItem('cube-hero-session-v2',JSON.stringify(session));else localStorage.removeItem('cube-hero-session-v2')}catch{/* storage unavailable */}},[session])
   useEffect(()=>{const handleHash=()=>{setVsPendingSession(null);setPage(getCurrentPage());setMenuOpen(false)};window.addEventListener('hashchange',handleHash);return()=>window.removeEventListener('hashchange',handleHash)},[])
-  useEffect(()=>{if(page==='journey')aiPrefetch.prewarm()},[page])
+  // Results screen is idle: prepare the next verified scramble without doing
+  // expensive CFOP work during the live race.
+  useEffect(()=>{if(page==='journey'||page==='results')aiPrefetch.prewarm()},[page])
   useEffect(()=>{document.documentElement.classList.toggle('reduce-motion',preferences.reducedMotion);document.documentElement.classList.toggle('compact-mode',preferences.compact);return()=>{document.documentElement.classList.remove('reduce-motion','compact-mode')}},[preferences.reducedMotion,preferences.compact])
   useEffect(()=>{
     configureGameAudio({enabled:preferences.sound,volume:preferences.soundVolume,cinematic:preferences.cinematicSounds,timer:preferences.timerSounds})

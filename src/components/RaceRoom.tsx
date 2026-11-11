@@ -12,7 +12,7 @@ import InspectionModal from './InspectionModal'
 import RaceMechanicsModal from './RaceMechanicsModal'
 import { createAiPlan } from '../lib/aiPlan'
 import type { AiPlan } from '../lib/aiPlan'
-import { solveScramble } from '../lib/solver'
+import { aiPrefetch } from '../lib/aiPrefetch'
 import { ARM_DELAY_MS, armProgressPercent, isValidStartRelease } from '../lib/stackmat'
 import { includeEndedHold, inspectionElapsedMs } from '../lib/inspectionClock'
 import { createRecord, formatTime, generateScramble, getAiCount, getAiPersonality, inspectionPenalty, RACE_COUNT } from '../lib/racing'
@@ -146,7 +146,11 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
   const [holdTooShort,setHoldTooShort]=useState(false)
   const activeHold=useRef<{source:HoldSource;startedAt:number;pointerId?:number}|null>(null)
   const racersRef=useRef<HTMLDivElement|null>(null)
-  const [scramble,setScramble]=useState(generateScramble)
+  // Peek, rather than consume, in the initializer: React StrictMode may
+  // run state initializers twice before committing a render.
+  const [scramble,setScramble]=useState(()=>aiPrefetch.peekNext() ?? generateScramble())
+  // Claim after commit so the already-verified/in-flight solve remains reusable.
+  useEffect(()=>{aiPrefetch.claimInitial(scramble)},[scramble])
   const [plans,setPlans]=useState<AiPlan[]>([])
   const plan=plans[0]??null
   const [solverStatus,setSolverStatus]=useState<'preparing'|'ready'|'error'>('preparing')
@@ -240,7 +244,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
     setPlans([])
     setSolverStatus('preparing')
     setSolverError('')
-    void solveScramble(scramble).then(solution=>{
+    void aiPrefetch.prepare(scramble).then(solution=>{
       if(canceled)return
       // All competitors face the identical verified CFOP scramble. Their
       // times and stage-to-stage cadence are sampled independently.
@@ -438,7 +442,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
     <div className="live-status" role="status"><span className={`live-status-dot ${stage==='running'?'pulse':''}`}/><strong>{stageLabel}</strong><span>{stage==='waiting'?'Your time is locked in. The remaining AI rivals are finishing their solves.':stage==='scramble'?'Apply this scramble to your physical 3×3 cube.':stage==='ready'?'Hold Space or your timer for 1.5 seconds, then release.':stage==='inspection'?'Hold Space or the inspection screen for 1.5 seconds, then release.':'Every AI is solving the same scramble with its own simulated pace.'}</span></div>
     <section className="surface scramble-panel"><div className="scramble-meta"><Shuffle size={16}/> 3×3 Scramble · Round {round}</div><div className="scramble-line"><strong>{scramble}</strong><button type="button" title="Copy scramble" aria-label="Copy scramble" onClick={copy}>{copied?<Check size={21}/>:<Copy size={21}/>}</button></div><div className="scramble-subtext">25-turn practice scramble · Both racers start from the same exact cube state</div>{copied&&<div className="copied-indicator">Copied!</div>}<ScrambleBeginnerGuide scramble={scramble}/>
       {stage==='scramble'&&<><div className={`solver-prep solver-${solverStatus}`} role="status">{solverStatus==='preparing'?<><LoaderCircle size={16} className="spin-icon"/> Computing a verified CFOP solve (Cross → F2L → OLL → PLL)…</>:solverStatus==='ready'?<><ShieldCheck size={16}/> Verified CFOP solution ready · {plan?.moves.length} moves · {aiCount>1?`${aiCount} AI rivals prepared`: 'Cross / 4 F2L / OLL / PLL'}</>:<><X size={16}/> {solverError} <button type="button" className="inline-retry" onClick={()=>setRetry(n=>n+1)}>Retry</button></>}</div><div className="scramble-actions">
-          <button type="button" className="btn btn-outline btn-sm scramble-new-button" onClick={()=>setScramble(generateScramble())}><RotateCcw size={15}/> New Scramble</button>
+          <button type="button" className="btn btn-outline btn-sm scramble-new-button" onClick={()=>setScramble(aiPrefetch.takeNext())}><RotateCcw size={15}/> New Scramble</button>
           <InspectReadyButton
             ready={Boolean(plan && solverStatus==='ready')}
             pulseAllowed={!reducedMotion&&!systemReducedMotion}
