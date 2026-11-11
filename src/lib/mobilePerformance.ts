@@ -12,6 +12,13 @@ export const MOBILE_PERFORMANCE_QUERY = [
 export const DESKTOP_COMPETITION_TICK_MS = 30
 export const MOBILE_COMPETITION_TICK_MS = 90
 export const MOBILE_RACING_TICK_MS = 240
+// Fewer full-page React renders on Android while the independent stopwatches
+// and compositor-animated cube continue at their normal accuracy/speed.
+export const ANDROID_RACING_TICK_MS = 360
+
+export function isAndroidBrowser(): boolean {
+  return typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
+}
 
 export function isCompactPerformanceViewport(): boolean {
   return typeof window !== 'undefined' &&
@@ -25,6 +32,6 @@ export function competitionRenderIntervalMs(racing = false): number {
   // and the featured mobile cube has its own isolated playback. Parent React
   // updates are needed only for coarse status/finish changes.
   return isCompactPerformanceViewport()
-    ? (racing ? MOBILE_RACING_TICK_MS : MOBILE_COMPETITION_TICK_MS)
+    ? (racing ? (isAndroidBrowser() ? ANDROID_RACING_TICK_MS : MOBILE_RACING_TICK_MS) : MOBILE_COMPETITION_TICK_MS)
     : DESKTOP_COMPETITION_TICK_MS
 }

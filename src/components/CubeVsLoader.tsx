@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { isAndroidBrowser } from '../lib/mobilePerformance'
 import './CubeVsLoader.css'
 
 /** A real 3×3 cube: 26 cubies, exterior stickers, and animated quarter-turn layers. */
@@ -29,8 +30,9 @@ const MOVES: Turn[] = [
   { axis: 1, layer: 1, dir: 1 },  // U'
 ]
 const UNDO: Turn[] = [...MOVES].reverse().map(m => ({ ...m, dir: (m.dir * -1) as -1 | 1 }))
-const TURN_MS = 610
-const PAUSE_MS = 115
+// A quick, readable quarter turn. Roughly 3.3× the original move cadence.
+const TURN_MS = 195
+const PAUSE_MS = 24
 const PITCH = 0.99
 const HALF = 0.478
 const STICKER_HALF = 0.398
@@ -182,9 +184,19 @@ function CubeCanvas({ startsScrambled = false }: { startsScrambled?: boolean }) 
     let moveStart: number | null = null
     let frame = 0
     let stopped = false
+    // Android browsers can become CPU-bound when drawing two canvas cubes
+    // at 90/120Hz. Cap just the loader; this never touches live race cubes.
+    const android = isAndroidBrowser()
+    const minimumFrameMs = android ? 1000 / 40 : 0
+    let lastDrawAt = -Infinity
 
     function render(now: number) {
       if (stopped || !context) return
+      if (minimumFrameMs && now - lastDrawAt < minimumFrameMs) {
+        frame = requestAnimationFrame(render)
+        return
+      }
+      lastDrawAt = now
       if (moveStart === null) moveStart = now + 140
       const elapsed = now - moveStart
       if (elapsed >= TURN_MS + PAUSE_MS) {
@@ -203,7 +215,7 @@ function CubeCanvas({ startsScrambled = false }: { startsScrambled?: boolean }) 
       const rect = canvas!.getBoundingClientRect()
       width = Math.max(1, rect.width)
       height = Math.max(1, rect.height)
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, android ? 1.5 : 2)
       canvas!.width = Math.round(width * dpr)
       canvas!.height = Math.round(height * dpr)
       context!.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -216,7 +228,7 @@ function CubeCanvas({ startsScrambled = false }: { startsScrambled?: boolean }) 
     const onMotionChanged = () => {
       cancelAnimationFrame(frame)
       if (reduceMotion.matches) drawCube(context, cubies, null, 0, width, height)
-      else { moveStart = null; frame = requestAnimationFrame(render) }
+      else { moveStart = null; lastDrawAt = -Infinity; frame = requestAnimationFrame(render) }
     }
     reduceMotion.addEventListener('change', onMotionChanged)
     return () => {

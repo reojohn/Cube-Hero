@@ -433,7 +433,7 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
   const isQualifyingResult=result?.mode==='qualifying'
   const duelWin=result?.officialMs!=null&&outcome?.baselineMs!=null&&result.officialMs<outcome.baselineMs
   const wins=data.duels.filter(x=>x.officialMs!==null&&x.opponentMs!==null&&x.officialMs<x.opponentMs).length
-  return <div className="page-stack narrow-stack ghost-page">
+  return <div className={`page-stack narrow-stack ghost-page ${stage==='running'||stage==='waiting'?'ch-performance-live':''}`}>
     <RaceMechanicsModal open={mechanicsModalOpen} mode="ghost" onClose={closeMechanics} />
     <GhostResetModal open={resetModalOpen} qualifyingSolves={qualifiedCount} duels={data.duels.length} onCancel={()=>setResetModalOpen(false)} onConfirm={resetGhost} />
     {inspectionModalOpen&&stage==='inspection'&&<InspectionModal

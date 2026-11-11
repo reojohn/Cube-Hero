@@ -181,3 +181,33 @@
     box-sizing:border-box;
   }
 }
+
+/* Android-only live-race composition budget.
+   These rules affect surrounding chrome, not the physical cubies or their
+   verified move durations. No other device/theme or pre-race UI is changed. */
+@media (max-width: 740px),
+       (orientation: landscape) and (max-height: 620px) and (max-width: 1180px),
+       (pointer: coarse) and (max-width: 1180px) {
+  .cube-android-browser .app-shell .ch-performance-live .scramble-panel,
+  .cube-android-browser .app-shell .ch-performance-live .ghost-scramble-panel,
+  .cube-android-browser .app-shell .ch-performance-live .racer-panel,
+  .cube-android-browser .app-shell .ch-performance-live .ghost-player-card,
+  .cube-android-browser .app-shell .ch-performance-live .ghost-opponent-card,
+  .cube-android-browser .app-shell .ch-performance-live .multi-ai-live-rival {
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* Static lighting and lightweight borders remain; only nonessential
+     ambient animations stop. The AI/Ghost turning layer isn't selected. */
+  .cube-android-browser .app-shell .ch-performance-live .live-status-dot.pulse,
+  .cube-android-browser .app-shell .ch-performance-live .spin-icon {
+    animation: none;
+  }
+  /* The list is well below the Ghost arena and can be skipped by Chromium
+     until scrolled into view, without changing its records or controls. */
+  .cube-android-browser .app-shell .ch-performance-live .ghost-history-panel {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 420px;
+  }
+}
