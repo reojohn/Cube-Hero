@@ -6,7 +6,7 @@ import { ArrowRight, Check, CircleHelp, Clock3, Copy, Ghost, Keyboard, LoaderCir
 import AiCube3D from './AiCube3D'
 import MobileRaceCube from './MobileRaceCube'
 import LiveTimerText from './LiveTimerText'
-import { competitionRenderIntervalMs, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY } from '../lib/mobilePerformance'
+import { competitionRenderIntervalMs, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY, scheduleOpponentFinishRefreshes, shouldRenderAndroidOnFinishOnly } from '../lib/mobilePerformance'
 import InspectionModal from './InspectionModal'
 import RaceMechanicsModal from './RaceMechanicsModal'
 import { hasSeenMechanics, markMechanicsSeen } from '../lib/mechanicsVisit'
@@ -234,9 +234,17 @@ export default function GhostRace({precision,sound,reducedMotion,onActiveChange}
   },[])
   useEffect(()=>{
     if(!active&&holdStartedAt===null)return
+    // The visible stopwatch and opponent cube have independent clocks.
+    // A complete Ghost page reconcile every 360ms only wastes Android frames.
+    if ((stage==='running'||stage==='waiting') && shouldRenderAndroidOnFinishOnly()) return
     const interval=window.setInterval(()=>setTick(msNow()),competitionRenderIntervalMs(stage==='running'||stage==='waiting'))
     return()=>window.clearInterval(interval)
   },[active,holdStartedAt])
+  useEffect(()=>{
+    if (!['running','waiting'].includes(stage) || !shouldRenderAndroidOnFinishOnly()) return
+    if (startRef.current===null || !ghostPlan) return
+    return scheduleOpponentFinishRefreshes(startRef.current,[ghostPlan.totalMs],()=>setTick(msNow()))
+  },[stage,ghostPlan])
   useEffect(()=>{
     const down=(event:KeyboardEvent)=>keyDownRef.current(event)
     const up=(event:KeyboardEvent)=>keyUpRef.current(event)

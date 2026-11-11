@@ -7,7 +7,7 @@ import MobileRaceCube from './MobileRaceCube'
 import MobileAiPortrait from './MobileAiPortrait'
 import { AI_RIVALS, getRival } from '../lib/rivals'
 import LiveTimerText from './LiveTimerText'
-import { competitionRenderIntervalMs, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY } from '../lib/mobilePerformance'
+import { competitionRenderIntervalMs, isAndroidBrowser, isCompactPerformanceViewport, MOBILE_PERFORMANCE_QUERY, scheduleOpponentFinishRefreshes, shouldRenderAndroidOnFinishOnly } from '../lib/mobilePerformance'
 import InspectionModal from './InspectionModal'
 import RaceMechanicsModal from './RaceMechanicsModal'
 import { createAiPlan } from '../lib/aiPlan'
@@ -268,9 +268,17 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
   },[])
   useEffect(()=>{
     if(!['inspection','running','waiting'].includes(stage) && !(stage==='ready' && holdStartedAt!==null))return
+    // Android: the live stopwatches and turning cube already run independently.
+    // Avoid a costly full RaceRoom render every 360ms during the actual solve.
+    if ((stage==='running'||stage==='waiting') && shouldRenderAndroidOnFinishOnly()) return
     const timer=window.setInterval(()=>setTick(msNow()),competitionRenderIntervalMs(stage==='running'||stage==='waiting'))
     return()=>window.clearInterval(timer)
   },[stage,holdStartedAt])
+  useEffect(()=>{
+    if (!['running','waiting'].includes(stage) || !shouldRenderAndroidOnFinishOnly()) return
+    if (startRef.current===null || !plans.length) return
+    return scheduleOpponentFinishRefreshes(startRef.current,plans.map(rival=>rival.totalMs),()=>setTick(msNow()))
+  },[stage,plans])
   useEffect(()=>{
     const down=(event:KeyboardEvent)=>keyActionRef.current(event)
     const up=(event:KeyboardEvent)=>keyReleaseRef.current(event)
@@ -461,7 +469,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
       <div className="multi-ai-live-grid">{plans.slice(1).map((rival,i)=>{
         const time=startRef.current===null?0:Math.min(rival.totalMs,elapsed)
         const done=startRef.current!==null&&elapsed>=rival.totalMs
-        return <div className={`multi-ai-live-rival ${done?'finished':''}`} key={`ai-${i+2}`}><div className="multi-ai-rival-top"><span className="multi-ai-rival-avatar"><BrainCircuit size={15}/></span>{compactRendering?<span className="multi-ai-rival-name"><strong>AI {i+2}</strong><span>{mobileOpponentPortraits[i+1]?.name}</span></span>:<strong>AI {i+2}</strong>}<small>{done?'SOLVED':'RACING'}</small></div><div className="multi-ai-rival-body"><div className="multi-ai-rival-time">{formatTime(time,precision)}<small>s</small></div>{compactRendering?<MobileAiPortrait rival={mobileOpponentPortraits[i+1]}/>:session.settings.showCube?<div className="multi-ai-rival-cube" aria-hidden="true"><AiCube3D scramble={scramble} plan={rival} elapsedMs={time}/></div>:<div className="multi-ai-rival-cube-placeholder" aria-hidden="true"><Layers3 size={22}/></div>}</div></div>
+        return <div className={`multi-ai-live-rival ${done?'finished':''}`} key={`ai-${i+2}`}><div className="multi-ai-rival-top"><span className="multi-ai-rival-avatar"><BrainCircuit size={15}/></span>{compactRendering?<span className="multi-ai-rival-name"><strong>AI {i+2}</strong><span>{mobileOpponentPortraits[i+1]?.name}</span></span>:<strong>AI {i+2}</strong>}<small>{done?'SOLVED':'RACING'}</small></div><div className="multi-ai-rival-body"><div className="multi-ai-rival-time">{compactRendering&&isAndroidBrowser()?<LiveTimerText className="multi-ai-rival-value" timeMs={time} precision={precision} running={stage==='running'||stage==='waiting'} startAt={startRef.current} limitMs={rival.totalMs}/>:formatTime(time,precision)}<small>s</small></div>{compactRendering?<MobileAiPortrait rival={mobileOpponentPortraits[i+1]}/>:session.settings.showCube?<div className="multi-ai-rival-cube" aria-hidden="true"><AiCube3D scramble={scramble} plan={rival} elapsedMs={time}/></div>:<div className="multi-ai-rival-cube-placeholder" aria-hidden="true"><Layers3 size={22}/></div>}</div></div>
       })}</div>
     </section>}
     </div>

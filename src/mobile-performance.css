@@ -211,3 +211,7 @@
     contain-intrinsic-size: auto 420px;
   }
 }
+
+/* The compact multi-AI time is drawn directly by the small stopwatch node.
+   It must keep the exact same typography/inline layout as its old text node. */
+.app-shell .multi-ai-rival-value { display: inline; font: inherit; letter-spacing: inherit; }
