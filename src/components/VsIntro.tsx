@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { ArrowRight, ChevronLeft, Flag, ShieldCheck, Sparkles, Swords, Volume2, Zap } from 'lucide-react'
+import { ArrowRight, ChevronLeft, Flag, ShieldCheck, Sparkles, Swords, Zap } from 'lucide-react'
 import type { RaceSettings } from '../lib/racing'
 import { getAiCount } from '../lib/racing'
 import { AI_RIVALS, getRival } from '../lib/rivals'
@@ -8,7 +8,6 @@ import { prewarmRivalPortraits, getRivalPortraitTheme } from '../lib/rivalPortra
 import RivalPortrait from './RivalPortrait'
 import playerAvatar from '../assets/player-avatars/default-cube-keeper.webp'
 import { useLocalPlayer } from './LocalPlayerProvider'
-import { playGameSound } from '../lib/gameAudio'
 import './VsIntro.css'
 
 /** The intro intentionally does NOT render RaceRoom or create a running timer.
@@ -20,15 +19,14 @@ export const VS_INTRO_REDUCED_DURATION_MS = 1100
 type Props = {
   playerName?: string
   settings: RaceSettings
-  sound: boolean
   reducedMotion: boolean
   onEnterArena: () => void
   onBack: () => void
 }
 
 
-export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, onBack, playerName = 'Guest Cuber' }: Props) {
-  const {avatarUrl} = useLocalPlayer()
+export default function VsIntro({ settings, reducedMotion, onEnterArena, onBack, playerName = 'Guest Cuber' }: Props) {
+  const {avatarUrl, avatarKind} = useLocalPlayer()
   const playerPortrait = avatarUrl || playerAvatar
   const rival = getRival(settings.difficulty)
   const opponentCount = getAiCount(settings.aiCount)
@@ -53,7 +51,6 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
   enterRef.current = onEnterArena
   backRef.current = onBack
   const finishedRef = useRef(false)
-  const introSoundPlayedRef = useRef(false)
   const backButtonRef = useRef<HTMLButtonElement>(null)
   const skipButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -97,13 +94,6 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
     return () => window.clearTimeout(timer)
   }, [motionOff])
 
-  useEffect(() => {
-    if (sound && !introSoundPlayedRef.current) {
-      introSoundPlayedRef.current = true
-      playGameSound('vs')
-    }
-  }, [sound])
-
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
       event.preventDefault()
@@ -123,7 +113,7 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
 
   return (
     <div
-      className={`cube-vs-intro${motionOff ? ' cube-vs-intro--reduced' : ''}${opponentCount >= 7 ? ' cube-vs-intro--dense' : ''}`}
+      className={`cube-vs-intro${motionOff ? ' cube-vs-intro--reduced' : ''}${opponentCount >= 7 ? ' cube-vs-intro--dense' : ''}${!isTournament ? ' cube-vs-intro--head-to-head' : ''}`}
       role="dialog"
       aria-modal="true"
       aria-label={isTournament ? `Cube Hero free-for-all: You versus ${opponentCount} independent AI opponents, Sub-${rival.difficulty}` : `Cube Hero matchup: You versus ${rival.name}, Sub-${rival.difficulty}`}
@@ -186,7 +176,7 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
             <div className="cube-vs-portrait-stage cube-vs-portrait-stage--player">
               <span className="cube-vs-halo" aria-hidden="true"/>
               <span className="cube-vs-halo-ring" aria-hidden="true"/>
-              <img className="cube-vs-player-image cube-vs-player-image--custom" src={playerPortrait} width={512} height={512} alt="Cube Hero player mascot" draggable={false} decoding="async" fetchPriority="high"/>
+              <img className={`cube-vs-player-image ${avatarKind === 'upload' ? 'cube-vs-player-image--custom' : 'cube-vs-player-image--preset'}`} src={playerPortrait} width={512} height={512} alt="Cube Hero player mascot" draggable={false} decoding="async" fetchPriority="high"/>
             </div>
             <div className="cube-vs-fighter-title"><span>THE CHALLENGER</span><h2>YOU</h2><p title={playerName}>{playerName}</p></div>
           </section>
@@ -217,7 +207,6 @@ export default function VsIntro({ settings, sound, reducedMotion, onEnterArena, 
           <div className="cube-vs-progress" aria-hidden="true"><span key={motionOff ? 'short' : 'full'}/></div>
           <div className="cube-vs-actions">
             <button type="button" ref={backButtonRef} className="cube-vs-back" onClick={back}><ChevronLeft size={18}/> Back to setup</button>
-            <span className="cube-vs-next-note"><Volume2 size={14} aria-hidden="true"/> {sound ? 'INTRO SOUND ON' : 'INTRO SOUND OFF'}</span>
             <button type="button" ref={skipButtonRef} className="cube-vs-skip" onClick={enter}>Enter arena now <ArrowRight size={17}/></button>
           </div>
         </div>

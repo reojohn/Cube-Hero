@@ -1,7 +1,7 @@
 /**
  * CubeHero's tiny, entirely local sound engine. No downloads, audio assets,
  * recurring timers, or React renders; one AudioContext is reused throughout
- * the app. Every cue is a short, quietly mixed Web Audio envelope.
+ * the app. Every cue is a short, balanced Web Audio envelope.
  *
  * Browsers (especially mobile Safari/Chrome) require a user interaction before
  * sound playback. unlockGameAudio() is called from real pointer/key gestures.
@@ -22,10 +22,13 @@ const defaults: GameAudioSettings = { enabled: false, volume: 55, cinematic: tru
 let settings = { ...defaults }
 let context: AudioContext | null = null
 let bus: GainNode | null = null
+// Previous 0.25 mix was barely audible on mobile, even at 100%.
+// 0.65 keeps start/stop cues distinct without making overlapping tones clip.
+const MASTER_GAIN = 0.65
 
 export function configureGameAudio(next: Partial<GameAudioSettings>): void {
   settings = { ...settings, ...next, volume: Math.min(100, Math.max(0, Number(next.volume ?? settings.volume) || 0)) }
-  if (bus && context) bus.gain.setTargetAtTime(settings.enabled ? settings.volume / 100 * 0.25 : 0, context.currentTime, 0.01)
+  if (bus && context) bus.gain.setTargetAtTime(settings.enabled ? settings.volume / 100 * MASTER_GAIN : 0, context.currentTime, 0.01)
 }
 
 function getContext(): AudioContext | null {
@@ -36,7 +39,7 @@ function getContext(): AudioContext | null {
     try {
       context = new Constructor({ latencyHint: 'interactive' })
       bus = context.createGain()
-      bus.gain.value = settings.volume / 100 * 0.25
+      bus.gain.value = settings.volume / 100 * MASTER_GAIN
       bus.connect(context.destination)
     } catch { context = null; bus = null; return null }
   }

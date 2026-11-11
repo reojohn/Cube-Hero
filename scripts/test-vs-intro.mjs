@@ -16,11 +16,12 @@ const { AI_RIVALS, getRival } = await loadTestModules()('rivals')
 const js = transpileModule(source, { compilerOptions: { module: ModuleKind.CommonJS, jsx: JsxEmit.ReactJSX, target: ScriptTarget.ES2022 } }).outputText
 const mod = { exports: {} }
 let previewAvatarUrl = null
+let previewAvatarKind = 'default'
 const customRequire = name => {
   if (name === '../lib/racing') return { getAiCount: n => Math.max(1, Math.min(10, n || 1)) }
   if (name === '../lib/rivals') return { getRival, AI_RIVALS }
   if (name === '../lib/rivalPortraits') return { prewarmRivalPortraits: () => {}, getRivalPortraitTheme: (_difficulty, accent, glow) => ({ '--rival-accent': accent, '--rival-glow': glow }) }
-  if (name === './LocalPlayerProvider') return { useLocalPlayer: () => ({ avatarUrl: previewAvatarUrl }) }
+  if (name === './LocalPlayerProvider') return { useLocalPlayer: () => ({ avatarUrl: previewAvatarUrl, avatarKind: previewAvatarKind }) }
   if (name === './RivalPortrait') return { __esModule: true, default: ({ rival }) => React.createElement('img', { src: `/rivals/Sub-${rival.difficulty}.webp`, alt: '' }) }
   if (name === '../assets/player-avatars/default-cube-keeper.webp') return { __esModule: true, default: '/assets/default-cube-keeper.webp' }
   if (name === '../lib/gameAudio') return { playGameSound: () => {} }
@@ -34,6 +35,11 @@ assert.equal(VS_INTRO_REDUCED_DURATION_MS, 1100, "Reduced-motion duration should
 const vsCss = fs.readFileSync(path.join(dir, '../src/components/VsIntro.css'), 'utf8')
 assert.match(vsCss, /animation:vs-timeline 5s linear both/, "Progress bar should match the intro duration")
 assert.equal(AI_RIVALS.length, 55)
+// Desktop head-to-head is once again a framed, bounded 1v1 presentation.
+assert.match(vsCss, /@media \(min-width: 1181px\) and \(min-height: 621px\)/, 'Desktop restores its dedicated 1v1 proportions')
+assert.match(vsCss, /height: min\(54dvh, 510px\)/, 'Desktop cards stay compact instead of growing until the footer is crowded')
+assert.doesNotMatch(source, /INTRO SOUND ON|INTRO SOUND OFF/, 'No sound-status banner in the cinematic footer')
+assert.doesNotMatch(source, /Volume2/, 'No decorative sound indicator remains')
 for (const rival of AI_RIVALS) {
   const settings = { difficulty: rival.difficulty, personality: 'balanced', aiCount: 1 }
   const html = renderToStaticMarkup(React.createElement(VsIntro, { settings, sound: false, reducedMotion: true, onEnterArena() {}, onBack() {} }))
@@ -77,14 +83,27 @@ for (const count of [2,3,4,5,6,7,8,9,10]) {
     assert.ok(html.includes(`--vs-landscape-rows:${landscapeRacers <= 6 ? 1 : 2}`), 'Landscape lineup has at most two rows')
   }
 }
+const presetHtml = renderToStaticMarkup(React.createElement(VsIntro, {
+  settings: { difficulty: '15', personality: 'balanced', aiCount: 1 },
+  sound: false, reducedMotion: true, onEnterArena() {}, onBack() {},
+}))
+assert.match(presetHtml, /cube-vs-intro--head-to-head/, 'Head-to-head receives scoped desktop styling')
+assert.match(presetHtml, /cube-vs-player-image--preset/, 'Default mascot retains large artwork presentation on desktop')
 previewAvatarUrl = 'data:image/jpeg;base64,AAAA'
+previewAvatarKind = 'upload'
 const customHtml = renderToStaticMarkup(React.createElement(VsIntro, {
   settings: { difficulty: '15', personality: 'balanced', aiCount: 5 },
   sound: false, reducedMotion: true, onEnterArena() {}, onBack() {},
 }))
 assert.match(customHtml, /cube-vs-contender-art--custom/, 'Custom avatar appears in the multi-rival VS cards')
 assert.match(customHtml, /src="data:image\/jpeg;base64,AAAA"/, 'The saved photo is rendered in VS instead of the default mascot')
+const uploadedHeadToHead = renderToStaticMarkup(React.createElement(VsIntro, {
+  settings: { difficulty: '15', personality: 'balanced', aiCount: 1 },
+  sound: false, reducedMotion: true, onEnterArena() {}, onBack() {},
+}))
+assert.doesNotMatch(uploadedHeadToHead, /cube-vs-player-image--preset/, 'User-uploaded photos stay in their familiar circular frame')
 previewAvatarUrl = null
+previewAvatarKind = 'default'
 assert.ok(app.includes('setVsPendingSession(prepared)'), 'Start Race should prepare a session but not mount RaceRoom')
 assert.ok(app.includes('setSession(prepared)'), 'Only after intro does the prepared session become active')
 assert.ok(app.includes("goTo('room')"), 'Completion navigates to RaceRoom')

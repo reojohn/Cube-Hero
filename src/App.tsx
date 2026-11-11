@@ -243,11 +243,10 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
     <Surface className="settings-surface"><div className="settings-section-head"><span className="settings-header-icon"><SlidersHorizontal size={20}/></span><div><h3>Experience</h3><p>Adjust how your arena behaves.</p></div></div>
       <div className="settings-row"><div><strong>Interface animations</strong><p>Reduce decorative movement for accessibility.</p></div><Switch checked={preferences.reducedMotion} onChange={v=>change('reducedMotion',v)} label="Reduce animations"/></div>
       <div className="settings-row"><div><strong>Compact layout</strong><p>Fit more cards into the available screen space.</p></div><Switch checked={preferences.compact} onChange={v=>change('compact',v)} label="Compact layout"/></div>
-      <div className="settings-row"><div><strong>Game sound effects</strong><p>Sounds for inspection, racing, VS introductions, and personal bests.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Enable game sound effects"/></div>
+      <div className="settings-row"><div><strong>Game sound effects</strong><p>Sounds for inspection, racing, and personal bests. VS intros stay silent.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Enable game sound effects"/></div>
       <div className="ch-audio-settings" aria-label="Game sound configuration">
         <div className="ch-audio-volume-row"><label htmlFor="cube-audio-volume"><Volume2 size={17} aria-hidden="true"/> Sound volume</label><strong>{preferences.soundVolume}%</strong></div>
         <input id="cube-audio-volume" type="range" min="0" max="100" step="5" value={preferences.soundVolume} disabled={!preferences.sound} onChange={event=>change('soundVolume',Number(event.target.value))} aria-label="Game sound volume"/>
-        <div className="ch-audio-control-row"><div><strong>Cinematic VS sounds</strong><p>Whoosh and matchup impact cues.</p></div><Switch checked={preferences.cinematicSounds} onChange={v=>change('cinematicSounds',v)} label="Cinematic VS sound effects"/></div>
         <div className="ch-audio-control-row"><div><strong>Timer and inspection sounds</strong><p>Hold ready, start, stop, and countdown beeps.</p></div><Switch checked={preferences.timerSounds} onChange={v=>change('timerSounds',v)} label="Timer and inspection sound effects"/></div>
         <button type="button" className="btn btn-outline btn-sm ch-audio-test" disabled={!preferences.sound||!preferences.soundVolume} onClick={()=>{unlockGameAudio();playGameSound('preview')}}><Volume2 size={16}/> Test sound</button>
         <p className="ch-audio-hint">Sounds are generated on your device—no downloads or accounts. Mobile browsers play sound after the first interaction.</p>
@@ -451,7 +450,6 @@ export default function App(){
       playerName={playerName}
       key={vsPendingSession.id}
       settings={vsPendingSession.settings}
-      sound={preferences.sound}
       reducedMotion={preferences.reducedMotion}
       onEnterArena={enterVsRace}
       onBack={()=>setVsPendingSession(null)}
