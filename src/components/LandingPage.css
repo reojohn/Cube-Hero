@@ -35,14 +35,18 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
 .lp-button:active{transform:translateY(0) scale(.98)}
 .lp-button-primary{background:linear-gradient(110deg,#9f60f8,#7642ef 54%,#6441d5);border-color:#c390ff8a;box-shadow:0 12px 36px #7741f754,inset 0 1px 0 #f1d5ff77;color:white}
 .lp-button-primary:hover{box-shadow:0 18px 44px #7945fb81;background:linear-gradient(110deg,#b17afa,#875af9,#7545e3)}
-/* High-visibility inspect-style pulse. Rings are ABOVE the button background,
-   unlike the previous z-index:-1 rings that disappeared behind the section. */
-.lp-button-echo{position:relative;isolation:isolate;overflow:visible!important;box-shadow:0 0 0 2px rgba(205,162,255,.75),0 0 26px rgba(141,70,255,.78),0 12px 30px rgba(114,52,229,.5),inset 0 1px 0 #f1d5ff77}
-.lp-button-echo::before,.lp-button-echo::after{content:"";position:absolute;inset:-4px;border-radius:inherit;border:3px solid #c49cff;box-shadow:0 0 15px rgba(192,121,255,.95),0 0 30px rgba(158,74,255,.6);z-index:0;opacity:0;pointer-events:none}
-.lp-button-echo::before{animation:lp-button-ring 1.9s ease-out infinite}
-.lp-button-echo::after{animation:lp-button-ring 1.9s ease-out .95s infinite}
-.lp-button-echo:hover{box-shadow:0 0 0 3px rgba(222,184,255,.9),0 0 34px rgba(171,95,255,.9),0 14px 42px rgba(129,67,251,.6)}
-@keyframes lp-button-ring{0%{transform:scale(.97);opacity:.92}55%{opacity:.56}100%{transform:scale(1.23);opacity:0}}
+/* Gentle inspect-style ring echo with an occasional bright shine.
+   No heavy GPU blur or giant constantly expanding halos. */
+.lp-button-echo{position:relative;isolation:isolate;overflow:visible!important}
+.lp-button-echo::before,.lp-button-echo::after{content:"";position:absolute;inset:-3px;border-radius:inherit;border:1.5px solid rgba(203,164,255,.65);box-shadow:0 0 7px rgba(172,104,255,.25);z-index:1;opacity:0;pointer-events:none}
+.lp-button-echo::before{animation:lp-button-ring 3.2s ease-out infinite}
+.lp-button-echo::after{animation:lp-button-ring 3.2s ease-out 1.6s infinite}
+.lp-button-echo:hover{box-shadow:0 13px 33px rgba(119,65,247,.52),0 0 14px rgba(170,103,255,.3),inset 0 1px rgba(255,255,255,.45)}
+@keyframes lp-button-ring{0%{transform:scale(1);opacity:.48}55%{opacity:.22}100%{transform:scale(1.105);opacity:0}}
+/* The flash is clipped INSIDE the button, unlike the echo rings. */
+.lp-button-echo .lp-cta-shine{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:1}
+.lp-button-echo .lp-cta-shine::after{content:"";position:absolute;top:-55%;left:-45%;height:210%;width:38%;transform:translateX(-130%) rotate(24deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);animation:lp-button-flash 4.8s ease-in-out infinite}
+@keyframes lp-button-flash{0%,16%{transform:translateX(-130%) rotate(24deg)}32%,100%{transform:translateX(650%) rotate(24deg)}}
 .lp-button-secondary{border-color:#8671b47a;color:#f1eaff;background:linear-gradient(125deg,rgba(44,31,83,.78),rgba(20,21,43,.78));box-shadow:inset 0 1px #ffffff0b}
 .lp-button-secondary:hover{border-color:#b695ffab;background:linear-gradient(125deg,#423168b0,#272143)}
 .lp-button-large{min-height:57px;padding:0 23px;font-size:13px;border-radius:14px}
@@ -231,7 +235,7 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
  .lp-footer{padding-top:34px}.lp-footer-main{flex-direction:column;align-items:flex-start;gap:26px}.lp-footer-links{gap:15px 20px}.lp-footer-bottom{flex-direction:column;align-items:flex-start;justify-content:center;gap:12px;padding-block:20px;font-size:9px}
 }
 @media(max-width:350px){.lp-brand-name small{display:none}.lp-header-play{padding:0 9px}.lp-hero-title{font-size:33px}.lp-art-topline{font-size:6px}.lp-float-card small{display:none}.lp-metric span{font-size:7.5px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-site *,.lp-site *::before,.lp-site *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.lp-button-echo::before,.lp-button-echo::after{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lp-site *,.lp-site *::before,.lp-site *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.lp-button-echo::before,.lp-button-echo::after,.lp-button-echo .lp-cta-shine{display:none}.lp-medium-turn-layer{animation:none!important}}
 
 
 /* ===== Landing page premium refresh + race demos ===== */
@@ -268,6 +272,24 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
 .lp-duel-cube-spot{height:155px;width:100%;display:grid;place-items:center;overflow:visible}
 .lp-real-cube{width:155px;height:155px;display:block;max-width:100%;object-fit:contain;filter:drop-shadow(0 14px 15px rgba(2,2,14,.75))}
 .lp-real-cube.is-ghost{filter:drop-shadow(0 0 15px rgba(109,161,255,.85)) drop-shadow(0 9px 12px rgba(3,5,26,.8))}
+/* Medium-quality landing duel cube: real 26-piece geometry, only the 54
+   exterior colored faces, and ONE compositor-driven turning slice. */
+.lp-medium-cube{--lp-cube-size:94px;--lp-cube-cell:calc(var(--lp-cube-size) / 3);--lp-cube-half-cell:calc(var(--lp-cube-cell) / 2);position:relative;display:block;perspective:520px;overflow:visible;contain:layout style}
+.lp-medium-camera{position:absolute;left:50%;top:50%;width:var(--lp-cube-size);height:var(--lp-cube-size);transform:translate(-50%,-50%);transform-style:preserve-3d}
+.lp-medium-body{position:relative;width:100%;height:100%;transform:rotateX(-25deg) rotateY(-35deg);transform-style:preserve-3d}
+.lp-medium-layer{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+.lp-medium-turn-layer{animation-name:lp-medium-physical-turn;animation-timing-function:linear;animation-fill-mode:both;transform-origin:center center;will-change:transform}
+.lp-medium-cubie{position:absolute;left:calc(50% - var(--lp-cube-half-cell));top:calc(50% - var(--lp-cube-half-cell));width:var(--lp-cube-cell);height:var(--lp-cube-cell);transform-style:preserve-3d}
+.lp-medium-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:1.5px;border:1.75px solid #19233a;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.25);}
+.lp-medium-face-U{transform:rotateX(90deg) translateZ(var(--lp-cube-half-cell))}
+.lp-medium-face-D{transform:rotateX(-90deg) translateZ(var(--lp-cube-half-cell))}
+.lp-medium-face-F{transform:translateZ(var(--lp-cube-half-cell))}
+.lp-medium-face-B{transform:rotateY(180deg) translateZ(var(--lp-cube-half-cell))}
+.lp-medium-face-R{transform:rotateY(90deg) translateZ(var(--lp-cube-half-cell))}
+.lp-medium-face-L{transform:rotateY(-90deg) translateZ(var(--lp-cube-half-cell))}
+.lp-medium-sticker-U{background:#ffda47}.lp-medium-sticker-D{background:#f5f5ff}.lp-medium-sticker-F{background:#3185fd}
+.lp-medium-sticker-B{background:#19cf86}.lp-medium-sticker-R{background:#f1435b}.lp-medium-sticker-L{background:#ff9447}
+@keyframes lp-medium-physical-turn{from{transform:rotateX(0deg)}to{transform:var(--lp-slice-turn-end,rotateX(0deg))}}
 .lp-duel-contender{min-height:290px}
 .lp-duel-time{font-family:'Plus Jakarta Sans','DM Sans',sans-serif;color:#f5efff;font-variant-numeric:tabular-nums;font-feature-settings:'tnum';font-size:clamp(21px,2.5vw,30px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;white-space:nowrap}
 .lp-duel-time small{font-size:13px;color:#a8a2c6;letter-spacing:0;margin-left:2px}
@@ -403,7 +425,7 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
  .lp-duel-avatar{width:24px;height:24px;border-radius:8px}
  .lp-duel-contender-head strong{font-size:8px;letter-spacing:.6px}
  .lp-duel-cube-spot{height:119px}
- .lp-real-cube{width:119px;height:119px}
+ .lp-real-cube{width:119px;height:119px}.lp-medium-cube{--lp-cube-size:76px}
  .lp-duel-time{font-size:21px;letter-spacing:-1px}
  .lp-duel-time small{font-size:11px}
  .lp-duel-state{font-size:7px;min-width:0;padding:5px 6px;letter-spacing:.5px}
@@ -413,7 +435,7 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
 }
 @media(max-width:365px){
  .lp-duel-cube-spot{height:102px}
- .lp-real-cube{width:102px;height:102px}
+ .lp-real-cube{width:102px;height:102px}.lp-medium-cube{--lp-cube-size:68px}
  .lp-duel-time{font-size:19px}
  .lp-duel-contender-head strong{font-size:7px}
  .lp-duel-state{font-size:6px}

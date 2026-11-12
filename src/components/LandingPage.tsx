@@ -150,7 +150,7 @@ export default function LandingPage() {
           <a href="#faq" onClick={closeMenu}>FAQ</a>
           <WebLink className="lp-mobile-play" >Play Cube Hero <ArrowRight size={16}/></WebLink>
         </nav>
-        <div className="lp-header-actions"><span className="lp-free-label"><span/> FREE TO PLAY</span><WebLink className="lp-button lp-button-primary lp-header-play lp-button-echo">Play now <ArrowUpRight size={16}/></WebLink></div>
+        <div className="lp-header-actions"><span className="lp-free-label"><span/> FREE TO PLAY</span><WebLink className="lp-button lp-button-primary lp-header-play lp-button-echo">Play now <ArrowUpRight size={16}/><span className="lp-cta-shine" aria-hidden="true" /></WebLink></div>
         <button type="button" className="lp-menu-button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="lp-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={23} /> : <Menu size={23} />}</button>
       </div>
     </header>
@@ -162,7 +162,7 @@ export default function LandingPage() {
           <h1 id="lp-hero-title" className="lp-hero-title lp-entry">SOLVE FASTER.<br/><span>RACE SMARTER.</span><br/>BECOME A <em>HERO.</em></h1>
           <p className="lp-hero-description lp-entry">More than a timer. Challenge human-like AI, chase your personal best, master CFOP, and turn every solve into progress.</p>
           <div className="lp-hero-actions lp-entry">
-            <WebLink className="lp-button lp-button-primary lp-button-large lp-button-echo"><Play size={18} fill="currentColor"/> Play for free <ArrowRight size={18}/></WebLink>
+            <WebLink className="lp-button lp-button-primary lp-button-large lp-button-echo"><Play size={18} fill="currentColor"/> Play for free <ArrowRight size={18}/><span className="lp-cta-shine" aria-hidden="true" /></WebLink>
             <a href="#download" className="lp-button lp-button-secondary lp-button-large"><Smartphone size={19}/> All downloads <ArrowDown size={17}/></a>
           </div>
           <div className="lp-hero-downloads lp-entry"><div className="lp-hero-downloads-heading"><span>GET CUBE HERO</span><small>Android available now</small></div><PlatformDownloads compact /></div>

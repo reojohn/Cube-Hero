@@ -1,239 +1,80 @@
-import { useEffect, useRef } from 'react'
-import { parseCubeMove, type CubeMove } from '../lib/cubeMoves'
+import { memo, useMemo } from 'react'
+import type { CSSProperties } from 'react'
+import { buildSolidCubeFrames } from '../lib/mobileCubeFrames'
+import { inTurningLayer } from '../lib/cubeTurning'
+import type { Cubie } from '../lib/cubeTurning'
+import { mediumMovingFaces } from '../lib/mediumCubeGeometry'
+import { mobileSliceTurn } from '../lib/mobileCubeTurn'
 
 /**
- * Landing-page 3×3 duel illustration.
- * Real 26-piece geometry with sticker colors and animated quarter-turn layers.
- * Both contestants begin from the same shared scramble and play through the
- * exact inverse sequence; only their demo clock/solve duration differs.
- * No solver, save data, game timer, or live race code is modified here.
+ * Lightweight landing-page version of the app's Medium graphics renderer.
+ *
+ * The two racers share one legal scramble and inverse solution. Only the active
+ * cubie slice is animated with one compositor-friendly CSS transform; we never
+ * draw every canvas polygon or update React state on each animation frame.
+ * The parent still owns the demo race clock and winner announcements.
  */
-type Vec3 = [number, number, number]
-type Axis = 0 | 1 | 2
-type Sticker = { normal: Vec3; color: string }
-type Cubie = { position: Vec3; stickers: Sticker[] }
-type Turn = { axis: Axis; layers: readonly number[]; direction: -1 | 1; turns: 1 | 2 }
-type Face = { normal: Vec3; u: Vec3; v: Vec3 }
-type Polygon = { depth: number; plastic: Vec3[]; sticker: Vec3[] | null; color: string | null; light: number }
+const SCRAMBLE = ['R', 'U', 'F', "L'", 'D', "R'", 'U', "F'", 'L', "U'", 'R', 'F'] as const
+const inverse = (move: string) => move.endsWith("'") ? move.slice(0, -1) : `${move}'`
+const SOLUTION = [...SCRAMBLE].reverse().map(inverse)
+const FRAMES = buildSolidCubeFrames(SCRAMBLE.join(' '), SOLUTION)
+const TURNS = SOLUTION.map(mobileSliceTurn)
 
-// These moves are deliberately all legal quarter turns: inverse moves return
-// every sticker to its original position, not merely to a decorative solid face.
-const SCRAMBLE = ["R", "U", "F", "L'", "D", "R'", "U", "F'", "L", "U'", "R", "F"]
-const invert = (move: string) => move.endsWith("'") ? move.slice(0, -1) : `${move}'`
-const SOLUTION = [...SCRAMBLE].reverse().map(invert)
-const FACE_COLORS: Record<string, string> = {
-  U: '#ffda4a', R: '#ff584e', F: '#38a5ff',
-  D: '#f1f4ff', L: '#ff913e', B: '#46d977',
-}
-const FACES: Face[] = [
-  { normal: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] },
-  { normal: [1, 0, 0], u: [0, 0, -1], v: [0, 1, 0] },
-  { normal: [0, 1, 0], u: [1, 0, 0], v: [0, 0, -1] },
-  { normal: [0, 0, -1], u: [-1, 0, 0], v: [0, 1, 0] },
-  { normal: [-1, 0, 0], u: [0, 0, 1], v: [0, 1, 0] },
-  { normal: [0, -1, 0], u: [1, 0, 0], v: [0, 0, 1] },
-]
-const FACE_KEYS = ['F', 'R', 'U', 'B', 'L', 'D'] as const
-const PITCH = 0.99
-const HALF = 0.483
-const STICKER_HALF = 0.394
-const YAW = -Math.PI / 5.7
-const TILT = Math.PI / 7.1
+type Props = { elapsed: number; duration: number; ghost?: boolean }
 
-function rotate(vector: Vec3, axis: Axis, radians: number): Vec3 {
-  const c = Math.cos(radians)
-  const s = Math.sin(radians)
-  const [x, y, z] = vector
-  if (axis === 0) return [x, y * c - z * s, y * s + z * c]
-  if (axis === 1) return [x * c + z * s, y, -x * s + z * c]
-  return [x * c - y * s, x * s + y * c, z]
-}
-function add(a: Vec3, b: Vec3): Vec3 { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]] }
-function scale(v: Vec3, n: number): Vec3 { return [v[0] * n, v[1] * n, v[2] * n] }
-function dot(a: Vec3, b: Vec3): number { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] }
-function view(v: Vec3): Vec3 { return rotate(rotate(v, 1, YAW), 0, TILT) }
-function axisOf(move: CubeMove): Axis { return move.axis === 'X' ? 0 : move.axis === 'Y' ? 1 : 2 }
-function toTurn(text: string): Turn {
-  const move = parseCubeMove(text)
-  return { axis: axisOf(move), layers: move.layers, direction: move.direction, turns: move.turns }
+function stepAt({ elapsed, duration }: Pick<Props, 'elapsed' | 'duration'>): number {
+  if (duration <= 0) return SOLUTION.length
+  return Math.min(SOLUTION.length, Math.floor(Math.min(1, Math.max(0, elapsed / duration)) * SOLUTION.length))
 }
 
-function solvedCubies(): Cubie[] {
-  const cubies: Cubie[] = []
-  for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) {
-    if (x === 0 && y === 0 && z === 0) continue
-    const position: Vec3 = [x, y, z]
-    cubies.push({ position, stickers: FACES.flatMap((face, i) =>
-      dot(face.normal, position) === 1 ? [{ normal: [...face.normal] as Vec3, color: FACE_COLORS[FACE_KEYS[i]] }] : [],
-    ) })
-  }
-  return cubies
-}
-function turnCubies(cubies: Cubie[], turn: Turn): void {
-  for (let n = 0; n < turn.turns; n++) for (const cubie of cubies) {
-    if (!turn.layers.includes(cubie.position[turn.axis])) continue
-    const radians = turn.direction * Math.PI / 2
-    cubie.position = rotate(cubie.position, turn.axis, radians).map(Math.round) as Vec3
-    for (const sticker of cubie.stickers) sticker.normal = rotate(sticker.normal, turn.axis, radians).map(Math.round) as Vec3
-  }
-}
-const solutionTurns = SOLUTION.map(toTurn)
-// Build each complete physical pose once. Each animation frame merely interpolates
-// the single active layer. Both racers reuse these exact same snapshots.
-const SOLVE_STATES = (() => {
-  const cubies = solvedCubies()
-  SCRAMBLE.forEach(move => turnCubies(cubies, toTurn(move)))
-  const copy = (): Cubie[] => cubies.map(cubie => ({
-    position: [...cubie.position] as Vec3,
-    stickers: cubie.stickers.map(sticker => ({ normal: [...sticker.normal] as Vec3, color: sticker.color })),
-  }))
-  const states = [copy()]
-  solutionTurns.forEach(turn => { turnCubies(cubies, turn); states.push(copy()) })
-  return states
-})()
+const MediumCubie = memo(function MediumCubie({ piece }: { piece: Cubie }) {
+  const faces = mediumMovingFaces(piece)
+  return <div className="lp-medium-cubie" style={{ transform: `translate3d(${piece.x * 100}%, ${-piece.y * 100}%, calc(var(--lp-cube-cell) * ${piece.z}))` }}>
+    {faces.map(face => <div key={face} className={`lp-medium-face lp-medium-face-${face} lp-medium-sticker-${piece.stickers[face]}`} />)}
+  </div>
+})
 
-function corners(center: Vec3, normal: Vec3, u: Vec3, v: Vec3, half: number, offset: number): Vec3[] {
-  const base = add(center, scale(normal, offset))
-  return [
-    add(add(base, scale(u, -half)), scale(v, -half)),
-    add(add(base, scale(u, half)), scale(v, -half)),
-    add(add(base, scale(u, half)), scale(v, half)),
-    add(add(base, scale(u, -half)), scale(v, half)),
-  ]
-}
-function visiblePolygons(state: readonly Cubie[], active: Turn | null, radians: number, filter: 'all' | 'moving' | 'stationary' = 'all'): Polygon[] {
-  const polygons: Polygon[] = []
-  for (const cubie of state) {
-    const moving = !!active && active.layers.includes(cubie.position[active.axis])
-    if (filter === 'moving' && !moving) continue
-    if (filter === 'stationary' && moving) continue
-    const transform = (v: Vec3): Vec3 => moving && active ? rotate(v, active.axis, radians) : v
-    const center = transform(scale(cubie.position, PITCH))
-    for (const face of FACES) {
-      const normal = transform(face.normal)
-      const lightNormal = view(normal)
-      if (lightNormal[2] <= 0.005) continue
-      const u = transform(face.u)
-      const v = transform(face.v)
-      const plastic = corners(center, normal, u, v, HALF, HALF).map(view)
-      const matchingSticker = cubie.stickers.find(sticker => dot(sticker.normal, face.normal) > .99)
-      const sticker = matchingSticker ? corners(center, normal, u, v, STICKER_HALF, HALF + .012).map(view) : null
-      polygons.push({
-        plastic,
-        sticker,
-        color: matchingSticker?.color || null,
-        depth: plastic.reduce((sum, point) => sum + point[2], 0) / 4,
-        light: lightNormal[2],
-      })
+function LandingDuelCube({ elapsed, duration, ghost = false }: Props) {
+  const completed = stepAt({ elapsed, duration })
+  const turn = TURNS[completed] ?? null
+  const pieces = FRAMES[completed]
+  const { stationary, moving } = useMemo(() => {
+    if (!turn) return { stationary: pieces, moving: [] as readonly Cubie[] }
+    return {
+      stationary: pieces.filter(piece => !inTurningLayer(piece, turn.axis, turn.layers)),
+      moving: pieces.filter(piece => inTurningLayer(piece, turn.axis, turn.layers)),
     }
-  }
-  return polygons.sort((a, b) => a.depth - b.depth)
+  }, [pieces, turn])
+
+  // A React wake-up can land partway into a turn: jump directly to that point
+  // using a negative animation delay and let CSS finish smoothly at 60 fps.
+  // The memo comparator prevents ordinary timer ticks from restarting it.
+  const moveMs = duration * 1000 / SOLUTION.length
+  const elapsedMs = Math.max(0, Math.min(duration, elapsed)) * 1000
+  const startedMoveMs = completed * moveMs
+  const offsetMs = Math.min(moveMs, Math.max(0, elapsedMs - startedMoveMs))
+  const style = turn ? ({
+    '--lp-slice-turn-end': `rotate${turn.axis}(${turn.degrees}deg)`,
+    animationDuration: `${moveMs}ms`,
+    animationDelay: `-${offsetMs}ms`,
+  } as CSSProperties) : undefined
+
+  return <div className={`lp-real-cube lp-medium-cube${ghost ? ' is-ghost' : ''}`} aria-hidden="true">
+    <div className="lp-medium-camera"><div className="lp-medium-body">
+      <div className="lp-medium-layer">
+        {stationary.map(piece => <MediumCubie key={piece.id} piece={piece} />)}
+      </div>
+      {turn && <div className="lp-medium-layer lp-medium-turn-layer" key={completed} style={style}>
+        {moving.map(piece => <MediumCubie key={piece.id} piece={piece} />)}
+      </div>}
+    </div></div>
+  </div>
 }
-// Stationary cubies do not change during a layer turn. Cache their projected
-// geometry once instead of rebuilding it for every rendered frame and racer.
-const STATIC_POLYGONS = SOLVE_STATES.map((state, i) =>
-  visiblePolygons(state, solutionTurns[i] ?? null, 0, 'stationary'),
+
+// Timer text may tick ~8 times a second; the cube should re-render only when
+// the next physical layer turn starts (roughly once every 0.6-0.8 seconds).
+export default memo(LandingDuelCube, (before, after) =>
+  before.ghost === after.ghost &&
+  before.duration === after.duration &&
+  stepAt(before) === stepAt(after),
 )
-function shade(hex: string, brightness: number): string {
-  const value = parseInt(hex.slice(1), 16)
-  const r = Math.min(255, Math.round(((value >> 16) & 255) * brightness))
-  const g = Math.min(255, Math.round(((value >> 8) & 255) * brightness))
-  const b = Math.min(255, Math.round((value & 255) * brightness))
-  return `rgb(${r},${g},${b})`
-}
-function drawCube(canvas: HTMLCanvasElement, elapsed: number, duration: number, ghost: boolean): void {
-  const context = canvas.getContext('2d', { alpha: true })
-  if (!context) return
-  const width = canvas.getBoundingClientRect().width || 180
-  const height = canvas.getBoundingClientRect().height || 180
-  // A 160px marketing preview gains little from 2x DPR; lower resolution
-  // substantially reduces raster work on high-density phones.
-  const dpr = Math.min(window.devicePixelRatio || 1, window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 1 : 1.35)
-  const w = Math.round(width * dpr)
-  const h = Math.round(height * dpr)
-  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h }
-  context.setTransform(dpr, 0, 0, dpr, 0, 0)
-  context.clearRect(0, 0, width, height)
-
-  const ratio = Math.min(1, Math.max(0, elapsed / duration))
-  const movePosition = ratio * solutionTurns.length
-  const completed = Math.min(solutionTurns.length, Math.floor(movePosition))
-  const current = completed < solutionTurns.length ? solutionTurns[completed] : null
-  const fraction = movePosition - completed
-  const eased = fraction * fraction * (3 - 2 * fraction)
-  const radians = current ? current.direction * eased * (Math.PI / 2) : 0
-  const scaleFactor = Math.min(width, height) / 5.0
-  const project = (point: Vec3): [number, number] => {
-    const perspective = 9 / (9 - point[2])
-    return [width / 2 + point[0] * scaleFactor * perspective, height / 2 - point[1] * scaleFactor * perspective]
-  }
-  function trace(points: Vec3[]) {
-    context!.beginPath()
-    points.forEach((point, i) => {
-      const [x, y] = project(point)
-      if (i === 0) context!.moveTo(x, y)
-      else context!.lineTo(x, y)
-    })
-    context!.closePath()
-  }
-  context.globalAlpha = ghost ? .82 : 1
-  const polygons = current
-    ? [...STATIC_POLYGONS[completed], ...visiblePolygons(SOLVE_STATES[completed], current, radians, 'moving')].sort((a, b) => a.depth - b.depth)
-    : STATIC_POLYGONS[completed]
-  for (const polygon of polygons) {
-    trace(polygon.plastic)
-    context.fillStyle = '#11141f'
-    context.fill()
-    context.strokeStyle = '#282d45'
-    context.lineWidth = Math.max(.7, scaleFactor * .024)
-    context.stroke()
-    if (!polygon.sticker || !polygon.color) continue
-    trace(polygon.sticker)
-    const brightness = .75 + Math.min(.26, Math.max(0, polygon.light) * .28)
-    // Single shaded fill instead of creating a new CanvasGradient for every
-    // sticker on every frame. Visible face lighting remains intact.
-    context.fillStyle = shade(polygon.color, Math.min(1.12, brightness + .07))
-    context.fill()
-    context.strokeStyle = 'rgba(255,255,255,.18)'
-    context.lineWidth = Math.max(.5, scaleFactor * .012)
-    context.stroke()
-  }
-  context.globalAlpha = 1
-}
-
-export default function LandingDuelCube({ elapsed, duration, ghost = false }: { elapsed: number; duration: number; ghost?: boolean }) {
-  const canvas = useRef<HTMLCanvasElement>(null)
-  const latest = useRef({ elapsed, duration, ghost })
-  const lastPaint = useRef({ time: -Infinity, elapsed: -1, finished: false, ghost: false })
-  latest.current = { elapsed, duration, ghost }
-  useEffect(() => {
-    if (!canvas.current) return
-    // A resize is infrequent. Force a fresh frame only after dimensions change.
-    const observer = new ResizeObserver(() => {
-      const current = latest.current
-      if (canvas.current) {
-        lastPaint.current.time = -Infinity
-        drawCube(canvas.current, current.elapsed, current.duration, current.ghost)
-        lastPaint.current = { time: performance.now(), elapsed: current.elapsed, finished: current.elapsed >= current.duration, ghost: current.ghost }
-      }
-    })
-    observer.observe(canvas.current)
-    return () => observer.disconnect()
-  }, [])
-  useEffect(() => {
-    const target = canvas.current
-    if (!target) return
-    const finished = elapsed >= duration
-    const previous = lastPaint.current
-    // Solved cubes are static. Repainting them throughout the result hold only
-    // wastes CPU, so render the solved state once and leave it in the canvas.
-    if (finished && previous.finished && previous.ghost === ghost) return
-    const now = performance.now()
-    const minFrameMs = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 180 : 115
-    const newCycle = elapsed < previous.elapsed
-    if (!finished && !newCycle && now - previous.time < minFrameMs) return
-    drawCube(target, elapsed, duration, ghost)
-    lastPaint.current = { time: now, elapsed, finished, ghost }
-  }, [elapsed, duration, ghost])
-  return <canvas className={`lp-real-cube${ghost ? ' is-ghost' : ''}`} ref={canvas} width={160} height={160} aria-hidden="true" />
-}
