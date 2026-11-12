@@ -21,7 +21,7 @@ import type { GraphicsQuality } from '../lib/graphicsQuality'
 
 type Stage='scramble'|'ready'|'inspection'|'running'|'waiting'
 type HoldSource = 'keyboard' | 'pointer'
-type Props={session:RaceSession;goTo:(page:'race'|'room'|'results')=>void;onComplete:(record:RaceRecord)=>void;toast:(message:string)=>void;precision:2|3;sound:boolean;reducedMotion:boolean;graphics:GraphicsQuality;onActiveChange:(value:boolean)=>void}
+type Props={session:RaceSession;goTo:(page:'race'|'room'|'results'|'settings')=>void;onComplete:(record:RaceRecord)=>void;toast:(message:string)=>void;precision:2|3;sound:boolean;reducedMotion:boolean;graphics:GraphicsQuality;onActiveChange:(value:boolean)=>void}
 const msNow=()=>performance.now()
 
 type BeginnerMove = {
@@ -478,6 +478,6 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
     {(stage==='inspection'||stage==='ready')&&<button className={`btn btn-primary btn-lg btn-full start-race-button stackmat-hold-button ${holdArmed?'stackmat-armed':''}`} onPointerDown={onHoldPointerDown} onPointerUp={onHoldPointerUp} onPointerCancel={onHoldPointerCancel} onLostPointerCapture={onHoldPointerCancel} onClick={e=>e.preventDefault()}><Flag size={19}/>{holdArmed?'READY — RELEASE TO START':holdStartedAt!==null?'KEEP HOLDING…':'HOLD TO START — 1.5s'} <Keyboard size={16}/></button>}
     {stage==='running'&&<button className="btn btn-primary btn-lg btn-full stop-race-button" onClick={stopRace}><Trophy size={19}/> STOP TIMER — SPACE</button>}
     {stage==='waiting'&&<div className="race-waiting"><ShieldCheck size={19}/> Player time saved. Results appear after all AI opponents finish solving.</div>}
-    <div className="room-actions"><button className="btn btn-outline" onClick={leave}><SlidersHorizontal size={17}/> Change settings</button><div className="round-badge"><Flag size={16}/> Round {round}/{total} <ArrowRight size={15}/></div></div>
+    <div className="room-actions"><button type="button" className="btn btn-outline" onClick={()=>goTo('settings')}><SlidersHorizontal size={17}/> Change Graphics Settings</button><div className="round-badge"><Flag size={16}/> Round {round}/{total} <ArrowRight size={15}/></div></div>
   </div>
 }
