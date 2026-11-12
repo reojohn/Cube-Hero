@@ -51,21 +51,53 @@
 .ch-low-sticker-cube .ai-css-facelet { border: none; box-shadow: none; border-radius: 1.5px; }
 .ch-low-cube-shell { background: none !important; }
 
-/* Medium v2: keep only 27 static flat stickers in the scene. During each
-   verified move, animate ONLY its physical cubies (usually nine pieces), with
-   the real exterior sticker surfaces and opaque cut faces. No permanent
-   26-piece CSS 3D assembly, which was almost as costly as High on Android. */
+/* Medium v3: continuous, real 3D slice motion over a permanently colored
+   sticker-backed cube. Six flat faces and six inset core faces prevent
+   transparent/dark cavities without building High's 26 x 6 cubie scene. */
 .ch-medium-cube-shell { background: none !important; filter: none !important; isolation: auto; }
 .ch-medium-stage { --cube-half: calc(var(--cube-size) / 2); }
 .ch-medium-cube-shell .ai-mobile-solid-camera { animation: none !important; }
-.ch-medium-static-faces { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
-.ch-medium-static-face { box-shadow: none; border-width: 1px; gap: 2px; padding: 3px; border-radius: 1px; }
-.ch-medium-static-face .ai-css-facelet { transition: none; box-shadow: none; border: 0; border-radius: 1px; }
-.ch-medium-sticker-in-motion { visibility: hidden; }
+/* Recess the backing by 1px to avoid z-fighting with the animated stickers.
+   Never hide backing stickers while a layer turns: that caused the black gaps. */
+.ch-medium-static-faces {
+  --cube-half: calc(var(--cube-size) / 2 - 1px);
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.ch-medium-static-face {
+  box-shadow: none;
+  background: #455477;
+  border: 1px solid #455477;
+  gap: 1px;
+  padding: 1px;
+  border-radius: 1px;
+}
+.ch-medium-static-face .ai-css-facelet { transition: none; box-shadow: none; border: 0; border-radius: 0; }
+/* Fill the central one-cubie cavity, but do not overlap rotating layers.
+   A larger inner cube would clip through M/E/S and wide turns. */
+.ch-medium-inner-core {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: scale3d(.333, .333, .333);
+  pointer-events: none;
+}
+.ch-medium-core-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border: 0;
+}
+
 .ch-medium-moving-cubie { pointer-events: none; }
 .ch-medium-cube-shell .ch-medium-moving-face {
-  box-shadow: none; border: 1px solid #090b12; border-radius: 1px;
-  background: #111725;
+  box-shadow: none;
+  border: 0;
+  border-radius: 1px;
+  background: transparent;
+  backface-visibility: hidden;
 }
 .ch-medium-cube-shell .ch-medium-moving-face.sticker-U { background: #ffda47; }
 .ch-medium-cube-shell .ch-medium-moving-face.sticker-D { background: #f5f5ff; }
@@ -73,10 +105,15 @@
 .ch-medium-cube-shell .ch-medium-moving-face.sticker-B { background: #19cf86; }
 .ch-medium-cube-shell .ch-medium-moving-face.sticker-R { background: #f1435b; }
 .ch-medium-cube-shell .ch-medium-moving-face.sticker-L { background: #ff9447; }
-/* Six distinct, real physical poses per turn instead of computing a new GPU
-   3D scene on every refresh frame. The total rotation angle and move-end
-   timestamps remain EXACTLY the same as High. */
-.ch-medium-cube-shell .ch-medium-turn-layer { animation-timing-function: steps(6, end); }
+.ch-medium-cube-shell .ch-medium-cubie-face {
+  box-shadow: none;
+  border-color: transparent;
+  background: transparent;
+  backface-visibility: hidden;
+}
+/* Continuous physical turns, compositor-driven with no per-frame React
+   work. Total rotation angle and solve timestamps are unchanged. */
+.ch-medium-cube-shell .ch-medium-turn-layer { animation-timing-function: linear; }
 /* Do not waste GPU time on costly background chrome during a live Medium race. */
 .ch-graphics-medium.ch-performance-live .ai-css-cube-aura,
 .ch-graphics-medium.ch-performance-live .ai-css-cube-floor { display: none !important; }

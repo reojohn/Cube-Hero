@@ -6,7 +6,7 @@ import { cubeFacesTimeline } from '../lib/cubeState'
 import { inTurningLayer } from '../lib/cubeTurning'
 import type { Cubie } from '../lib/cubeTurning'
 import { buildSolidCubeFrames } from '../lib/mobileCubeFrames'
-import { mobileSliceTurn, visibleStickerInLayer } from '../lib/mobileCubeTurn'
+import { mobileSliceTurn } from '../lib/mobileCubeTurn'
 import { MEDIUM_STATIC_FACES, mediumMovingFaces } from '../lib/mediumCubeGeometry'
 
 type Props = {
@@ -19,11 +19,11 @@ type Frame = { plan: AiPlan | null; startedAt: number | null; completed: number;
 type Turn = ReturnType<typeof mobileSliceTurn>
 
 /**
- * Unlike High's 26 x 6-face scene, Medium uses three inexpensive, stationary
- * sticker planes and ONLY constructs 3D cubies for the actively moving slice.
- * The moving cubies have their actual exterior colored faces and the two
- * opaque cut faces for their turning axis, so there is still a real rotating
- * 3D layer without the large permanent 3D scene that caused mobile jank.
+ * Medium keeps one low-cost sticker-backed cube in the background and creates
+ * actual rotating cubies only for the active slice. The backing (all six
+ * faces) remains colored while a layer turns, so rotation cannot uncover a
+ * black void. A recessed, six-sided colored core closes off the view through
+ * corner gaps without the heavy 26-piece High renderer.
  */
 const MediumMovingCubie = memo(function MediumMovingCubie({ piece, axis }: { piece: Cubie; axis: Turn['axis'] }) {
   return <div className="ai-turning-cubie ch-medium-moving-cubie"
@@ -74,8 +74,8 @@ const MediumRaceCube = memo(function MediumRaceCube({ scramble, plan, active, st
   }, [active, startAt, plan])
 
   const completed = frame.plan === plan && frame.startedAt === (active ? startAt : null) ? frame.completed : 0
-  // One-time preparation before the live turn loop. A move only reconciles the
-  // 27 flat stickers plus the current layer, not 26 physical cubelets.
+  // Prepare face states once; only the current layer changes in the live loop.
+  // The backing has 54 flat stickers plus a six-face inset core (no 26-piece scene).
   const facesTimeline = useMemo(() => cubeFacesTimeline(scramble, plan.moves), [scramble, plan.moves])
   const cubieTimeline = useMemo(() => buildSolidCubeFrames(scramble, plan.moves), [scramble, plan.moves])
   const faces = facesTimeline[completed] ?? facesTimeline[0]
@@ -98,10 +98,14 @@ const MediumRaceCube = memo(function MediumRaceCube({ scramble, plan, active, st
       aria-label={`Three-dimensional cube with lightweight physical layer rotations. ${completed} of ${plan.moves.length} verified moves completed${move ? `, turning ${move}` : ''}.`}>
       <div className="ai-physical-cube-camera ai-mobile-solid-camera">
         <div className="ai-physical-cube-body">
-          <div className="ch-medium-static-faces">
+          <div className="ch-medium-inner-core" aria-hidden="true">
+            {MEDIUM_STATIC_FACES.map(face => <div key={face}
+              className={`ch-medium-core-face ai-css-face-${face} sticker-${faces[face][4]}`} />)}
+          </div>
+          <div className="ch-medium-static-faces" aria-hidden="true">
             {MEDIUM_STATIC_FACES.map(face => <div key={face} className={`ai-css-cube-face ai-css-face-${face} ch-medium-static-face`}>
               {faces[face].map((sticker, index) => <span key={`${face}-${index}`}
-                className={`ai-css-facelet sticker-${sticker}${turn && visibleStickerInLayer(face, index, turn.axis, turn.layers) ? ' ch-medium-sticker-in-motion' : ''}`} />)}
+                className={`ai-css-facelet sticker-${sticker}`} />)}
             </div>)}
           </div>
           {turn && <div key={`${startAt}-${completed}-${move}`} className="ai-physical-layer ai-mobile-turn-layer ch-medium-turn-layer" style={animation}>

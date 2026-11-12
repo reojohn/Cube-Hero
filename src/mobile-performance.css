@@ -64,6 +64,12 @@
     border-width: 1px;
     background: #111725;
   }
+  .app-shell .ch-medium-cubie-face {
+    box-shadow: none;
+    border-color: transparent;
+    background: transparent;
+    backface-visibility: hidden;
+  }
   .app-shell .ai-mobile-solid-face .ai-turning-sticker {
     box-shadow: none;
     width: calc(100% - 4px);
