@@ -14,8 +14,21 @@ import { mobileSliceTurn } from '../lib/mobileCubeTurn'
  * draw every canvas polygon or update React state on each animation frame.
  * The parent still owns the demo race clock and winner announcements.
  */
-const SCRAMBLE = ['R', 'U', 'F', "L'", 'D', "R'", 'U', "F'", 'L', "U'", 'R', 'F'] as const
-const inverse = (move: string) => move.endsWith("'") ? move.slice(0, -1) : `${move}'`
+// The previous 12-move inverse took 0.67 s per turn in an 8 s race.
+// A 44-turn legal sequence lets the same Medium-style physical slice
+// animation run at speedcubing pace (~5.5 turns/s at an 8 s finish).
+// Both competitors use the exact same scramble and inverse solve.
+const SCRAMBLE = [
+  'R', 'U2', "F'", 'L', 'D', 'B2', "R'", 'U', 'F2', "L'", 'D2', 'B',
+  "U'", 'R2', 'F', "D'", 'L2', "B'", 'U2', 'R', "F'", 'D', "L'", 'B2',
+  'R', "U'", 'F2', "D'", 'L2', 'B', 'U', "R'", 'D2', 'F', "L'", 'U2',
+  "B'", 'R2', 'D', 'F2', "U'", 'L', 'B2', "R'",
+] as const
+// A 180-degree turn is its own inverse (B2 -> B2, never B2').
+// The shared cube parser only accepts a prime on a quarter turn.
+const inverse = (move: string) => move.endsWith('2')
+  ? move
+  : move.endsWith("'") ? move.slice(0, -1) : `${move}'`
 const SOLUTION = [...SCRAMBLE].reverse().map(inverse)
 const FRAMES = buildSolidCubeFrames(SCRAMBLE.join(' '), SOLUTION)
 const TURNS = SOLUTION.map(mobileSliceTurn)
@@ -72,7 +85,7 @@ function LandingDuelCube({ elapsed, duration, ghost = false }: Props) {
 }
 
 // Timer text may tick ~8 times a second; the cube should re-render only when
-// the next physical layer turn starts (roughly once every 0.6-0.8 seconds).
+// the next physical layer turn starts (roughly 0.17-0.23 seconds per move).
 export default memo(LandingDuelCube, (before, after) =>
   before.ghost === after.ghost &&
   before.duration === after.duration &&

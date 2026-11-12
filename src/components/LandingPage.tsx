@@ -68,9 +68,12 @@ function DuelPreview({ mode }: { mode: DuelMode }) {
     if (!element) return
     let timer: number | undefined
     let started = 0
-    // Timers remain accurate (performance.now), but a marketing preview does
-    // not need to re-render its entire React subtree every 80 ms.
-    const intervalMs = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 180 : 120
+    // The visual solution now has 44 fast, legal turns. Keep timer sampling
+    // below half the shortest move period (~168 ms at 7.40 seconds) so the
+    // Medium cube can begin every slice rather than skipping over moves.
+    // React.memo still skips cube renders between move boundaries; CSS does
+    // the smooth intermediate turning on the compositor.
+    const intervalMs = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 70 : 60
     const stop = () => { if (timer !== undefined) { window.clearInterval(timer); timer = undefined } }
     const begin = () => {
       if (timer !== undefined || document.hidden) return
