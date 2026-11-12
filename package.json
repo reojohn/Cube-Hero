@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5188 --strictPort",
+    "prebuild": "node scripts/check-no-public-apk.mjs",
     "build": "tsc --noEmit && vite build",
-    "build:web": "npm run build",
+    "prebuild:web": "node scripts/check-no-public-apk.mjs",
+    "build:web": "npm run typecheck && vite build --outDir dist-web && node scripts/stage-apk-web.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test:engine": "node scripts/test-phase3.mjs",

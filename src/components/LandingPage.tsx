@@ -39,7 +39,7 @@ function WebLink({ className = '', children, to = GAME_START_URL }: { className?
 // The upcoming platform buttons deliberately remain disabled until an actual build is ready.
 function PlatformDownloads({ compact = false }: { compact?: boolean }) {
   return <div className={`lp-download-platforms${compact ? ' lp-download-platforms-hero' : ''}`} aria-label="Get Cube Hero for your device">
-    <a className="lp-platform-card lp-platform-card-android" href="/downloads/CubeHero-v1.0.0-android.apk" download="CubeHero-v1.0.0-android.apk">
+    <a className="lp-platform-card lp-platform-card-android" href="/downloads/CubeHero-v1.0.0-android.apk?release=clean-official-20261113" download="CubeHero-v1.0.0-android.apk">
       <span className="lp-platform-icon"><Download size={18}/></span><span><strong>Android</strong><small>Download APK · v1.0.0</small></span>
     </a>
     <button type="button" className="lp-platform-card lp-platform-card-ios" disabled title="iOS release coming soon">

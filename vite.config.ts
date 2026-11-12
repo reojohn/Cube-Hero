@@ -4,27 +4,26 @@ import tailwindcss from '@tailwindcss/vite'
 import { createReadStream, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const androidApkName = 'CubeHero-v1.0.0-android.apk'
-const androidApkUrl = `/downloads/${androidApkName}`
+const releaseName = 'CubeHero-v1.0.0-android.apk'
+const releasePath = resolve('release-downloads', releaseName)
 
-// Serve the release in local Vite dev too, without putting the APK in public/.
-// Keeping it out of public/ prevents the Android Capacitor bundle from
-// accidentally containing the previous version's 28 MB installer.
-function localApkDownload(): Plugin {
+/** Local downloads work in npm run dev without adding the APK to public/. */
+function cubeHeroLocalRelease(): Plugin {
   return {
-    name: 'cube-hero-local-apk-download',
+    name: 'cubehero-local-release-download',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const path = (req.url ?? '').split('?')[0]
-        if (path !== androidApkUrl) return next()
-        const file = resolve('releases', androidApkName)
+        const pathname = (req.url ?? '').split('?')[0]
+        if (pathname !== `/downloads/${releaseName}`) return next()
         let size: number
-        try { size = statSync(file).size } catch { res.statusCode = 404; res.end('APK unavailable'); return }
+        try { size = statSync(releasePath).size } catch { res.statusCode = 404; res.end('Release APK not found'); return }
+        res.statusCode = 200
         res.setHeader('Content-Type', 'application/vnd.android.package-archive')
-        res.setHeader('Content-Disposition', `attachment; filename="${androidApkName}"`)
+        res.setHeader('Content-Disposition', `attachment; filename="${releaseName}"`)
+        res.setHeader('Cache-Control', 'no-store')
         res.setHeader('Content-Length', size)
-        const stream = createReadStream(file)
-        stream.on('error', () => { try { res.end() } catch { /* connection closed */ } })
+        const stream = createReadStream(releasePath)
+        stream.on('error', () => { if (!res.headersSent) res.statusCode = 500; res.end() })
         stream.pipe(res)
       })
     },
@@ -32,9 +31,7 @@ function localApkDownload(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), localApkDownload()],
+  plugins: [react(), tailwindcss(), cubeHeroLocalRelease()],
   server: { strictPort: false },
-  build: {
-    cssCodeSplit: false,
-  },
+  build: { cssCodeSplit: false },
 })
