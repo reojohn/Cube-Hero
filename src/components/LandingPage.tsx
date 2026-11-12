@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Award, BookOpen, Check,
   ChevronDown, CircleCheck, Flag, Ghost, UserRound, Bot,
@@ -6,7 +6,6 @@ import {
   Smartphone, Sparkles, Timer, Trophy, X, Zap,
 } from 'lucide-react'
 import { GAME_START_URL } from '../lib/siteRouting'
-import LandingDuelCube from './LandingDuelCube'
 import './LandingPage.css'
 
 const FEATURES = [
@@ -53,76 +52,34 @@ function PlatformDownloads({ compact = false }: { compact?: boolean }) {
 }
 
 type DuelMode = 'ai' | 'ghost'
-// This is an illustrative race preview, not an actual saved solve or an interactive race.
+
+// TEMPORARY PERFORMANCE TEST: no cube renderer, frame generation, live timers,
+// animation timers, observers, or requests are mounted by this preview.
+// Restore the earlier LandingPage.tsx to re-enable animated demo races.
 function DuelPreview({ mode }: { mode: DuelMode }) {
   const isGhost = mode === 'ghost'
-  const humanGoal = isGhost ? 9.20 : 8.00
-  const rivalGoal = isGhost ? 7.40 : 10.00
-  const finish = Math.max(humanGoal, rivalGoal)
-  const cycle = finish + 3.0
-  const viewportRef = useRef<HTMLDivElement>(null)
-  const [elapsed, setElapsed] = useState(0)
-
-  useEffect(() => {
-    const element = viewportRef.current
-    if (!element) return
-    let timer: number | undefined
-    let started = 0
-    // The visual solution now has 44 fast, legal turns. Keep timer sampling
-    // below half the shortest move period (~168 ms at 7.40 seconds) so the
-    // Medium cube can begin every slice rather than skipping over moves.
-    // React.memo still skips cube renders between move boundaries; CSS does
-    // the smooth intermediate turning on the compositor.
-    const intervalMs = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 70 : 60
-    const stop = () => { if (timer !== undefined) { window.clearInterval(timer); timer = undefined } }
-    const begin = () => {
-      if (timer !== undefined || document.hidden) return
-      started = performance.now()
-      setElapsed(0)
-      timer = window.setInterval(() => setElapsed(((performance.now() - started) / 1000) % cycle), intervalMs)
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !document.hidden) begin()
-      else stop()
-    }, { threshold: 0.12 })
-    observer.observe(element)
-    const visibilityChange = () => {
-      if (document.hidden) stop()
-      else if (element.getBoundingClientRect().bottom > 0 && element.getBoundingClientRect().top < window.innerHeight) begin()
-    }
-    document.addEventListener('visibilitychange', visibilityChange)
-    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', visibilityChange); stop() }
-  }, [cycle])
-
-  const humanDone = elapsed >= humanGoal
-  const rivalDone = elapsed >= rivalGoal
-  const over = elapsed >= finish
   const humanWon = !isGhost
-  const humanSeconds = Math.min(elapsed, humanGoal).toFixed(2)
-  const rivalSeconds = Math.min(elapsed, rivalGoal).toFixed(2)
-
-  return <div className={`lp-duel-preview lp-duel-preview-${mode}`} ref={viewportRef}>
-    <div className="lp-duel-info"><span className="lp-duel-live"><span/> DEMO MATCH</span><span>3×3 · SAME SCRAMBLE</span></div>
-    <div className="lp-duel-stage" aria-hidden="true">
-      <div className={`lp-duel-contender${humanDone ? ' is-finished' : ''}${over && humanWon ? ' is-winner' : ''}`}>
+  return <div className={`lp-duel-preview lp-duel-preview-${mode}`} aria-label={`${isGhost ? 'Ghost Race' : 'Race AI'} example result; animated preview disabled for performance testing`}>
+    <div className="lp-duel-info"><span>PREVIEW PAUSED · PERFORMANCE TEST</span><span>NO 3D / TIMERS</span></div>
+    <div className="lp-duel-stage">
+      <div className={`lp-duel-contender is-finished${humanWon ? ' is-winner' : ''}`}>
         <div className="lp-duel-contender-head"><span className="lp-duel-avatar"><UserRound size={17}/></span><strong>YOU</strong></div>
-        <div className="lp-duel-cube-spot"><LandingDuelCube elapsed={Math.min(elapsed, humanGoal)} duration={humanGoal} /></div>
-        <div className="lp-duel-time">{humanSeconds}<small>s</small></div>
-        <span className="lp-duel-state">{over && humanWon ? '🏆 WINNER' : humanDone ? 'SOLVED' : 'SOLVING...'}</span>
+        <div className="lp-duel-cube-spot"><span style={{ color:'#aaa0c3', fontWeight:800, fontSize:11, letterSpacing:'.08em', textAlign:'center' }}>3D PREVIEW OFF</span></div>
+        <div className="lp-duel-time">{isGhost ? '9.20' : '8.00'}<small>s</small></div>
+        <span className="lp-duel-state">{humanWon ? '🏆 WINNER' : 'SOLVED'}</span>
       </div>
       <span className="lp-duel-versus">VS</span>
-      <div className={`lp-duel-contender${rivalDone ? ' is-finished' : ''}${over && !humanWon ? ' is-winner' : ''}`}>
+      <div className={`lp-duel-contender is-finished${!humanWon ? ' is-winner' : ''}`}>
         <div className="lp-duel-contender-head"><span className="lp-duel-avatar">{isGhost ? <Ghost size={17}/> : <Bot size={17}/>}</span><strong>{isGhost ? 'GHOST' : 'AI RIVAL'}</strong></div>
-        <div className="lp-duel-cube-spot"><LandingDuelCube elapsed={Math.min(elapsed, rivalGoal)} duration={rivalGoal} ghost={isGhost} /></div>
-        <div className="lp-duel-time">{rivalSeconds}<small>s</small></div>
-        <span className="lp-duel-state">{over && !humanWon ? '🏆 WINNER' : rivalDone ? 'SOLVED' : 'SOLVING...'}</span>
+        <div className="lp-duel-cube-spot"><span style={{ color:'#aaa0c3', fontWeight:800, fontSize:11, letterSpacing:'.08em', textAlign:'center' }}>3D PREVIEW OFF</span></div>
+        <div className="lp-duel-time">{isGhost ? '7.40' : '10.00'}<small>s</small></div>
+        <span className="lp-duel-state">{!humanWon ? '🏆 WINNER' : 'SOLVED'}</span>
       </div>
     </div>
-    <div className={`lp-duel-outcome${over ? ' is-visible' : ''}${isGhost ? ' is-ghost' : ''}`} aria-hidden="true">
-      {over ? <><Trophy size={15}/><strong>{isGhost ? 'GHOST WINS!' : 'YOU WIN!'}</strong><span>{isGhost ? '07.40s vs 09.20s' : '08.00s vs 10.00s'}</span></> : <><Timer size={15}/><strong>RACE IN PROGRESS</strong><span>First cube to solve takes the win</span></>}
+    <div className={`lp-duel-outcome${isGhost ? ' is-ghost' : ''}`} style={{ color: isGhost ? '#c8d1ff' : '#bafde3' }}>
+      <Trophy size={15}/><strong>{isGhost ? 'GHOST WINS!' : 'YOU WIN!'}</strong><span>{isGhost ? '07.40s vs 09.20s' : '08.00s vs 10.00s'}</span>
     </div>
-    <div className="lp-duel-timeline" aria-hidden="true"><span style={{ width: `${Math.min(100, elapsed / cycle * 100)}%` }}/></div>
-    <p className="lp-duel-a11y">Example result: {isGhost ? 'The ghost cube wins in 7.40 seconds, and the human solves in 9.20 seconds.' : 'The human wins in 8 seconds, and the AI finishes in 10 seconds.'} The animated preview repeats.</p>
+    <p className="lp-duel-a11y">Example result only. 3D cubes and timer animations have been temporarily removed for performance testing.</p>
   </div>
 }
 
@@ -226,7 +183,7 @@ export default function LandingPage() {
       </section>
 
       <section className="lp-section lp-wrap lp-battle-section" aria-labelledby="lp-battle-title">
-        <div className="lp-section-intro lp-battle-intro"><div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> SEE THE ARENA IN MOTION</div><h2 id="lp-battle-title">Two modes. <span>Two rivalries.</span></h2><p>Watch both cubes solve side by side. Race an AI opponent—or challenge the time set by your own ghost.</p></div>
+        <div className="lp-section-intro lp-battle-intro"><div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> ARENA PERFORMANCE TEST</div><h2 id="lp-battle-title">Two modes. <span>Two rivalries.</span></h2><p>The animated previews are temporarily paused so you can compare how smoothly the landing page scrolls.</p></div>
         <div className="lp-battle-grid">
           <article className="lp-battle-card">
             <div className="lp-battle-copy"><span className="lp-battle-label"><Flag size={14}/> RACE AI</span><h3>Human vs. AI. Who solves first?</h3><p>In this match, you finish in 8 seconds. The AI finishes in 10.</p></div>
