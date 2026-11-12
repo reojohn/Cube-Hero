@@ -81,12 +81,6 @@
 .solo-history-more{margin:14px auto 0;display:flex}
 .solo-history-foot{justify-content:flex-start;gap:8px;color:#8d9cbf;font-size:11px;line-height:1.5;margin-top:17px}
 .solo-history-foot button{border:none;background:none;color:#cdb0ff;display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;font-weight:750;padding:0}
-.solo-confirm-scrim{position:fixed;inset:0;background:#080c1fd9;backdrop-filter:blur(9px);z-index:110;display:grid;place-items:center;padding:20px}
-.solo-confirm-modal{background:linear-gradient(135deg,#252044,#121f38);border:1px solid #8779ac;border-radius:22px;padding:30px;max-width:450px;width:100%;box-shadow:0 25px 80px #0008}
-.solo-confirm-modal>svg{color:#ff9aab}.solo-confirm-modal h2{margin:15px 0 8px;font-size:23px}.solo-confirm-modal p{color:#b4bfdb;font-size:13px;line-height:1.6}
-.solo-confirm-modal>div{display:flex;justify-content:end;flex-wrap:wrap;gap:10px;margin-top:24px}
-.solo-confirm-modal button{cursor:pointer;border:1px solid #65658d;background:#292d4b;color:#fafaff;padding:11px 15px;border-radius:10px;font-weight:800}
-.solo-confirm-modal button.solo-danger{background:#ac3857;border-color:#ea718f}
 @keyframes solo-rotate{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
 @media(max-width:900px){.solo-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.solo-heading-pill{display:none}}
 @media(max-width:720px){

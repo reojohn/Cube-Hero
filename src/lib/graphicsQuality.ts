@@ -7,9 +7,9 @@ export const GRAPHICS_OPTIONS: readonly {
   detail: string
   recommendation: string
 }[] = [
-  { value: 'low', title: 'Low', detail: 'Sticker colors update between moves. No physical turns.', recommendation: 'Best performance' },
-  { value: 'medium', title: 'Medium', detail: 'Real 3D turns; only the moving layer is rendered as physical pieces, with reduced animation frames.', recommendation: 'Balanced' },
-  { value: 'high', title: 'High', detail: 'Full detailed pieces and rotating layers, as before.', recommendation: 'Best visuals' },
+  { value: 'low', title: 'Low', detail: 'Sticker colors update between moves. No physical turns. Fastest and lightest option.', recommendation: 'Best performance' },
+  { value: 'medium', title: 'Medium', detail: 'One smooth physical cube with real 3D turns and lighter rendering. Best for most phones.', recommendation: 'Balanced' },
+  { value: 'high', title: 'High', detail: 'Full detailed pieces, richer depth, and the highest visual quality for desktop and stronger devices.', recommendation: 'Best visuals' },
 ]
 
 export function graphicsQuality(value: unknown): GraphicsQuality {

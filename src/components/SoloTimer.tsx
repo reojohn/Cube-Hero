@@ -7,6 +7,7 @@ import { SOLO_TIMER_STORAGE_KEY, SOLO_SOLVE_LIMIT, officialSoloMs, parseSoloSolv
 import type { SoloPenalty, SoloSolve } from '../lib/soloTimer'
 import { playGameSound } from '../lib/gameAudio'
 import './SoloTimer.css'
+import ConfirmationModal from './ConfirmationModal'
 
 type Phase = 'idle'|'inspection'|'holding'|'running'|'stopped'
 type Props = { precision: 2|3; onActiveChange: (value:boolean)=>void; reducedMotion:boolean; onRaceClick:()=>void }
@@ -85,6 +86,7 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
   const [displayResult,setDisplayResult] = useState<SoloSolve|null>(null)
   const [copied,setCopied] = useState(false)
   const [confirmClear,setConfirmClear] = useState(false)
+  const [confirmDeleteLast,setConfirmDeleteLast] = useState(false)
   const [visibleCount,setVisibleCount] = useState(40)
   const [expandedSolveId,setExpandedSolveId] = useState<string|null>(null)
   const [copiedHistoryId,setCopiedHistoryId] = useState<string|null>(null)
@@ -253,11 +255,17 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
   },[])
   const deleteLast=()=>{
     if(active || solves.length===0)return
-    if(!window.confirm('Delete your most recent solo solve?'))return
+    setConfirmDeleteLast(true)
+  }
+  const confirmDeleteLastSolve=()=>{
+    if(active){setConfirmDeleteLast(false);return}
     const last=solves[solves.length-1]
-    setSolves(prev=>prev.slice(0,-1))
-    setExpandedSolveId(prev=>prev===last.id?null:prev)
-    if(displayResult?.id===last.id)setDisplayResult(null)
+    if(last){
+      setSolves(prev=>prev.slice(0,-1))
+      setExpandedSolveId(prev=>prev===last.id?null:prev)
+      if(displayResult?.id===last.id)setDisplayResult(null)
+    }
+    setConfirmDeleteLast(false)
   }
   const clearHistory=()=>{
     if(active)return
@@ -362,6 +370,7 @@ export default function SoloTimer({ precision, onActiveChange, reducedMotion, on
       <div className="solo-history-foot"><CircleHelp size={15}/> Solo solves stay separate from AI races and Hero Journey XP. Browser storage can be cleared by your browser. <button type="button" onClick={onRaceClick}>Want a rival? Race AI <ArrowRight size={14}/></button></div>
       </div>
     </section>
-    {confirmClear&&<div className="solo-confirm-scrim" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setConfirmClear(false)}}><section className="solo-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="solo-confirm-title"><Trash2 size={30}/><h2 id="solo-confirm-title">Clear solo history?</h2><p>This permanently deletes all {solves.length} saved solo solves from this browser. AI race history and Hero Journey will not be affected.</p><div><button type="button" onClick={()=>setConfirmClear(false)}>Keep my solves</button><button type="button" className="solo-danger" onClick={clearHistory}>Delete solo history</button></div></section></div>}
+    {confirmDeleteLast&&<ConfirmationModal title="Undo the last solve?" message="Your most recent saved solo time will be removed from this device. This cannot be undone." confirmLabel="Delete last solve" cancelLabel="Keep the solve" tone="warning" icon="delete" onCancel={()=>setConfirmDeleteLast(false)} onConfirm={confirmDeleteLastSolve}/>}
+    {confirmClear&&<ConfirmationModal title="Clear solo history?" message={`This permanently deletes all ${solves.length} solo solves from this device. AI race history and Hero Journey are not affected.`} confirmLabel="Delete solo history" cancelLabel="Keep my solves" tone="danger" icon="delete" onCancel={()=>setConfirmClear(false)} onConfirm={clearHistory}/>}
   </div>
 }

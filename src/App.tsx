@@ -44,6 +44,9 @@ import { configureGameAudio, playGameSound, unlockGameAudio } from './lib/gameAu
 import { isNativeApp, listenForNativeBack, minimizeNativeApp } from './lib/nativePlatform'
 import { GRAPHICS_OPTIONS, graphicsQuality } from './lib/graphicsQuality'
 import type { GraphicsQuality } from './lib/graphicsQuality'
+import ConfirmationModal from './components/ConfirmationModal'
+import type { ConfirmationDetails } from './components/ConfirmationModal'
+import GraphicsCubePreview from './components/GraphicsCubePreview'
 
 type Page='home'|'race'|'room'|'results'|'practice'|'solo'|'statistics'|'learn'|'journey'|'settings'
 type Preferences={sound:boolean;soundVolume:number;cinematicSounds:boolean;timerSounds:boolean;reducedMotion:boolean;compact:boolean;graphics:GraphicsQuality;precision:'2'|'3';orientation:OrientationPreference}
@@ -63,7 +66,16 @@ const NAV:{page:Page;label:string;icon:LucideIcon}[]=[
   {page:'journey',label:'Hero Journey',icon:Award},
 ]
 const initialRace:RaceSettings={difficulty:'15',personality:'balanced',aiCount:1,raceLength:'single',inspection:true,showCube:true,breakdown:true,puzzle:'333'}
-const initialPreferences:Preferences={sound:false,soundVolume:55,cinematicSounds:true,timerSounds:true,reducedMotion:false,compact:false,graphics:'high',precision:'2',orientation:'auto'}
+type ConfirmIntent=ConfirmationDetails & {onConfirm:()=>void}
+function defaultGraphicsPreference():GraphicsQuality{
+  if(typeof window==='undefined'||typeof navigator==='undefined')return 'high'
+  const coarse=window.matchMedia?.('(pointer: coarse)').matches??false
+  const narrow=window.matchMedia?.('(max-width: 960px)').matches??false
+  const mobileUA=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+  const touch=(navigator.maxTouchPoints??0)>0
+  return mobileUA||(touch&&(coarse||narrow))?'medium':'high'
+}
+const initialPreferences:Preferences={sound:false,soundVolume:55,cinematicSounds:true,timerSounds:true,reducedMotion:false,compact:false,graphics:defaultGraphicsPreference(),precision:'2',orientation:'auto'}
 const PATH_LABELS:Record<Page,string>={home:'Overview',race:'Set up your race',room:'Live race arena',results:'Race results',practice:'YOU vs YOU · Ghost Race',solo:'Solo practice timer',statistics:'Your statistics',learn:'Learn speedcubing',journey:'Achievements & progression',settings:'Settings'}
 
 function readSaved<T extends object>(key:string,fallback:T):T {
@@ -206,6 +218,7 @@ function RacePage({settings,update,startRace}:{settings:RaceSettings;update:(v:R
 }
 
 function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{preferences:Preferences;update:(p:Preferences)=>void;reset:()=>void;playerName:string;onPlayerNameChange:(name:string)=>void}){
+  const recommendedGraphics=defaultGraphicsPreference()
   const [draftName,setDraftName]=useState(playerName)
   const [nameSaved,setNameSaved]=useState(false)
   const [orientationFeedback,setOrientationFeedback]=useState<OrientationLockFeedback|null>(null)
@@ -261,11 +274,24 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
     <Surface className="settings-surface ch-graphics-settings" aria-label="Graphics settings">
       <div className="settings-section-head"><span className="settings-header-icon"><Cpu size={20}/></span><div><h3>Graphics Settings</h3><p>Choose how Race AI and Ghost Race render their cubes. Lower settings can help slower Android phones keep the timers responsive.</p></div></div>
       <div className="ch-graphics-grid" role="group" aria-label="Cube graphics quality">
-        {GRAPHICS_OPTIONS.map(option=><button type="button" key={option.value} className={`ch-graphics-option ch-graphics-option-${option.value}${graphicsQuality(preferences.graphics)===option.value?' selected':''}`} aria-pressed={graphicsQuality(preferences.graphics)===option.value} onClick={()=>change('graphics',option.value)}>
-          <span className="ch-graphics-option-top"><strong>{option.title}</strong>{graphicsQuality(preferences.graphics)===option.value&&<Check size={17} aria-hidden="true"/>}</span>
-          <span className="ch-graphics-tag">{option.recommendation}</span>
-          <small>{option.detail}</small>
-        </button>)}
+        {GRAPHICS_OPTIONS.map(option=>{
+          const selected=graphicsQuality(preferences.graphics)===option.value
+          const recommended=recommendedGraphics===option.value
+          return <button type="button" key={option.value} className={`ch-graphics-option ch-graphics-option-${option.value}${selected?' selected':''}`} aria-pressed={selected} onClick={()=>change('graphics',option.value)}>
+            <span className="ch-graphics-option-top">
+              <span className="ch-graphics-heading"><strong>{option.title}</strong><em>{option.recommendation}</em></span>
+              {selected&&<span className="ch-graphics-check"><Check size={16} aria-hidden="true"/></span>}
+            </span>
+            <GraphicsCubePreview quality={option.value}/>
+            <span className="ch-graphics-chip-row">
+              <span className="ch-graphics-tag">{selected?'Current setting':option.recommendation}</span>
+              {option.value==='medium'&&<span className="ch-graphics-tag ch-graphics-tag-recommend"><Smartphone size={12} aria-hidden="true"/> Recommended for Android</span>}
+              {option.value==='high'&&<span className="ch-graphics-tag ch-graphics-tag-recommend"><Cpu size={12} aria-hidden="true"/> Recommended for Desktop</span>}
+              {recommended&&<span className="ch-graphics-tag ch-graphics-tag-device">Default on this device</span>}
+            </span>
+            <small>{option.detail}</small>
+          </button>
+        })}
       </div>
       <p className="ch-graphics-help"><ShieldCheck size={15} aria-hidden="true"/> Only the graphics change. Scrambles, AI speeds, inspection, ghost records and official times stay exactly the same. Your choice saves automatically on this device.</p>
     </Surface>
@@ -312,6 +338,7 @@ export default function App(){
   const [journeyTab,setJourneyTab]=useState<JourneyTab>('overview')
   const [raceSettings,setRaceSettings]=useSavedState('cube-hero-race-settings-v1',initialRace)
   const [preferences,setPreferences]=useSavedState('cube-hero-preferences-v1',initialPreferences)
+  const [confirmState,setConfirmState]=useState<ConfirmIntent|null>(null)
   useEffect(()=>{
     if (isNativeApp()) void requestOrientationPreference(orientationPreference(preferences.orientation))
     // Apply the saved preference only once at native launch; subsequent changes use the Settings button.
@@ -386,12 +413,20 @@ export default function App(){
     window.addEventListener('keydown',onKeyDown)
     return()=>{document.body.style.overflow=previousOverflow;window.removeEventListener('keydown',onKeyDown)}
   },[menuOpen])
-  const goTo=(to:Page)=>{if(((page==='room'&&to!=='room'&&to!=='results')||(page==='practice'&&to!=='practice')||(page==='solo'&&to!=='solo'))&&activeRaceRef.current){if(!window.confirm('Leave the running race? This unfinished round will not be saved.'))return;activeRaceRef.current=false}setVsPendingSession(null);setPage(to);setMenuOpen(false);window.location.hash=`/${to}`;window.scrollTo({top:0,behavior:'instant'})}
+  const navigateTo=(to:Page)=>{activeRaceRef.current=false;setVsPendingSession(null);setPage(to);setMenuOpen(false);window.location.hash=`/${to}`;window.scrollTo({top:0,behavior:'instant'})}
+  const goTo=(to:Page)=>{
+    if(((page==='room'&&to!=='room'&&to!=='results')||(page==='practice'&&to!=='practice')||(page==='solo'&&to!=='solo'))&&activeRaceRef.current){
+      setConfirmState({title:'Leave the running race?',message:'This unfinished round will not be saved. You can stay here to continue racing or leave now.',confirmLabel:'Leave race',cancelLabel:'Stay here',tone:'warning',icon:'leave',onConfirm:()=>navigateTo(to)})
+      return
+    }
+    navigateTo(to)
+  }
   // Android Back must respect an active solve, close overlays first, and never
   // change the race clock or saved progress. Keep one native listener stable
   // across timer-driven React renders (including multi-AI races).
   const nativeBackAction = useRef<() => void>(()=>{})
   nativeBackAction.current = () => {
+    if (confirmState) { setConfirmState(null); return }
     if (vsPendingSession) { setVsPendingSession(null); return }
     if (levelUp) { setLevelUp(null); return }
     if (menuOpen) { setMenuOpen(false); return }
@@ -427,13 +462,23 @@ export default function App(){
   const startTournament=(selection:{difficulty:Difficulty;personality:AiPersonality;aiCount:number})=>{
     unlockGameAudio()
     const active=activeTournament(journey)
-    if(active&&!window.confirm('Start a new tournament? Your unfinished championship will be marked as abandoned.'))return
+    if(active){
+      setConfirmState({title:'Start a new tournament?',message:'Your unfinished championship will be marked as abandoned if you continue.',confirmLabel:'Start new tournament',cancelLabel:'Keep current run',tone:'warning',icon:'warning',onConfirm:()=>{
+        const raceSession:RaceSession={id:newId(),settings:{...raceSettings,difficulty:selection.difficulty,personality:selection.personality,aiCount:getAiCount(selection.aiCount),raceLength:'ao5',inspection:true,showCube:true,puzzle:'333'},records:[]}
+        const event:TournamentSeries={id:newId(),sessionId:raceSession.id,createdAt:new Date().toISOString(),status:'active',difficulty:selection.difficulty,personality:selection.personality,aiCount:raceSession.settings.aiCount,roundsTarget:5,records:[]}
+        setJourney(prev=>startJourneyTournament(prev,event))
+        setSession(raceSession)
+        setJourneyTab('tournaments')
+        navigateTo('room')
+      }})
+      return
+    }
     const raceSession:RaceSession={id:newId(),settings:{...raceSettings,difficulty:selection.difficulty,personality:selection.personality,aiCount:getAiCount(selection.aiCount),raceLength:'ao5',inspection:true,showCube:true,puzzle:'333'},records:[]}
     const event:TournamentSeries={id:newId(),sessionId:raceSession.id,createdAt:new Date().toISOString(),status:'active',difficulty:selection.difficulty,personality:selection.personality,aiCount:raceSession.settings.aiCount,roundsTarget:5,records:[]}
     setJourney(prev=>startJourneyTournament(prev,event))
     setSession(raceSession)
     setJourneyTab('tournaments')
-    goTo('room')
+    navigateTo('room')
   }
   const resumeTournament=(event:TournamentSeries)=>{
     if(event.status!=='active')return
@@ -441,7 +486,7 @@ export default function App(){
     goTo('room')
   }
   const reset=()=>{void requestOrientationPreference('auto');setPreferences(initialPreferences);setRaceSettings(initialRace);setToastMessage('Your interface preferences have been reset.')}
-  const clearHistory=()=>{if(window.confirm('Delete ALL locally saved race history? This cannot be undone.')){setHistory([]);setSession(null);setToastMessage('Race history cleared from this browser.')}}
+  const clearHistory=()=>setConfirmState({title:'Delete saved race history?',message:'This clears all locally saved race history from this browser. This action cannot be undone.',confirmLabel:'Delete history',cancelLabel:'Keep history',tone:'danger',icon:'delete',onConfirm:()=>{setHistory([]);setSession(null);setToastMessage('Race history cleared from this browser.')}})
   const dismissLevelUp=useCallback(()=>setLevelUp(null),[])
   const precision=Number(preferences.precision) as 2|3
   const currentTournament=journey.tournaments.find(t=>t.sessionId===session?.id)
@@ -480,6 +525,7 @@ export default function App(){
         <Menu size={20} strokeWidth={1.85} aria-hidden="true"/><span>More</span>
       </button>
     </nav>
+    {confirmState&&<ConfirmationModal {...confirmState} onCancel={()=>setConfirmState(null)} onConfirm={()=>{setConfirmState(null);confirmState.onConfirm()}}/>}
     {toastMessage&&<div className="toast" role="status"><CheckCircle2 size={17}/>{toastMessage}</div>}
     {levelUp&&<LevelUpCelebration key={levelUp.level} {...levelUp} reducedMotion={preferences.reducedMotion} onContinue={dismissLevelUp}/>}
     {vsPendingSession&&<VsIntro
