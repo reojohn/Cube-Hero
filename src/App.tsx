@@ -21,6 +21,7 @@ import { useLocalPlayer } from './components/LocalPlayerProvider'
 import { isValidPlayerName, normalizePlayerName, PLAYER_NAME_MAX_LENGTH } from './lib/localPlayer'
 import VsIntro from './components/VsIntro'
 import LevelUpCelebration from './components/LevelUpCelebration'
+import AchievementToast from './components/AchievementToast'
 import { getRival } from './lib/rivals'
 import { earnedLevel } from './lib/levelUp'
 import type { LevelUpMilestone } from './lib/levelUp'
@@ -29,8 +30,9 @@ import SoloTimer from './components/SoloTimer'
 import Academy from './components/Academy'
 import HeroJourney from './components/HeroJourney'
 import type { JourneyTab } from './components/HeroJourney'
-import { JOURNEY_STORAGE_KEY, JOURNEY_UPDATED_EVENT, parseJourney, blankJourney, syncJourney, startTournament as startJourneyTournament, recordTournamentRound, activeTournament, tournamentStandings, levelInfo, journeyMetrics } from './lib/heroJourney'
-import type { JourneyState, TournamentSeries } from './lib/heroJourney'
+import { JOURNEY_STORAGE_KEY, JOURNEY_UPDATED_EVENT, parseJourney, blankJourney, syncJourney, startTournament as startJourneyTournament, recordTournamentRound, activeTournament, tournamentStandings, levelInfo, journeyMetrics, achievements } from './lib/heroJourney'
+import type { Achievement, JourneyState, TournamentSeries } from './lib/heroJourney'
+import { earnedAchievementIds, newAchievementUnlocks } from './lib/achievementNotifications'
 import { parseGhostData, GHOST_STORAGE_KEY, emptyGhostData } from './lib/ghost'
 import { ACADEMY_STORAGE_KEY, parseAcademyProgress, initialAcademyProgress } from './lib/academy'
 import RaceMechanicsModal from './components/RaceMechanicsModal'
@@ -388,6 +390,16 @@ export default function App(){
   })
   const lastLevelRef=useRef(initialLevel)
   const [levelUp,setLevelUp]=useState<LevelUpMilestone|null>(null)
+  // Baseline includes existing Ghost, Academy and AI progress that may be
+  // imported on mount. Historical achievements must NEVER pop up on launch.
+  const [initialEarnedAchievements]=useState(()=>{
+    const {ghost,academy}=loadJourneySources()
+    return earnedAchievementIds(syncJourney(journey,history,ghost,academy))
+  })
+  const previousEarnedAchievementsRef=useRef(initialEarnedAchievements)
+  const [achievementQueue,setAchievementQueue]=useState<Achievement[]>([])
+  const [achievementNotice,setAchievementNotice]=useState<Achievement|null>(null)
+  const dismissAchievement=useCallback(()=>setAchievementNotice(null),[])
   const activeRaceRef=useRef(false)
   const trackRaceActive=useCallback((value:boolean)=>{activeRaceRef.current=value},[])
   useEffect(()=>{try{localStorage.setItem('cube-hero-history-v2',JSON.stringify(history.slice(-2000)))}catch{/* storage unavailable */}},[history])
@@ -414,6 +426,22 @@ export default function App(){
       lastLevelRef.current=milestone.level
     }
   },[journey])
+  // Announce only newly unlocked achievements, across every CubeHero mode.
+  // Previous IDs are updated before queuing, preventing duplicate toasts from
+  // React re-renders, navigation, or repeated progress synchronization.
+  useEffect(()=>{
+    const current=achievements(journey)
+    const unlocked=newAchievementUnlocks(previousEarnedAchievementsRef.current,current)
+    previousEarnedAchievementsRef.current=new Set(current.filter(item=>item.unlocked).map(item=>item.id))
+    if(unlocked.length)setAchievementQueue(prev=>[...prev,...unlocked])
+  },[journey])
+  // Show queued achievements sequentially. Let the existing full-screen
+  // level-up celebration finish first instead of overlapping both rewards.
+  useEffect(()=>{
+    if(levelUp||achievementNotice||achievementQueue.length===0)return
+    setAchievementNotice(achievementQueue[0])
+    setAchievementQueue(prev=>prev.slice(1))
+  },[levelUp,achievementNotice,achievementQueue])
   useEffect(()=>{try{if(session)localStorage.setItem('cube-hero-session-v2',JSON.stringify(session));else localStorage.removeItem('cube-hero-session-v2')}catch{/* storage unavailable */}},[session])
   useEffect(()=>{const handleHash=()=>{setVsPendingSession(null);setPage(getCurrentPage());setMenuOpen(false)};window.addEventListener('hashchange',handleHash);return()=>window.removeEventListener('hashchange',handleHash)},[])
   // Results screen is idle: prepare the next verified scramble without doing
@@ -554,6 +582,9 @@ export default function App(){
     </nav>
     {confirmState&&<ConfirmationModal {...confirmState} onCancel={()=>setConfirmState(null)} onConfirm={()=>{setConfirmState(null);confirmState.onConfirm()}}/>}
     {toastMessage&&<div className="toast" role="status"><CheckCircle2 size={17}/>{toastMessage}</div>}
+    {achievementNotice&&!levelUp&&<AchievementToast key={achievementNotice.id} achievement={achievementNotice}
+      moreCount={achievementQueue.length} reducedMotion={preferences.reducedMotion}
+      onDismiss={dismissAchievement} onView={()=>{dismissAchievement();setJourneyTab('achievements');goTo('journey')}}/>}
     {levelUp&&<LevelUpCelebration key={levelUp.level} {...levelUp} reducedMotion={preferences.reducedMotion} onContinue={dismissLevelUp}/>}
     {vsPendingSession&&<VsIntro
       playerName={playerName}

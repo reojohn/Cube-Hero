@@ -9,7 +9,7 @@
 export type GameSound =
   | 'inspect' | 'arm' | 'ready' | 'start' | 'stop' | 'countdown'
   | 'opponentFinish' | 'victory' | 'loss' | 'personalBest'
-  | 'ghostFinish' | 'vs' | 'vsImpact' | 'vsFinal' | 'preview'
+  | 'ghostFinish' | 'vs' | 'vsImpact' | 'vsFinal' | 'preview' | 'achievement'
 
 export type GameAudioSettings = {
   enabled: boolean
@@ -85,6 +85,8 @@ const effects: Record<GameSound, Note[]> = {
   vsImpact: [[110, 0, .32, .45, 'triangle', 53], [720, .06, .16, .27, 'sawtooth', 270], [880, .22, .24, .21, 'sine', 1100]],
   vsFinal: [[430, 0, .16, .24, 'triangle', 600], [620, .16, .18, .25, 'triangle', 820], [920, .34, .34, .28, 'sine', 1200]],
   preview: [[540, 0, .10, .23, 'sine'], [680, .13, .11, .23, 'sine'], [910, .26, .19, .24, 'triangle']],
+  // Short earned-reward chime; respects the game's master sound / volume setting.
+  achievement: [[523, 0, .10, .13, 'triangle'], [659, .10, .13, .15, 'triangle'], [784, .23, .24, .19, 'sine']],
 }
 
 const cinematicOnly = new Set<GameSound>(['vs','vsImpact','vsFinal'])

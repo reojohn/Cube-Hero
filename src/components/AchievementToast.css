@@ -1,0 +1,39 @@
+/* Minecraft-style achievement banner, customized for CubeHero's navy/purple UI.
+   Animates only on entry and once for its lifespan; nothing runs offscreen. */
+.ch-achievement-toast{
+  position:fixed;z-index:1200;right:clamp(14px,2.4vw,32px);top:calc(env(safe-area-inset-top,0px) + 18px);
+  width:min(382px,calc(100vw - 28px));min-height:112px;
+  display:flex;align-items:center;gap:14px;padding:17px 37px 19px 17px;
+  border-radius:16px;border:1px solid #b58a50;
+  background:linear-gradient(117deg,#171c2e 0%,#12182a 62%,#201b38 100%);
+  box-shadow:0 14px 32px #0406119c,0 0 0 1px #e2bf7940 inset;
+  color:#f6f1e5;overflow:hidden;isolation:isolate;
+  animation:ch-achievement-slide .42s cubic-bezier(.16,1,.3,1) both;
+}
+.ch-achievement-toast__accent{position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(#fff1ba,#e8a848,#a56dfc);}
+.ch-achievement-toast__icon{position:relative;flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:13px;border:1px solid #e7b86285;background:linear-gradient(140deg,#59402f,#251d3a 67%);color:#ffda8a;box-shadow:inset 0 1px 0 #ffe2a62e,0 7px 18px #0a071874;}
+.ch-achievement-toast__check{position:absolute;right:-5px;bottom:-5px;background:#35866e;border:1px solid #adf5d7;border-radius:50%;width:18px;height:18px;padding:2px;color:#fff;}
+.ch-achievement-toast__copy{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start;}
+.ch-achievement-toast__eyebrow{display:flex;gap:5px;align-items:center;color:#ffd687;font-size:9px;font-weight:900;letter-spacing:1.12px;line-height:1.35;}
+.ch-achievement-toast__copy>strong{font:800 16px/1.35 'Plus Jakarta Sans','DM Sans',system-ui,sans-serif;letter-spacing:-.35px;margin:5px 0 3px;color:#fff9ed;}
+.ch-achievement-toast__copy>p{font-size:11px;line-height:1.45;color:#b5b5cd;max-width:280px;margin:0;}
+.ch-achievement-toast__view{color:#eec78c;background:none;border:none;text-decoration:none;padding:8px 0 0;font-weight:800;font-size:10px;cursor:pointer;}
+.ch-achievement-toast__view:hover{color:#fff2c7;text-decoration:underline;}
+.ch-achievement-toast__view:focus-visible,.ch-achievement-toast__close:focus-visible{outline:2px solid #ffda9f;outline-offset:3px;}
+.ch-achievement-toast__queued{font-size:9px;color:#b4a0d3;margin-top:4px;}
+.ch-achievement-toast__close{position:absolute;top:10px;right:10px;width:27px;height:27px;display:grid;place-items:center;background:#ffffff0c;border:1px solid #ffffff12;border-radius:7px;color:#b8b8d2;cursor:pointer;}
+.ch-achievement-toast__close:hover{color:#fff;background:#ffffff22;}
+.ch-achievement-toast__timebar{position:absolute;bottom:0;left:0;right:0;height:3px;transform-origin:left center;background:linear-gradient(90deg,#f1c371,#9766fc);animation:ch-achievement-drain 5s linear both;}
+@keyframes ch-achievement-slide{from{opacity:0;transform:translateX(calc(100% + 40px))}to{opacity:1;transform:translateX(0)}}
+@keyframes ch-achievement-drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media(max-width:650px){
+  .ch-achievement-toast{top:calc(env(safe-area-inset-top,0px) + 74px);right:12px;width:calc(100vw - 24px);padding:14px 36px 16px 13px;border-radius:13px;gap:11px;min-height:100px;}
+  .ch-achievement-toast__icon{width:47px;height:47px;border-radius:11px;}
+  .ch-achievement-toast__icon>svg:first-child{width:25px;height:25px;}
+  .ch-achievement-toast__copy>strong{font-size:14px;}
+  .ch-achievement-toast__eyebrow{font-size:8px;letter-spacing:.85px;}
+  .ch-achievement-toast__copy>p{font-size:10px;}
+}
+@media(max-height:450px){.ch-achievement-toast{top:calc(env(safe-area-inset-top,0px) + 9px);min-height:0;padding-top:10px;padding-bottom:12px;}}
+@media(prefers-reduced-motion:reduce){.ch-achievement-toast,.ch-achievement-toast__timebar{animation:none!important;}}
+.ch-achievement-toast--still,.ch-achievement-toast--still .ch-achievement-toast__timebar{animation:none!important;}
