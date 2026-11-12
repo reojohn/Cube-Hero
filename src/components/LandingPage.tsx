@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Award, BookOpen, Check,
-  ChevronDown, CircleCheck, Flag, Ghost, UserRound, Bot,
+  ChevronDown, CircleCheck, Flag, Ghost,
   Download, GraduationCap, Layers3, Laptop, Menu, MousePointer2, Play, ShieldCheck,
   Smartphone, Sparkles, Timer, Trophy, X, Zap,
 } from 'lucide-react'
@@ -51,38 +51,6 @@ function PlatformDownloads({ compact = false }: { compact?: boolean }) {
   </div>
 }
 
-type DuelMode = 'ai' | 'ghost'
-
-// TEMPORARY PERFORMANCE TEST: no cube renderer, frame generation, live timers,
-// animation timers, observers, or requests are mounted by this preview.
-// Restore the earlier LandingPage.tsx to re-enable animated demo races.
-function DuelPreview({ mode }: { mode: DuelMode }) {
-  const isGhost = mode === 'ghost'
-  const humanWon = !isGhost
-  return <div className={`lp-duel-preview lp-duel-preview-${mode}`} aria-label={`${isGhost ? 'Ghost Race' : 'Race AI'} example result; animated preview disabled for performance testing`}>
-    <div className="lp-duel-info"><span>PREVIEW PAUSED · PERFORMANCE TEST</span><span>NO 3D / TIMERS</span></div>
-    <div className="lp-duel-stage">
-      <div className={`lp-duel-contender is-finished${humanWon ? ' is-winner' : ''}`}>
-        <div className="lp-duel-contender-head"><span className="lp-duel-avatar"><UserRound size={17}/></span><strong>YOU</strong></div>
-        <div className="lp-duel-cube-spot"><span style={{ color:'#aaa0c3', fontWeight:800, fontSize:11, letterSpacing:'.08em', textAlign:'center' }}>3D PREVIEW OFF</span></div>
-        <div className="lp-duel-time">{isGhost ? '9.20' : '8.00'}<small>s</small></div>
-        <span className="lp-duel-state">{humanWon ? '🏆 WINNER' : 'SOLVED'}</span>
-      </div>
-      <span className="lp-duel-versus">VS</span>
-      <div className={`lp-duel-contender is-finished${!humanWon ? ' is-winner' : ''}`}>
-        <div className="lp-duel-contender-head"><span className="lp-duel-avatar">{isGhost ? <Ghost size={17}/> : <Bot size={17}/>}</span><strong>{isGhost ? 'GHOST' : 'AI RIVAL'}</strong></div>
-        <div className="lp-duel-cube-spot"><span style={{ color:'#aaa0c3', fontWeight:800, fontSize:11, letterSpacing:'.08em', textAlign:'center' }}>3D PREVIEW OFF</span></div>
-        <div className="lp-duel-time">{isGhost ? '7.40' : '10.00'}<small>s</small></div>
-        <span className="lp-duel-state">{!humanWon ? '🏆 WINNER' : 'SOLVED'}</span>
-      </div>
-    </div>
-    <div className={`lp-duel-outcome${isGhost ? ' is-ghost' : ''}`} style={{ color: isGhost ? '#c8d1ff' : '#bafde3' }}>
-      <Trophy size={15}/><strong>{isGhost ? 'GHOST WINS!' : 'YOU WIN!'}</strong><span>{isGhost ? '07.40s vs 09.20s' : '08.00s vs 10.00s'}</span>
-    </div>
-    <p className="lp-duel-a11y">Example result only. 3D cubes and timer animations have been temporarily removed for performance testing.</p>
-  </div>
-}
-
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   useEffect(() => {
@@ -125,6 +93,7 @@ export default function LandingPage() {
             <WebLink className="lp-button lp-button-primary lp-button-large lp-button-echo"><Play size={18} fill="currentColor"/> Play for free <ArrowRight size={18}/><span className="lp-cta-shine" aria-hidden="true" /></WebLink>
             <a href="#download" className="lp-button lp-button-secondary lp-button-large"><Smartphone size={19}/> All downloads <ArrowDown size={17}/></a>
           </div>
+          <div className="lp-download-trust lp-entry"><ShieldCheck size={14}/><span>Official CubeHero APK · Direct download from this site</span></div>
           <div className="lp-hero-downloads lp-entry"><div className="lp-hero-downloads-heading"><span>GET CUBE HERO</span><small>Android available now</small></div><PlatformDownloads compact /></div>
           <div className="lp-hero-notes lp-entry"><span><CircleCheck size={15}/> No account needed</span><span><CircleCheck size={15}/> Works with a real 3×3 cube</span></div>
         </div>
@@ -182,16 +151,50 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="lp-section lp-wrap lp-battle-section" aria-labelledby="lp-battle-title">
-        <div className="lp-section-intro lp-battle-intro"><div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> ARENA PERFORMANCE TEST</div><h2 id="lp-battle-title">Two modes. <span>Two rivalries.</span></h2><p>The animated previews are temporarily paused so you can compare how smoothly the landing page scrolls.</p></div>
-        <div className="lp-battle-grid">
-          <article className="lp-battle-card">
-            <div className="lp-battle-copy"><span className="lp-battle-label"><Flag size={14}/> RACE AI</span><h3>Human vs. AI. Who solves first?</h3><p>In this match, you finish in 8 seconds. The AI finishes in 10.</p></div>
-            <DuelPreview mode="ai" />
+      <section className="lp-section lp-wrap lp-battle-section" id="battle-modes" aria-labelledby="lp-battle-title">
+        <div className="lp-section-intro lp-battle-intro">
+          <div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> CHOOSE YOUR CHALLENGE</div>
+          <h2 id="lp-battle-title">Two rivalries. <span>One hero.</span></h2>
+          <p>Go head-to-head with AI speedcubers or challenge your personal-best ghost. Here’s how each mode works.</p>
+        </div>
+        <div className="lp-battle-grid lp-poster-grid">
+          <article className="lp-battle-card lp-poster-card" aria-labelledby="lp-ai-poster-title">
+            <div className="lp-poster-frame">
+              <picture>
+                <source media="(max-width: 600px)" srcSet="/landing/race-ai-poster-mobile.webp" type="image/webp"/>
+                <img className="lp-poster-image" src="/landing/race-ai-poster.webp" alt="CubeHero You versus AI: a speedcuber holding a Rubik's cube faces a futuristic AI competitor in a purple neon arena." width={1672} height={941} loading="lazy" decoding="async"/>
+              </picture>
+              <span className="lp-poster-corner"><Flag size={13}/> RACE AI</span>
+            </div>
+            <div className="lp-poster-info">
+              <div className="lp-poster-title-row"><h3 id="lp-ai-poster-title">Challenge the AI.</h3><span className="lp-poster-kicker">HUMAN VS AI</span></div>
+              <p>Pick your rival, share the same scramble, and race for the faster solve.</p>
+              <ol className="lp-poster-mechanics">
+                <li><span className="lp-poster-number">01</span><span><strong>Choose your rivals.</strong><small>Race 1–10 AI cubers. Set their speed and personality.</small></span></li>
+                <li><span className="lp-poster-number">02</span><span><strong>Scramble your cube.</strong><small>Use the same displayed 3×3 scramble as your AI opponents.</small></span></li>
+                <li><span className="lp-poster-number">03</span><span><strong>Race to the finish.</strong><small>Solve your physical cube before your AI rivals complete theirs.</small></span></li>
+              </ol>
+              <WebLink to="/app#/race" className="lp-button lp-button-primary lp-poster-cta"><Flag size={17}/> Challenge the AI <ArrowUpRight size={17}/></WebLink>
+            </div>
           </article>
-          <article className="lp-battle-card lp-battle-card-ghost">
-            <div className="lp-battle-copy"><span className="lp-battle-label"><Ghost size={14}/> GHOST RACE</span><h3>You vs. your personal-best ghost.</h3><p>Your ghost crosses the finish line first. Can you beat it next time?</p></div>
-            <DuelPreview mode="ghost" />
+          <article className="lp-battle-card lp-poster-card lp-battle-card-ghost" aria-labelledby="lp-ghost-poster-title">
+            <div className="lp-poster-frame">
+              <picture>
+                <source media="(max-width: 600px)" srcSet="/landing/ghost-race-poster-mobile.webp" type="image/webp"/>
+                <img className="lp-poster-image" src="/landing/ghost-race-poster.webp" alt="CubeHero You versus Your Ghost: a speedcuber competes against a glowing purple ghost version of themself in a neon duel." width={1536} height={1024} loading="lazy" decoding="async"/>
+              </picture>
+              <span className="lp-poster-corner"><Ghost size={13}/> GHOST RACE</span>
+            </div>
+            <div className="lp-poster-info">
+              <div className="lp-poster-title-row"><h3 id="lp-ghost-poster-title">Outrace your ghost.</h3><span className="lp-poster-kicker">YOU VS YOU</span></div>
+              <p>Race against your own best recorded solve and chase a new personal best.</p>
+              <ol className="lp-poster-mechanics">
+                <li><span className="lp-poster-number">01</span><span><strong>Record three solves.</strong><small>Your fastest valid time becomes your personal ghost.</small></span></li>
+                <li><span className="lp-poster-number">02</span><span><strong>Get a fresh scramble.</strong><small>Prepare your physical 3×3 cube for the next round.</small></span></li>
+                <li><span className="lp-poster-number">03</span><span><strong>Beat your best.</strong><small>Finish faster than your ghost’s saved time to win.</small></span></li>
+              </ol>
+              <WebLink to="/app#/practice" className="lp-button lp-button-secondary lp-poster-cta"><Ghost size={17}/> Race your ghost <ArrowUpRight size={17}/></WebLink>
+            </div>
           </article>
         </div>
       </section>
