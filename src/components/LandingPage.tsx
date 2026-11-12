@@ -68,12 +68,15 @@ function DuelPreview({ mode }: { mode: DuelMode }) {
     if (!element) return
     let timer: number | undefined
     let started = 0
+    // Timers remain accurate (performance.now), but a marketing preview does
+    // not need to re-render its entire React subtree every 80 ms.
+    const intervalMs = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 180 : 120
     const stop = () => { if (timer !== undefined) { window.clearInterval(timer); timer = undefined } }
     const begin = () => {
       if (timer !== undefined || document.hidden) return
       started = performance.now()
       setElapsed(0)
-      timer = window.setInterval(() => setElapsed(((performance.now() - started) / 1000) % cycle), 80)
+      timer = window.setInterval(() => setElapsed(((performance.now() - started) / 1000) % cycle), intervalMs)
     }
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !document.hidden) begin()

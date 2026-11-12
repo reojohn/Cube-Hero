@@ -101,10 +101,12 @@ function corners(center: Vec3, normal: Vec3, u: Vec3, v: Vec3, half: number, off
     add(add(base, scale(u, -half)), scale(v, half)),
   ]
 }
-function visiblePolygons(state: readonly Cubie[], active: Turn | null, radians: number): Polygon[] {
+function visiblePolygons(state: readonly Cubie[], active: Turn | null, radians: number, filter: 'all' | 'moving' | 'stationary' = 'all'): Polygon[] {
   const polygons: Polygon[] = []
   for (const cubie of state) {
     const moving = !!active && active.layers.includes(cubie.position[active.axis])
+    if (filter === 'moving' && !moving) continue
+    if (filter === 'stationary' && moving) continue
     const transform = (v: Vec3): Vec3 => moving && active ? rotate(v, active.axis, radians) : v
     const center = transform(scale(cubie.position, PITCH))
     for (const face of FACES) {
@@ -127,6 +129,11 @@ function visiblePolygons(state: readonly Cubie[], active: Turn | null, radians: 
   }
   return polygons.sort((a, b) => a.depth - b.depth)
 }
+// Stationary cubies do not change during a layer turn. Cache their projected
+// geometry once instead of rebuilding it for every rendered frame and racer.
+const STATIC_POLYGONS = SOLVE_STATES.map((state, i) =>
+  visiblePolygons(state, solutionTurns[i] ?? null, 0, 'stationary'),
+)
 function shade(hex: string, brightness: number): string {
   const value = parseInt(hex.slice(1), 16)
   const r = Math.min(255, Math.round(((value >> 16) & 255) * brightness))
@@ -139,7 +146,9 @@ function drawCube(canvas: HTMLCanvasElement, elapsed: number, duration: number, 
   if (!context) return
   const width = canvas.getBoundingClientRect().width || 180
   const height = canvas.getBoundingClientRect().height || 180
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  // A 160px marketing preview gains little from 2x DPR; lower resolution
+  // substantially reduces raster work on high-density phones.
+  const dpr = Math.min(window.devicePixelRatio || 1, window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 1 : 1.35)
   const w = Math.round(width * dpr)
   const h = Math.round(height * dpr)
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h }
@@ -168,7 +177,10 @@ function drawCube(canvas: HTMLCanvasElement, elapsed: number, duration: number, 
     context!.closePath()
   }
   context.globalAlpha = ghost ? .82 : 1
-  for (const polygon of visiblePolygons(SOLVE_STATES[completed], current, radians)) {
+  const polygons = current
+    ? [...STATIC_POLYGONS[completed], ...visiblePolygons(SOLVE_STATES[completed], current, radians, 'moving')].sort((a, b) => a.depth - b.depth)
+    : STATIC_POLYGONS[completed]
+  for (const polygon of polygons) {
     trace(polygon.plastic)
     context.fillStyle = '#11141f'
     context.fill()
@@ -178,10 +190,9 @@ function drawCube(canvas: HTMLCanvasElement, elapsed: number, duration: number, 
     if (!polygon.sticker || !polygon.color) continue
     trace(polygon.sticker)
     const brightness = .75 + Math.min(.26, Math.max(0, polygon.light) * .28)
-    const gradient = context.createLinearGradient(...project(polygon.sticker[0]), ...project(polygon.sticker[2]))
-    gradient.addColorStop(0, shade(polygon.color, Math.min(1.15, brightness + .15)))
-    gradient.addColorStop(1, shade(polygon.color, brightness))
-    context.fillStyle = gradient
+    // Single shaded fill instead of creating a new CanvasGradient for every
+    // sticker on every frame. Visible face lighting remains intact.
+    context.fillStyle = shade(polygon.color, Math.min(1.12, brightness + .07))
     context.fill()
     context.strokeStyle = 'rgba(255,255,255,.18)'
     context.lineWidth = Math.max(.5, scaleFactor * .012)
@@ -193,18 +204,36 @@ function drawCube(canvas: HTMLCanvasElement, elapsed: number, duration: number, 
 export default function LandingDuelCube({ elapsed, duration, ghost = false }: { elapsed: number; duration: number; ghost?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const latest = useRef({ elapsed, duration, ghost })
+  const lastPaint = useRef({ time: -Infinity, elapsed: -1, finished: false, ghost: false })
   latest.current = { elapsed, duration, ghost }
   useEffect(() => {
     if (!canvas.current) return
+    // A resize is infrequent. Force a fresh frame only after dimensions change.
     const observer = new ResizeObserver(() => {
       const current = latest.current
-      if (canvas.current) drawCube(canvas.current, current.elapsed, current.duration, current.ghost)
+      if (canvas.current) {
+        lastPaint.current.time = -Infinity
+        drawCube(canvas.current, current.elapsed, current.duration, current.ghost)
+        lastPaint.current = { time: performance.now(), elapsed: current.elapsed, finished: current.elapsed >= current.duration, ghost: current.ghost }
+      }
     })
     observer.observe(canvas.current)
     return () => observer.disconnect()
   }, [])
   useEffect(() => {
-    if (canvas.current) drawCube(canvas.current, elapsed, duration, ghost)
+    const target = canvas.current
+    if (!target) return
+    const finished = elapsed >= duration
+    const previous = lastPaint.current
+    // Solved cubes are static. Repainting them throughout the result hold only
+    // wastes CPU, so render the solved state once and leave it in the canvas.
+    if (finished && previous.finished && previous.ghost === ghost) return
+    const now = performance.now()
+    const minFrameMs = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches ? 180 : 115
+    const newCycle = elapsed < previous.elapsed
+    if (!finished && !newCycle && now - previous.time < minFrameMs) return
+    drawCube(target, elapsed, duration, ghost)
+    lastPaint.current = { time: now, elapsed, finished, ghost }
   }, [elapsed, duration, ghost])
   return <canvas className={`lp-real-cube${ghost ? ' is-ghost' : ''}`} ref={canvas} width={160} height={160} aria-hidden="true" />
 }
