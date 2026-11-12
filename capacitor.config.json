@@ -1,6 +1,6 @@
 {
   "appId": "com.cubehero.speedcubing",
-  "appName": "Cube Hero",
+  "appName": "CubeHero",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

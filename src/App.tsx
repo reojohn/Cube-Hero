@@ -75,11 +75,25 @@ function defaultGraphicsPreference():GraphicsQuality{
   const touch=(navigator.maxTouchPoints??0)>0
   return mobileUA||(touch&&(coarse||narrow))?'medium':'high'
 }
-const initialPreferences:Preferences={sound:false,soundVolume:55,cinematicSounds:true,timerSounds:true,reducedMotion:false,compact:false,graphics:defaultGraphicsPreference(),precision:'2',orientation:'auto'}
+const initialPreferences:Preferences={sound:true,soundVolume:90,cinematicSounds:true,timerSounds:true,reducedMotion:false,compact:false,graphics:defaultGraphicsPreference(),precision:'2',orientation:'auto'}
 const PATH_LABELS:Record<Page,string>={home:'Overview',race:'Set up your race',room:'Live race arena',results:'Race results',practice:'YOU vs YOU · Ghost Race',solo:'Solo practice timer',statistics:'Your statistics',learn:'Learn speedcubing',journey:'Achievements & progression',settings:'Settings'}
 
 function readSaved<T extends object>(key:string,fallback:T):T {
-  try { const value=window.localStorage.getItem(key);return value?{...fallback,...JSON.parse(value)}:fallback }catch{return fallback}
+  try {
+    const value=window.localStorage.getItem(key)
+    if(!value)return fallback
+    const stored=JSON.parse(value)
+    // One-time transition for users who kept the previous silent 55% defaults.
+    // Preserve personalized audio preferences, and never override a later mute.
+    if(key==='cube-hero-preferences-v1' &&
+      !window.localStorage.getItem('cube-hero-audio-default-v2') &&
+      stored.sound===false && stored.soundVolume===55 &&
+      stored.cinematicSounds!==false && stored.timerSounds!==false){
+      window.localStorage.setItem('cube-hero-audio-default-v2','1')
+      return {...fallback,...stored,sound:true,soundVolume:90}
+    }
+    return {...fallback,...stored}
+  }catch{return fallback}
 }
 function useSavedState<T extends object>(key:string,fallback:T):[T,(value:T)=>void] {
   const [value,setValue]=useState<T>(()=>readSaved(key,fallback))
@@ -221,6 +235,7 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
   const recommendedGraphics=defaultGraphicsPreference()
   const [draftName,setDraftName]=useState(playerName)
   const [nameSaved,setNameSaved]=useState(false)
+  const [cubeDemo,setCubeDemo]=useState<{quality:GraphicsQuality;startedAt:number}|null>(null)
   const [orientationFeedback,setOrientationFeedback]=useState<OrientationLockFeedback|null>(null)
   const [physicalOrientation,setPhysicalOrientation]=useState<'portrait'|'landscape'>(()=>window.matchMedia('(orientation: landscape)').matches?'landscape':'portrait')
   useEffect(()=>{
@@ -231,6 +246,11 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
     return()=>{query.removeEventListener?.('change',updateOrientation);window.removeEventListener('resize',updateOrientation)}
   },[])
   useEffect(()=>{setDraftName(playerName)},[playerName])
+  useEffect(()=>{
+    if(!cubeDemo)return
+    const timeout=window.setTimeout(()=>setCubeDemo(current=>current?.startedAt===cubeDemo.startedAt?null:current),4700)
+    return()=>window.clearTimeout(timeout)
+  },[cubeDemo])
   const saveName=(event:React.FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!isValidPlayerName(draftName))return;onPlayerNameChange(normalizePlayerName(draftName));setNameSaved(true)}
   const change=<K extends keyof Preferences>(key:K,v:Preferences[K])=>{
     const next={...preferences,[key]:v}
@@ -259,16 +279,17 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
     <Surface className="settings-surface"><div className="settings-section-head"><span className="settings-header-icon"><SlidersHorizontal size={20}/></span><div><h3>Experience</h3><p>Adjust how your arena behaves.</p></div></div>
       <div className="settings-row"><div><strong>Interface animations</strong><p>Reduce decorative movement for accessibility.</p></div><Switch checked={preferences.reducedMotion} onChange={v=>change('reducedMotion',v)} label="Reduce animations"/></div>
       <div className="settings-row"><div><strong>Compact layout</strong><p>Fit more cards into the available screen space.</p></div><Switch checked={preferences.compact} onChange={v=>change('compact',v)} label="Compact layout"/></div>
-      <div className="settings-row"><div><strong>Game sound effects</strong><p>Sounds for inspection, racing, and personal bests. VS intros stay silent.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Enable game sound effects"/></div>
+      <div className="settings-row"><div><strong>Game sound effects</strong><p>Sounds for VS intros, inspection, racing, and personal bests. Enabled by default on new installs.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Enable game sound effects"/></div>
       <div className="ch-audio-settings" aria-label="Game sound configuration">
         <div className="ch-audio-volume-control">
           <div className="ch-audio-volume-row"><label htmlFor="cube-audio-volume"><Volume2 size={17} aria-hidden="true"/> <span>Sound volume</span></label><output htmlFor="cube-audio-volume">{preferences.soundVolume}%</output></div>
           <input className="ch-audio-volume-slider" id="cube-audio-volume" type="range" min="0" max="100" step="5" value={preferences.soundVolume} disabled={!preferences.sound} onChange={event=>change('soundVolume',Number(event.target.value))} aria-label="Game sound volume" aria-valuetext={`${preferences.soundVolume} percent`}/>
           <div className="ch-audio-volume-ends" aria-hidden="true"><span>Quiet</span><span>Loud</span></div>
         </div>
+        <div className="ch-audio-control-row"><div><strong>VS intro & cinematic sounds</strong><p>Play matchup whooshes and impact sounds during VS animations.</p></div><Switch checked={preferences.cinematicSounds} onChange={v=>change('cinematicSounds',v)} label="VS intro and cinematic sound effects"/></div>
         <div className="ch-audio-control-row"><div><strong>Timer and inspection sounds</strong><p>Hold ready, start, stop, and countdown beeps.</p></div><Switch checked={preferences.timerSounds} onChange={v=>change('timerSounds',v)} label="Timer and inspection sound effects"/></div>
         <button type="button" className="btn btn-outline btn-sm ch-audio-test" disabled={!preferences.sound||!preferences.soundVolume} onClick={()=>{unlockGameAudio();playGameSound('preview')}}><Volume2 size={16}/> Test sound</button>
-        <p className="ch-audio-hint">Sounds are generated on your device—no downloads or accounts. Mobile browsers play sound after the first interaction.</p>
+        <p className="ch-audio-hint">All sounds are generated offline on your device. Sound starts after your first tap or key press because browsers restrict automatic playback. Device volume still controls maximum loudness.</p>
       </div>
     </Surface>
     <Surface className="settings-surface ch-graphics-settings" aria-label="Graphics settings">
@@ -277,12 +298,18 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
         {GRAPHICS_OPTIONS.map(option=>{
           const selected=graphicsQuality(preferences.graphics)===option.value
           const recommended=recommendedGraphics===option.value
-          return <button type="button" key={option.value} className={`ch-graphics-option ch-graphics-option-${option.value}${selected?' selected':''}`} aria-pressed={selected} onClick={()=>change('graphics',option.value)}>
-            <span className="ch-graphics-option-top">
-              <span className="ch-graphics-heading"><strong>{option.title}</strong><em>{option.recommendation}</em></span>
-              {selected&&<span className="ch-graphics-check"><Check size={16} aria-hidden="true"/></span>}
-            </span>
-            <GraphicsCubePreview quality={option.value}/>
+          const previewing=cubeDemo?.quality===option.value
+          return <div key={option.value} className={`ch-graphics-option ch-graphics-option-${option.value}${selected?' selected':''}`}>
+            <button type="button" className="ch-graphics-select" aria-pressed={selected} aria-label={`Select ${option.title} graphics`} onClick={()=>change('graphics',option.value)}>
+              <span className="ch-graphics-option-top">
+                <span className="ch-graphics-heading"><strong>{option.title}</strong><em>{option.recommendation}</em></span>
+                {selected&&<span className="ch-graphics-check"><Check size={16} aria-hidden="true"/></span>}
+              </span>
+              <GraphicsCubePreview quality={option.value} playing={previewing} startAt={previewing ? cubeDemo?.startedAt ?? null : null}/>
+            </button>
+            <button type="button" className="ch-graphics-demo-btn" aria-label={`Simulate ${option.title} cube turns`} onClick={()=>{unlockGameAudio();setCubeDemo({quality:option.value,startedAt:performance.now()});}}>
+              <RotateCw size={14} aria-hidden="true"/> {previewing?'Replay turns':'Simulate turns'}
+            </button>
             <span className="ch-graphics-chip-row">
               <span className="ch-graphics-tag">{selected?'Current setting':option.recommendation}</span>
               {option.value==='medium'&&<span className="ch-graphics-tag ch-graphics-tag-recommend"><Smartphone size={12} aria-hidden="true"/> Recommended for Android</span>}
@@ -290,10 +317,10 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
               {recommended&&<span className="ch-graphics-tag ch-graphics-tag-device">Default on this device</span>}
             </span>
             <small>{option.detail}</small>
-          </button>
+          </div>
         })}
       </div>
-      <p className="ch-graphics-help"><ShieldCheck size={15} aria-hidden="true"/> Only the graphics change. Scrambles, AI speeds, inspection, ghost records and official times stay exactly the same. Your choice saves automatically on this device.</p>
+      <p className="ch-graphics-help"><ShieldCheck size={15} aria-hidden="true"/> Previews use the same cube renderers as races. Try Simulate turns to compare sticker updates versus physical slice turns. Graphics changes never alter scrambles, AI speeds, inspection, ghost records or official times. Your selection saves automatically.</p>
     </Surface>
     <Surface className="settings-surface ch-orientation-settings" aria-label="Mobile orientation preferences">
       <div className="settings-section-head"><span className="settings-header-icon"><TabletSmartphone size={20}/></span><div><h3>Mobile Orientation</h3><p>Choose how CubeHero fits your phone or installed mobile app.</p></div></div>

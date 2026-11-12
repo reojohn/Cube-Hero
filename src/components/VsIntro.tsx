@@ -8,6 +8,7 @@ import { prewarmRivalPortraits, getRivalPortraitTheme } from '../lib/rivalPortra
 import RivalPortrait from './RivalPortrait'
 import playerAvatar from '../assets/player-avatars/default-cube-keeper.webp'
 import { useLocalPlayer } from './LocalPlayerProvider'
+import { playGameSound } from '../lib/gameAudio'
 import './VsIntro.css'
 
 /** The intro intentionally does NOT render RaceRoom or create a running timer.
@@ -71,6 +72,17 @@ export default function VsIntro({ settings, reducedMotion, onEnterArena, onBack,
     query.addEventListener('change', update)
     return () => query.removeEventListener('change', update)
   }, [])
+
+  useEffect(() => {
+    // Browser audio is unlocked by the actual Start Race tap in the caller.
+    // Schedule rather than playing synchronously on mount so React StrictMode's
+    // development-only effect replay does not double the opening impact.
+    // Clear pending cues on Back/Skip; the race clock remains untouched.
+    const delays = motionOff ? [80, 560] : [80, 1500, 2980]
+    const cues = motionOff ? (['vs', 'vsImpact'] as const) : (['vs', 'vsImpact', 'vsFinal'] as const)
+    const timers = delays.map((delay, index) => window.setTimeout(() => playGameSound(cues[index]), delay))
+    return () => timers.forEach(id => window.clearTimeout(id))
+  }, [motionOff])
 
   useEffect(() => {
     // Covers both approved PNG/WebP opponents and the SVG fallback for future rivals.

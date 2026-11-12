@@ -17,3 +17,6 @@ android/local.properties
 android/captures/
 *.jks
 *.keystore
+
+# Final distributable APK and local release signing secrets
+release/

@@ -9,7 +9,7 @@
 export type GameSound =
   | 'inspect' | 'arm' | 'ready' | 'start' | 'stop' | 'countdown'
   | 'opponentFinish' | 'victory' | 'loss' | 'personalBest'
-  | 'ghostFinish' | 'vs' | 'preview'
+  | 'ghostFinish' | 'vs' | 'vsImpact' | 'vsFinal' | 'preview'
 
 export type GameAudioSettings = {
   enabled: boolean
@@ -18,15 +18,14 @@ export type GameAudioSettings = {
   timer: boolean
 }
 
-const defaults: GameAudioSettings = { enabled: false, volume: 55, cinematic: true, timer: true }
+const defaults: GameAudioSettings = { enabled: true, volume: 90, cinematic: true, timer: true }
 let settings = { ...defaults }
 let context: AudioContext | null = null
 let bus: GainNode | null = null
-// The 0.65 mix was still quiet on phone speakers. A stronger master gives
-// roughly +6.7 dB at the same slider position. A downstream compressor catches
-// simultaneous cue peaks before they reach the device output, preventing harsh
-// clipping without reducing quiet beeps. Actual speaker volume is device-limited.
-const MASTER_GAIN = 1.4
+// Boost phone-speaker presence without an external audio file or network access.
+// The downstream compressor controls overlapping peaks; output volume is still
+// bounded by the user's device speaker and system media volume.
+const MASTER_GAIN = 2.6
 
 export function configureGameAudio(next: Partial<GameAudioSettings>): void {
   settings = { ...settings, ...next, volume: Math.min(100, Math.max(0, Number(next.volume ?? settings.volume) || 0)) }
@@ -47,9 +46,9 @@ function getContext(): AudioContext | null {
       // fallback for older implementations.
       if (typeof context.createDynamicsCompressor === 'function') {
         const peakControl = context.createDynamicsCompressor()
-        peakControl.threshold.value = -9
-        peakControl.knee.value = 6
-        peakControl.ratio.value = 10
+        peakControl.threshold.value = -3
+        peakControl.knee.value = 5
+        peakControl.ratio.value = 8
         peakControl.attack.value = 0.003
         peakControl.release.value = 0.14
         bus.connect(peakControl)
@@ -72,21 +71,23 @@ type Note = [frequency: number, offset: number, duration: number, peak?: number,
 
 const effects: Record<GameSound, Note[]> = {
   inspect: [[470, 0, .105, .28, 'sine', 680], [840, .095, .14, .22, 'triangle', 1050]],
-  arm: [[290, 0, .09, .11, 'sine', 380]],
+  arm: [[290, 0, .10, .22, 'triangle', 380]],
   ready: [[660, 0, .105, .30, 'sine'], [990, .11, .15, .23, 'sine']],
   start: [[940, 0, .09, .33, 'triangle', 630], [1240, .04, .11, .10, 'sine']],
   stop: [[580, 0, .135, .34, 'triangle', 380], [370, .10, .09, .13, 'sine']],
-  countdown: [[780, 0, .08, .21, 'sine']],
+  countdown: [[780, 0, .11, .3, 'triangle']],
   opponentFinish: [[700, 0, .075, .14, 'triangle'], [480, .1, .105, .12, 'sine']],
   victory: [[520, 0, .13, .2, 'triangle'], [660, .12, .13, .22, 'sine'], [880, .24, .13, .24, 'sine'], [1050, .36, .22, .23, 'triangle']],
   loss: [[470, 0, .15, .2, 'triangle'], [350, .16, .20, .14, 'sine']],
   personalBest: [[620, 0, .12, .24, 'sine'], [830, .11, .11, .22, 'triangle'], [1046, .22, .17, .25, 'sine'], [1320, .37, .24, .20, 'sine']],
   ghostFinish: [[360, 0, .21, .17, 'sine', 510], [720, .17, .23, .16, 'sine', 900]],
-  vs: [[800, 0, .32, .17, 'sawtooth', 110], [340, .38, .29, .23, 'triangle', 110], [700, .4, .24, .17, 'sine', 920]],
+  vs: [[1200, 0, .32, .26, 'sawtooth', 105], [160, .16, .46, .29, 'triangle', 65], [540, .44, .22, .18, 'sine', 880]],
+  vsImpact: [[110, 0, .32, .45, 'triangle', 53], [720, .06, .16, .27, 'sawtooth', 270], [880, .22, .24, .21, 'sine', 1100]],
+  vsFinal: [[430, 0, .16, .24, 'triangle', 600], [620, .16, .18, .25, 'triangle', 820], [920, .34, .34, .28, 'sine', 1200]],
   preview: [[540, 0, .10, .23, 'sine'], [680, .13, .11, .23, 'sine'], [910, .26, .19, .24, 'triangle']],
 }
 
-const cinematicOnly = new Set<GameSound>(['vs'])
+const cinematicOnly = new Set<GameSound>(['vs','vsImpact','vsFinal'])
 const timerOnly = new Set<GameSound>(['inspect', 'arm', 'ready', 'start', 'stop', 'countdown'])
 
 /** Schedules short effects on the AudioContext's own clock, not on timer frames. */

@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Award, BookOpen, Check,
-  ChevronDown, CircleCheck, Download, Flag, Ghost,
-  GraduationCap, Layers3, Menu, MousePointer2, Play, ShieldCheck,
+  ChevronDown, CircleCheck, Flag, Ghost, UserRound, Bot,
+  Download, GraduationCap, Layers3, Laptop, Menu, MousePointer2, Play, ShieldCheck,
   Smartphone, Sparkles, Timer, Trophy, X, Zap,
 } from 'lucide-react'
 import { GAME_START_URL } from '../lib/siteRouting'
+import LandingDuelCube from './LandingDuelCube'
 import './LandingPage.css'
 
 const FEATURES = [
@@ -17,9 +18,9 @@ const FEATURES = [
 
 const FAQS = [
   { question: 'Is Cube Hero free to play?', answer: 'Yes. You can open the browser version and play without making an account. The current web experience stores your progress locally on your device.' },
-  { question: 'Can I download Cube Hero for Android?', answer: 'The Android app is planned but has not been released yet. We will add a real download link here after the mobile build has been tested and is ready to share.' },
+  { question: 'Can I download Cube Hero for Android?', answer: 'Yes. The Android APK is available in the download section of this landing page.' },
   { question: 'Do I need a smart cube?', answer: 'No. Cube Hero is designed to work with a regular physical 3×3 cube. Apply the displayed scramble to your cube and use the on-screen timer to race.' },
-  { question: 'Do I race against real people?', answer: 'Not at the moment. Race AI uses simulated opponents with verified CFOP move sequences. Ghost Race lets you race against your own saved time.' },
+  { question: 'Do I race against real people?', answer: 'Not at the moment. Race AI lets you challenge AI cubers built around verified CFOP move sequences. Ghost Race lets you race against your own saved time.' },
   { question: 'Will my records be saved?', answer: 'Your Race AI, Ghost Race, Academy, and Hero Journey progress is saved in the same browser on the same device. Clearing site storage or switching devices can remove that progress.' },
 ]
 
@@ -32,6 +33,91 @@ function Brand({ compact = false }: { compact?: boolean }) {
 
 function WebLink({ className = '', children, to = GAME_START_URL }: { className?: string; children: React.ReactNode; to?: string }) {
   return <a className={className} href={to}>{children}</a>
+}
+
+
+// Both download locations use the same source: the APK bundled in the site's public folder.
+// The upcoming platform buttons deliberately remain disabled until an actual build is ready.
+function PlatformDownloads({ compact = false }: { compact?: boolean }) {
+  return <div className={`lp-download-platforms${compact ? ' lp-download-platforms-hero' : ''}`} aria-label="Get Cube Hero for your device">
+    <a className="lp-platform-card lp-platform-card-android" href="/downloads/CubeHero-v1.0.0-android.apk" download="CubeHero-v1.0.0-android.apk">
+      <span className="lp-platform-icon"><Download size={18}/></span><span><strong>Android</strong><small>Download APK · v1.0.0</small></span>
+    </a>
+    <button type="button" className="lp-platform-card lp-platform-card-ios" disabled title="iOS release coming soon">
+      <span className="lp-platform-icon"><Smartphone size={18}/></span><span><strong>iOS</strong><small>Coming soon</small></span>
+    </button>
+    <button type="button" className="lp-platform-card lp-platform-card-pc" disabled title="PC / Laptop release coming soon">
+      <span className="lp-platform-icon"><Laptop size={18}/></span><span><strong>PC / Laptop</strong><small>Coming soon</small></span>
+    </button>
+  </div>
+}
+
+type DuelMode = 'ai' | 'ghost'
+// This is an illustrative race preview, not an actual saved solve or an interactive race.
+function DuelPreview({ mode }: { mode: DuelMode }) {
+  const isGhost = mode === 'ghost'
+  const humanGoal = isGhost ? 9.20 : 8.00
+  const rivalGoal = isGhost ? 7.40 : 10.00
+  const finish = Math.max(humanGoal, rivalGoal)
+  const cycle = finish + 3.0
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    const element = viewportRef.current
+    if (!element) return
+    let timer: number | undefined
+    let started = 0
+    const stop = () => { if (timer !== undefined) { window.clearInterval(timer); timer = undefined } }
+    const begin = () => {
+      if (timer !== undefined || document.hidden) return
+      started = performance.now()
+      setElapsed(0)
+      timer = window.setInterval(() => setElapsed(((performance.now() - started) / 1000) % cycle), 80)
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !document.hidden) begin()
+      else stop()
+    }, { threshold: 0.12 })
+    observer.observe(element)
+    const visibilityChange = () => {
+      if (document.hidden) stop()
+      else if (element.getBoundingClientRect().bottom > 0 && element.getBoundingClientRect().top < window.innerHeight) begin()
+    }
+    document.addEventListener('visibilitychange', visibilityChange)
+    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', visibilityChange); stop() }
+  }, [cycle])
+
+  const humanDone = elapsed >= humanGoal
+  const rivalDone = elapsed >= rivalGoal
+  const over = elapsed >= finish
+  const humanWon = !isGhost
+  const humanSeconds = Math.min(elapsed, humanGoal).toFixed(2)
+  const rivalSeconds = Math.min(elapsed, rivalGoal).toFixed(2)
+
+  return <div className={`lp-duel-preview lp-duel-preview-${mode}`} ref={viewportRef}>
+    <div className="lp-duel-info"><span className="lp-duel-live"><span/> DEMO MATCH</span><span>3×3 · SAME SCRAMBLE</span></div>
+    <div className="lp-duel-stage" aria-hidden="true">
+      <div className={`lp-duel-contender${humanDone ? ' is-finished' : ''}${over && humanWon ? ' is-winner' : ''}`}>
+        <div className="lp-duel-contender-head"><span className="lp-duel-avatar"><UserRound size={17}/></span><strong>YOU</strong></div>
+        <div className="lp-duel-cube-spot"><LandingDuelCube elapsed={Math.min(elapsed, humanGoal)} duration={humanGoal} /></div>
+        <div className="lp-duel-time">{humanSeconds}<small>s</small></div>
+        <span className="lp-duel-state">{over && humanWon ? '🏆 WINNER' : humanDone ? 'SOLVED' : 'SOLVING...'}</span>
+      </div>
+      <span className="lp-duel-versus">VS</span>
+      <div className={`lp-duel-contender${rivalDone ? ' is-finished' : ''}${over && !humanWon ? ' is-winner' : ''}`}>
+        <div className="lp-duel-contender-head"><span className="lp-duel-avatar">{isGhost ? <Ghost size={17}/> : <Bot size={17}/>}</span><strong>{isGhost ? 'GHOST' : 'AI RIVAL'}</strong></div>
+        <div className="lp-duel-cube-spot"><LandingDuelCube elapsed={Math.min(elapsed, rivalGoal)} duration={rivalGoal} ghost={isGhost} /></div>
+        <div className="lp-duel-time">{rivalSeconds}<small>s</small></div>
+        <span className="lp-duel-state">{over && !humanWon ? '🏆 WINNER' : rivalDone ? 'SOLVED' : 'SOLVING...'}</span>
+      </div>
+    </div>
+    <div className={`lp-duel-outcome${over ? ' is-visible' : ''}${isGhost ? ' is-ghost' : ''}`} aria-hidden="true">
+      {over ? <><Trophy size={15}/><strong>{isGhost ? 'GHOST WINS!' : 'YOU WIN!'}</strong><span>{isGhost ? '07.40s vs 09.20s' : '08.00s vs 10.00s'}</span></> : <><Timer size={15}/><strong>RACE IN PROGRESS</strong><span>First cube to solve takes the win</span></>}
+    </div>
+    <div className="lp-duel-timeline" aria-hidden="true"><span style={{ width: `${Math.min(100, elapsed / cycle * 100)}%` }}/></div>
+    <p className="lp-duel-a11y">Example result: {isGhost ? 'The ghost cube wins in 7.40 seconds, and the human solves in 9.20 seconds.' : 'The human wins in 8 seconds, and the AI finishes in 10 seconds.'} The animated preview repeats.</p>
+  </div>
 }
 
 export default function LandingPage() {
@@ -61,7 +147,7 @@ export default function LandingPage() {
           <a href="#faq" onClick={closeMenu}>FAQ</a>
           <WebLink className="lp-mobile-play" >Play Cube Hero <ArrowRight size={16}/></WebLink>
         </nav>
-        <div className="lp-header-actions"><span className="lp-free-label"><span/> FREE TO PLAY</span><WebLink className="lp-button lp-button-primary lp-header-play">Play now <ArrowUpRight size={16}/></WebLink></div>
+        <div className="lp-header-actions"><span className="lp-free-label"><span/> FREE TO PLAY</span><WebLink className="lp-button lp-button-primary lp-header-play lp-button-echo">Play now <ArrowUpRight size={16}/></WebLink></div>
         <button type="button" className="lp-menu-button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="lp-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={23} /> : <Menu size={23} />}</button>
       </div>
     </header>
@@ -73,9 +159,10 @@ export default function LandingPage() {
           <h1 id="lp-hero-title" className="lp-hero-title lp-entry">SOLVE FASTER.<br/><span>RACE SMARTER.</span><br/>BECOME A <em>HERO.</em></h1>
           <p className="lp-hero-description lp-entry">More than a timer. Challenge human-like AI, chase your personal best, master CFOP, and turn every solve into progress.</p>
           <div className="lp-hero-actions lp-entry">
-            <WebLink className="lp-button lp-button-primary lp-button-large"><Play size={18} fill="currentColor"/> Play for free <ArrowRight size={18}/></WebLink>
-            <a href="#download" className="lp-button lp-button-secondary lp-button-large"><Smartphone size={19}/> Get the mobile app <ArrowDown size={17}/></a>
+            <WebLink className="lp-button lp-button-primary lp-button-large lp-button-echo"><Play size={18} fill="currentColor"/> Play for free <ArrowRight size={18}/></WebLink>
+            <a href="#download" className="lp-button lp-button-secondary lp-button-large"><Smartphone size={19}/> All downloads <ArrowDown size={17}/></a>
           </div>
+          <div className="lp-hero-downloads lp-entry"><div className="lp-hero-downloads-heading"><span>GET CUBE HERO</span><small>Android available now</small></div><PlatformDownloads compact /></div>
           <div className="lp-hero-notes lp-entry"><span><CircleCheck size={15}/> No account needed</span><span><CircleCheck size={15}/> Works with a real 3×3 cube</span></div>
         </div>
 
@@ -132,8 +219,22 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="lp-section lp-wrap lp-battle-section" aria-labelledby="lp-battle-title">
+        <div className="lp-section-intro lp-battle-intro"><div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> SEE THE ARENA IN MOTION</div><h2 id="lp-battle-title">Two modes. <span>Two rivalries.</span></h2><p>Watch both cubes solve side by side. Race an AI opponent—or challenge the time set by your own ghost.</p></div>
+        <div className="lp-battle-grid">
+          <article className="lp-battle-card">
+            <div className="lp-battle-copy"><span className="lp-battle-label"><Flag size={14}/> RACE AI</span><h3>Human vs. AI. Who solves first?</h3><p>In this match, you finish in 8 seconds. The AI finishes in 10.</p></div>
+            <DuelPreview mode="ai" />
+          </article>
+          <article className="lp-battle-card lp-battle-card-ghost">
+            <div className="lp-battle-copy"><span className="lp-battle-label"><Ghost size={14}/> GHOST RACE</span><h3>You vs. your personal-best ghost.</h3><p>Your ghost crosses the finish line first. Can you beat it next time?</p></div>
+            <DuelPreview mode="ghost" />
+          </article>
+        </div>
+      </section>
+
       <section id="download" className="lp-section lp-download-section" aria-labelledby="lp-download-title"><div className="lp-wrap">
-        <div className="lp-download-card"><div className="lp-download-light" aria-hidden="true"/><div className="lp-download-left"><div className="lp-eyebrow"><Smartphone size={15}/> CUBE HERO EVERYWHERE</div><h2 id="lp-download-title">Your next solve<br/>is <span>always within reach.</span></h2><p>Play Cube Hero instantly in your browser. We're preparing an installable Android app for a future release.</p><div className="lp-download-actions"><WebLink className="lp-button lp-button-primary lp-button-large"><Play size={18} fill="currentColor"/> Play on web <ArrowRight size={18}/></WebLink><div className="lp-android-soon"><Download size={19}/><span>Android app <strong>Coming soon</strong></span></div></div><div className="lp-download-note"><ShieldCheck size={15}/> No APK is available yet. We’ll add a verified download link here when it’s ready.</div></div><div className="lp-phone-art" aria-hidden="true"><div className="lp-phone"><div className="lp-phone-bar"/><div className="lp-phone-screen"><img src="/cube-hero-mascot-384.png" alt=""/><span>CUBE HERO</span><strong>YOUR ARENA<br/>AWAITS.</strong><div className="lp-phone-cta">PLAY NOW <ArrowRight size={12}/></div></div></div><div className="lp-phone-orbit lp-phone-orbit-one"/><div className="lp-phone-orbit lp-phone-orbit-two"/></div></div>
+        <div className="lp-download-card"><div className="lp-download-light" aria-hidden="true"/><div className="lp-download-left"><div className="lp-eyebrow"><Smartphone size={15}/> CUBE HERO EVERYWHERE</div><h2 id="lp-download-title">Your next solve<br/>is <span>always within reach.</span></h2><p>Play Cube Hero instantly on the web, download the Android build today, and get ready for upcoming iOS and PC releases.</p><div className="lp-download-actions"><WebLink className="lp-button lp-button-primary lp-button-large"><Play size={18} fill="currentColor"/> Play on web <ArrowRight size={18}/></WebLink><PlatformDownloads /></div><div className="lp-download-note"><ShieldCheck size={15}/> Android APK available now. iPhone and PC buttons are ready for the future files you’ll attach later.</div></div><div className="lp-phone-art" aria-hidden="true"><div className="lp-phone"><div className="lp-phone-bar"/><div className="lp-phone-screen"><img src="/cube-hero-mascot-384.png" alt=""/><span>CUBE HERO</span><strong>YOUR ARENA<br/>AWAITS.</strong><div className="lp-phone-cta">PLAY NOW <ArrowRight size={12}/></div></div></div><div className="lp-phone-orbit lp-phone-orbit-one"/><div className="lp-phone-orbit lp-phone-orbit-two"/></div></div>
       </div></section>
 
       <section className="lp-section lp-wrap lp-faq" id="faq" aria-labelledby="lp-faq-title"><div className="lp-faq-intro"><div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> GOOD TO KNOW</div><h2 id="lp-faq-title">Questions, <span>answered.</span></h2><p>A few things to know before your first solve.</p></div><div className="lp-faq-items">{FAQS.map(({ question, answer }) => <details key={question} className="lp-faq-item"><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>

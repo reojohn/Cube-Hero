@@ -1,38 +1,65 @@
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
+import type { AiPlan } from '../lib/aiPlan'
 import type { GraphicsQuality } from '../lib/graphicsQuality'
+import RaceCubeVisual from './RaceCubeVisual'
+import { isAndroidBrowser } from '../lib/mobilePerformance'
 
-const swatches: Record<string, string> = {
-  y:'#ffda47', w:'#f5f5ff', b:'#3185fd', r:'#f1435b', g:'#19cf86', o:'#ff9447',
+// This is a real, verified miniature playback of the same renderer used in
+// Race AI and Ghost Race, not an SVG illustration of three identical cubes.
+// Inverting the scramble makes the demonstrator finish solved.
+const SCRAMBLE = "R U R' U' F R F'"
+const MOVES = ['F', "R'", "F'", 'U', 'R', "U'", "R'"]
+const MOVE_DURATION_MS = 550
+const ENDS = MOVES.map((_, index) => (index + 1) * MOVE_DURATION_MS)
+const ANIMATION_ENDS = MOVES.map((_, index) => (index + 1) * 1000)
+const PLAN: AiPlan = {
+  method: 'two-phase', solution: MOVES.join(' '), moves: MOVES,
+  totalMs: ENDS[ENDS.length - 1], moveEndsMs: ENDS,
+  animationEndsMs: ANIMATION_ENDS, segmentsMs: [1100, 1100, 1100, 550], qtm: MOVES.length,
 }
-const cubeColors: Record<'top'|'left'|'right', readonly string[]> = {
-  top: ['y','y','b','y','b','y','o','y','w'],
-  left: ['r','b','b','b','o','b','b','b','w'],
-  right: ['g','r','r','r','r','g','r','o','r'],
+const MODE_LABELS: Record<GraphicsQuality, string> = {
+  low: 'STICKER UPDATES',
+  medium: 'LIGHTWEIGHT 3D',
+  high: 'DETAILED 3D',
 }
-type Point = readonly [number,number]
-function between(a: Point,b:Point,t:number):Point{return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]}
-function spot(corners: readonly [Point,Point,Point,Point],u:number,v:number):Point{
-  return between(between(corners[0],corners[1],u),between(corners[3],corners[2],u),v)
-}
-function pointsFor(corners:readonly [Point,Point,Point,Point],x:number,y:number):string{
-  return [spot(corners,x/3,y/3),spot(corners,(x+1)/3,y/3),spot(corners,(x+1)/3,(y+1)/3),spot(corners,x/3,(y+1)/3)]
-    .map(point=>point.map(n=>n.toFixed(2)).join(',')).join(' ')
-}
-const faces:readonly {name:'top'|'left'|'right';vertices:readonly [Point,Point,Point,Point]}[] = [
-  {name:'top',vertices:[[74,9],[132,34],[74,60],[16,34]]},
-  {name:'left',vertices:[[16,34],[74,60],[74,118],[16,92]]},
-  {name:'right',vertices:[[74,60],[132,34],[132,92],[74,118]]},
-]
-/** Static, inexpensive SVG previews: do not mount extra racing cube renderers. */
-export default memo(function GraphicsCubePreview({quality}:{quality:GraphicsQuality}){
-  return <span className={`ch-graphics-preview ch-graphics-preview-${quality}`} aria-hidden="true">
-    <svg className="ch-graphics-preview-cube" viewBox="0 0 148 128" focusable="false">
-      {faces.map(face=><g key={face.name} className={`ch-graphics-preview-face-${face.name}`}>
-        {cubeColors[face.name].map((color,i)=><polygon key={i}
-          points={pointsFor(face.vertices,i%3,Math.floor(i/3))}
-          fill={swatches[color]} stroke="#16192d" strokeWidth={quality==='low'?1.3:quality==='medium'?1.45:1.6} strokeLinejoin="round" />)}
-      </g>)}
-    </svg>
-    <span className="ch-graphics-preview-floor" />
+
+function GraphicsCubePreview({ quality, playing, startAt }: {
+  quality: GraphicsQuality
+  playing: boolean
+  startAt: number | null
+}) {
+  const [elapsedMs, setElapsedMs] = useState(0)
+  const [compact] = useState(() => isAndroidBrowser() ||
+    (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches))
+  useEffect(() => {
+    // The desktop High renderer needs a bounded visual frame update. Low and
+    // Medium already wake up only at exact move boundaries by themselves.
+    if (!playing || startAt === null || quality !== 'high' || compact) {
+      setElapsedMs(0)
+      return
+    }
+    let frame = 0
+    let lastFrame = -Infinity
+    const update = (now: number) => {
+      if (now - lastFrame >= 33) {
+        setElapsedMs(Math.min(PLAN.totalMs, Math.max(0, now - startAt)))
+        lastFrame = now
+      }
+      if (now - startAt < PLAN.totalMs) frame = requestAnimationFrame(update)
+    }
+    frame = requestAnimationFrame(update)
+    return () => cancelAnimationFrame(frame)
+  }, [playing, startAt, quality, compact])
+
+  return <span className={`ch-graphics-preview ch-graphics-preview-${quality}${playing ? ' is-playing' : ''}`}
+    aria-label={`${quality} graphics cube preview. ${playing ? 'Simulating solution turns.' : 'Select Simulate turns for a live demonstration.'}`} role="img">
+    <span className="ch-graphics-preview-actual" aria-hidden="true">
+      <RaceCubeVisual graphics={quality} compact={compact} scramble={SCRAMBLE} plan={PLAN}
+        elapsedMs={elapsedMs} active={playing} startAt={playing ? startAt : null}/>
+    </span>
+    <span className="ch-graphics-preview-quality" aria-hidden="true">{MODE_LABELS[quality]}</span>
+    <span className="ch-graphics-preview-floor" aria-hidden="true" />
   </span>
-})
+}
+
+export default memo(GraphicsCubePreview)

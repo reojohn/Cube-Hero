@@ -164,3 +164,125 @@
 }
 @media(prefers-reduced-motion:reduce){.ch-graphics-option:hover,.ch-graphics-preview-cube{transform:none!important;transition:none!important}}
 .reduce-motion .ch-graphics-preview-cube,.reduce-motion .ch-graphics-option{transition:none!important;transform:none!important}
+
+/* Settings previews now use the SAME Low / Medium / High race cube renderers.
+   Each card has separate, accessible select and turn-demo controls so tapping
+   Simulate turns does not accidentally change the player's saved quality. */
+.ch-graphics-option { cursor: default; }
+.ch-graphics-option:focus-within { border-color: #b694ff; }
+.ch-graphics-select {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  gap: 12px;
+}
+.ch-graphics-select:focus-visible, .ch-graphics-demo-btn:focus-visible {
+  outline: 2px solid #d8b3ff;
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.ch-graphics-select .ch-graphics-preview { flex-shrink: 0; }
+.ch-graphics-preview { overflow: hidden; }
+.ch-graphics-preview-actual {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+.ch-graphics-preview-actual .ai-3d-cube-shell {
+  width: 100%;
+  height: 100% !important;
+  margin: 0 !important;
+  border-radius: 0;
+  overflow: visible;
+  background: none !important;
+  filter: none !important;
+}
+.app-shell .ch-graphics-preview-actual .ai-css-cube-stage,
+.app-shell .ch-graphics-preview-actual .ai-mobile-solid-stage {
+  --cube-size: 79px !important;
+  --cube-half: calc(var(--cube-size) / 2) !important;
+  --cube-cell: calc(var(--cube-size) / 3) !important;
+  --cube-half-cell: calc(var(--cube-cell) / 2) !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  perspective: 480px;
+}
+.ch-graphics-preview-low .ch-graphics-preview-actual .ai-css-cube-stage {
+  --cube-size: 71px !important;
+}
+.ch-graphics-preview-high .ch-graphics-preview-actual .ai-css-cube-stage {
+  --cube-size: 82px !important;
+}
+.ch-graphics-preview-high .ai-css-cube-aura { width: 130px; height: 90px; opacity: .55; }
+.ch-graphics-preview-high .ai-css-cube-floor { width: 95px; height: 12px; bottom: 0; }
+.ch-graphics-preview-low .ch-graphics-preview-floor,
+.ch-graphics-preview-medium .ch-graphics-preview-floor { opacity: .15; }
+.ch-graphics-preview-quality {
+  position: absolute;
+  left: 9px;
+  bottom: 7px;
+  z-index: 4;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: rgba(9, 14, 31, .72);
+  color: #c3c8ee;
+  font-size: 8px;
+  letter-spacing: .055em;
+  font-weight: 800;
+}
+.ch-graphics-preview-low .ch-graphics-preview-quality { color: #aab8d9; }
+.ch-graphics-preview-high .ch-graphics-preview-quality { color: #ebcaff; }
+.ch-graphics-preview.is-playing { border-color: #a477f3; }
+.ch-graphics-demo-btn {
+  position: relative;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid rgba(169, 141, 244, .46);
+  border-radius: 9px;
+  background: rgba(108, 73, 178, .19);
+  color: #efddff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.ch-graphics-demo-btn:hover { background: rgba(132, 90, 224, .32); border-color: #a987fa; }
+.ch-graphics-option small { margin-top: auto; }
+@media (max-width: 980px) {
+  .ch-graphics-select { grid-area: 1 / 1 / 3 / 3; display: grid; grid-template-columns: minmax(0, 1fr) 110px; grid-template-rows: auto auto; gap: 7px 13px; }
+  .ch-graphics-select .ch-graphics-option-top { grid-area: 1 / 1 / 2 / 2; }
+  .ch-graphics-select .ch-graphics-preview { grid-area: 1 / 2 / 3 / 3; height: 104px; }
+  .ch-graphics-option .ch-graphics-demo-btn { grid-area: 2 / 1 / 3 / 2; margin-top: 0; }
+  .ch-graphics-option .ch-graphics-chip-row { grid-area: 3 / 1 / 4 / 3; }
+  .ch-graphics-option small { grid-area: 4 / 1 / 5 / 3; }
+}
+@media (max-width: 390px) {
+  .ch-graphics-select { grid-template-columns: minmax(0, 1fr) 82px; gap: 6px 8px; }
+  .ch-graphics-select .ch-graphics-preview { height: 83px; }
+  .app-shell .ch-graphics-preview-actual .ai-css-cube-stage,
+  .app-shell .ch-graphics-preview-actual .ai-mobile-solid-stage { --cube-size: 64px !important; }
+  .app-shell .ch-graphics-preview-low .ch-graphics-preview-actual .ai-css-cube-stage { --cube-size: 58px !important; }
+  .ch-graphics-demo-btn { padding: 6px 8px; font-size: 11px; }
+  .ch-graphics-preview-quality { font-size: 6px; padding: 2px 3px; left: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ch-graphics-demo-btn { transition: none; }
+}

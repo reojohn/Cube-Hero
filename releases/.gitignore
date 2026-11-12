@@ -1,0 +1,3 @@
+# Allow this exact public release to be deployed even if the main project
+# ignores generated Android *.apk files.
+!CubeHero-v1.0.0-android.apk
