@@ -20,3 +20,10 @@ android/captures/
 
 # Final distributable APK and local release signing secrets
 release/
+/release-downloads/*.exe
+# Windows installer and generated build files
+win-unpacked/
+*.exe
+dist-web/
+dist-desktop/
+windows-installer/dist/

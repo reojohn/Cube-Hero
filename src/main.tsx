@@ -29,3 +29,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </StartupErrorBoundary>
   </React.StrictMode>,
 )
+
+
+// Cache desktop game files only after entering the arena, not while browsing
+// the marketing landing page. Native Android and mobile browsers are untouched.
+// Desktop installability is provided by the manifest even before registration.
+const isDesktopWebGame = showGame || window.matchMedia('(display-mode: standalone)').matches
+if (import.meta.env.PROD && !isNativeApp() && isDesktopWebGame && !/Android|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+  void import('./lib/registerDesktopPwa').then(({ registerDesktopPwa }) => registerDesktopPwa())
+}

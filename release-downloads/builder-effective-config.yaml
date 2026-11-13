@@ -1,0 +1,29 @@
+directories:
+  output: ../release-downloads
+  buildResources: build
+appId: com.cubehero.windows
+productName: CubeHero
+asar: true
+compression: maximum
+files:
+  - filter:
+      - main.cjs
+      - dist/**/*
+      - assets/cubehero.png
+      - package.json
+win:
+  icon: assets/cubehero.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: CubeHero
+  artifactName: CubeHero-v1.0.0-Windows-Setup.${ext}
+publish: null
+electronVersion: 45.3.1

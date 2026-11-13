@@ -8,7 +8,7 @@
     "prebuild": "node scripts/check-no-public-apk.mjs",
     "build": "tsc --noEmit && vite build",
     "prebuild:web": "node scripts/check-no-public-apk.mjs",
-    "build:web": "npm run typecheck && vite build --outDir dist-web && node scripts/stage-apk-web.mjs",
+    "build:web": "npm run typecheck && vite build --outDir dist-web && node scripts/stage-web-downloads.mjs && node scripts/generate-desktop-pwa.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test:engine": "node scripts/test-phase3.mjs",
@@ -35,7 +35,8 @@
     "android:sync": "npm run build && npx --no-install cap sync android",
     "android:open": "npx --no-install cap open android",
     "android:run": "npm run android:sync && npx --no-install cap run android",
-    "test:capacitor": "node scripts/test-capacitor.mjs"
+    "test:capacitor": "node scripts/test-capacitor.mjs",
+    "preview:web": "vite preview --outDir dist-web --host 127.0.0.1 --port 4188"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

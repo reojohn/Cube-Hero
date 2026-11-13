@@ -1,0 +1,45 @@
+{
+  "id": "/app",
+  "name": "CubeHero \u2014 The Speedcubing Arena",
+  "short_name": "CubeHero",
+  "description": "Challenge the AI. Outrace your Ghost. Break your limits.",
+  "start_url": "/app#/home",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#090c19",
+  "theme_color": "#090c19",
+  "orientation": "any",
+  "categories": [
+    "games",
+    "education",
+    "sports"
+  ],
+  "icons": [
+    {
+      "src": "/cubehero-desktop-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cubehero-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Race AI",
+      "url": "/app#/race"
+    },
+    {
+      "name": "Ghost Race",
+      "url": "/app#/practice"
+    },
+    {
+      "name": "Hero Journey",
+      "url": "/app#/journey"
+    }
+  ]
+}
