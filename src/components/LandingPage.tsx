@@ -19,6 +19,7 @@ const FAQS = [
   { question: 'Is Cube Hero free to play?', answer: 'Yes. You can open the browser version and play without making an account. The current web experience stores your progress locally on your device.' },
   { question: 'Can I download Cube Hero for Android?', answer: 'Yes. The Android APK is available in the download section of this landing page.' },
   { question: 'Can I install CubeHero on iPhone or iPad?', answer: 'Yes. Open this site in Safari, tap Share, choose Add to Home Screen, keep Open as Web App enabled if shown, then tap Add. No App Store account or IPA file is needed. Open the installed game online once before trying offline play.' },
+  { question: 'Can I install CubeHero on a MacBook or iMac?', answer: 'Yes. On macOS Sonoma 14 or later, open CubeHero in Safari, choose File → Add to Dock (or Share → Add to Dock), name the app CubeHero, then click Add. Open the app online once before testing offline play.' },
   { question: 'Can I download CubeHero for Windows PC or laptop?', answer: 'Yes. The PC / Laptop button downloads the Windows Setup (.exe) directly from CubeHero’s official GitHub Release, with no GitHub account required.' },
   { question: 'Do I need a smart cube?', answer: 'No. Cube Hero is designed to work with a regular physical 3×3 cube. Apply the displayed scramble to your cube and use the on-screen timer to race.' },
   { question: 'Do I race against real people?', answer: 'Not at the moment. Race AI lets you challenge AI cubers built around verified CFOP move sequences. Ghost Race lets you race against your own saved time.' },
@@ -146,6 +147,63 @@ export default function LandingPage() {
             </article>
           </div>
           <p className="lp-windows-help-footnote"><ShieldCheck size={15}/> Only proceed with installers you trust. Never disable SmartScreen globally. <a href="https://github.com/reojohn/Cube-Hero/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer">Verify the official v1.0.0 release <ArrowUpRight size={13}/></a></p>
+        </div>
+      </section>
+
+      <section className="lp-apple-help-outer lp-wrap" id="apple-install-help" aria-labelledby="lp-apple-help-title">
+        <div className="lp-apple-help">
+          <div className="lp-apple-help-head">
+            <span className="lp-apple-help-kicker"><Smartphone size={15}/> APPLE DEVICES · SAFARI INSTALLATION</span>
+            <h3 id="lp-apple-help-title">Install CubeHero on Apple devices</h3>
+            <p>iPhone, iPad, and Mac use Safari to install CubeHero as a web app. Follow the steps for your device below.</p>
+          </div>
+          <div className="lp-apple-help-grid">
+            <article className="lp-apple-help-card" aria-labelledby="lp-ios-help-title">
+              <div className="lp-apple-help-card-head">
+                <span className="lp-apple-device-label"><Smartphone size={14}/> iOS / iPadOS · iPhone &amp; iPad</span>
+                <h4 id="lp-ios-help-title">Add to Home Screen</h4>
+              </div>
+              <ol className="lp-apple-help-list">
+                <li><span>01</span><p>Open the <strong>CubeHero website in Safari</strong> on your iPhone or iPad.</p></li>
+                <li><span>02</span><p>Tap <strong>Share</strong> (or Page Menu → Share), then select <strong>Add to Home Screen</strong>.</p></li>
+                <li><span>03</span><p>Keep <strong>Open as Web App</strong> enabled if offered, tap <strong>Add</strong>, and launch CubeHero from your Home Screen.</p></li>
+              </ol>
+              <div className="lp-apple-visuals lp-apple-visuals-ios" aria-label="Illustrated Safari installation screenshots for iPhone and iPad">
+                <figure className="lp-apple-visual">
+                  <a href="/landing/cubehero-ios-share-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge iPhone Safari Share button illustration">
+                    <img src="/landing/cubehero-ios-share-step.webp" alt="Illustration of CubeHero open in iPhone Safari with the Share button highlighted" width="941" height="1672" loading="lazy" decoding="async"/>
+                  </a>
+                  <figcaption><strong>Step 1</strong> Tap Safari’s Share button <span>· View larger ↗</span></figcaption>
+                </figure>
+                <figure className="lp-apple-visual">
+                  <a href="/landing/cubehero-ios-add-to-home-screen-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge Add to Home Screen illustration">
+                    <img src="/landing/cubehero-ios-add-to-home-screen-step.webp" alt="Illustration of Safari's Share menu highlighting Add to Home Screen for CubeHero" width="941" height="1672" loading="lazy" decoding="async"/>
+                  </a>
+                  <figcaption><strong>Step 2</strong> Choose Add to Home Screen <span>· View larger ↗</span></figcaption>
+                </figure>
+              </div>
+            </article>
+            <article className="lp-apple-help-card" aria-labelledby="lp-macos-help-title">
+              <div className="lp-apple-help-card-head">
+                <span className="lp-apple-device-label"><Laptop size={14}/> macOS · MacBook &amp; iMac</span>
+                <h4 id="lp-macos-help-title">Add to Dock</h4>
+              </div>
+              <ol className="lp-apple-help-list">
+                <li><span>01</span><p>On <strong>macOS Sonoma 14 or later</strong>, open the CubeHero website in <strong>Safari</strong>.</p></li>
+                <li><span>02</span><p>Choose <strong>File → Add to Dock</strong> in the menu bar (or <strong>Share → Add to Dock</strong>).</p></li>
+                <li><span>03</span><p>Name it <strong>CubeHero</strong>, click <strong>Add</strong>, then open it from the Dock, Applications, or Spotlight.</p></li>
+              </ol>
+              <div className="lp-apple-visuals lp-apple-visuals-macos" aria-label="Illustrated macOS Safari Add to Dock installation screenshot">
+                <figure className="lp-apple-visual">
+                  <a href="/landing/cubehero-macos-add-to-dock-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge Safari File menu Add to Dock illustration">
+                    <img src="/landing/cubehero-macos-add-to-dock-step.webp" alt="Illustration of macOS Safari displaying the File menu with Add to Dock highlighted, over CubeHero's landing page" width="1448" height="1086" loading="lazy" decoding="async"/>
+                  </a>
+                  <figcaption><strong>macOS</strong> File → Add to Dock <span>· View larger ↗</span></figcaption>
+                </figure>
+              </div>
+            </article>
+          </div>
+          <p className="lp-apple-help-footnote"><ShieldCheck size={15}/> Illustrative guides: Safari menus can look different across versions. For offline play, open CubeHero while connected once so its files can load, then test offline. Device storage cleanup may remove cached files.</p>
         </div>
       </section>
 
