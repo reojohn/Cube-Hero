@@ -31,10 +31,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 )
 
 
-// Cache desktop game files only after entering the arena, not while browsing
-// the marketing landing page. Native Android and mobile browsers are untouched.
-// Desktop installability is provided by the manifest even before registration.
-const isDesktopWebGame = showGame || window.matchMedia('(display-mode: standalone)').matches
-if (import.meta.env.PROD && !isNativeApp() && isDesktopWebGame && !/Android|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+// Website-only offline cache for desktop and iPhone/iPad Home Screen apps.
+// Start caching after entering the game rather than on the marketing page.
+// Native Capacitor builds must remain unaffected (including any future iOS native build).
+const isWebGame = showGame || window.matchMedia('(display-mode: standalone)').matches
+if (import.meta.env.PROD && !isNativeApp() && isWebGame) {
   void import('./lib/registerDesktopPwa').then(({ registerDesktopPwa }) => registerDesktopPwa())
 }

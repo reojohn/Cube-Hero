@@ -18,6 +18,7 @@ const FEATURES = [
 const FAQS = [
   { question: 'Is Cube Hero free to play?', answer: 'Yes. You can open the browser version and play without making an account. The current web experience stores your progress locally on your device.' },
   { question: 'Can I download Cube Hero for Android?', answer: 'Yes. The Android APK is available in the download section of this landing page.' },
+  { question: 'Can I install CubeHero on iPhone or iPad?', answer: 'Yes. Open this site in Safari, tap Share, choose Add to Home Screen, keep Open as Web App enabled if shown, then tap Add. No App Store account or IPA file is needed. Open the installed game online once before trying offline play.' },
   { question: 'Can I download CubeHero for Windows PC or laptop?', answer: 'Yes. The PC / Laptop button downloads the Windows Setup (.exe) directly from CubeHero’s official GitHub Release, with no GitHub account required.' },
   { question: 'Do I need a smart cube?', answer: 'No. Cube Hero is designed to work with a regular physical 3×3 cube. Apply the displayed scramble to your cube and use the on-screen timer to race.' },
   { question: 'Do I race against real people?', answer: 'Not at the moment. Race AI lets you challenge AI cubers built around verified CFOP move sequences. Ghost Race lets you race against your own saved time.' },
@@ -37,13 +38,13 @@ function WebLink({ className = '', children, to = GAME_START_URL }: { className?
 
 
 // The Android APK is staged into the website build; Windows Setup is hosted on GitHub Releases.
-function PlatformDownloads({ compact = false }: { compact?: boolean }) {
+function PlatformDownloads({ compact = false, onInstallIOS }: { compact?: boolean; onInstallIOS: () => void }) {
   return <div className={`lp-download-platforms${compact ? ' lp-download-platforms-hero' : ''}`} aria-label="Get Cube Hero for your device">
     <a className="lp-platform-card lp-platform-card-android" href="/downloads/CubeHero-v1.0.0-android.apk?release=clean-official-20261113" download="CubeHero-v1.0.0-android.apk">
       <span className="lp-platform-icon"><Download size={18}/></span><span><strong>Android</strong><small>Download APK · v1.0.0</small></span>
     </a>
-    <button type="button" className="lp-platform-card lp-platform-card-ios" disabled title="iOS release coming soon">
-      <span className="lp-platform-icon"><Smartphone size={18}/></span><span><strong>iOS</strong><small>Coming soon</small></span>
+    <button type="button" className="lp-platform-card lp-platform-card-ios lp-platform-card-ios-ready" onClick={onInstallIOS} aria-haspopup="dialog" title="Install CubeHero on an iPhone or iPad using Safari">
+      <span className="lp-platform-icon"><Smartphone size={18}/></span><span><strong>iPhone / iPad</strong><small>Install via Safari · Free</small></span>
     </button>
     <a className="lp-platform-card lp-platform-card-pc lp-platform-card-desktop-ready" href="https://github.com/reojohn/Cube-Hero/releases/download/v1.0.0/CubeHero-v1.0.0-Windows-Setup.exe" title="Download CubeHero for Windows">
       <span className="lp-platform-icon"><Laptop size={18}/></span><span><strong>PC / Laptop</strong><small>Download Windows Setup</small></span>
@@ -54,6 +55,13 @@ function PlatformDownloads({ compact = false }: { compact?: boolean }) {
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [showIOSGuide, setShowIOSGuide] = useState(false)
+  useEffect(() => {
+    if (!showIOSGuide) return
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setShowIOSGuide(false) }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [showIOSGuide])
 
   useEffect(() => {
     document.title = 'Cube Hero — Race. Learn. Become a Hero.'
@@ -95,8 +103,10 @@ export default function LandingPage() {
             <WebLink className="lp-button lp-button-primary lp-button-large lp-button-echo"><Play size={18} fill="currentColor"/> Play for free <ArrowRight size={18}/><span className="lp-cta-shine" aria-hidden="true" /></WebLink>
             <a href="#download" className="lp-button lp-button-secondary lp-button-large"><Smartphone size={19}/> All downloads <ArrowDown size={17}/></a>
           </div>
-          <div className="lp-download-trust lp-entry"><ShieldCheck size={14}/><span>Official CubeHero downloads · Android APK + Windows Setup</span></div>
-          <div className="lp-hero-downloads lp-entry"><div className="lp-hero-downloads-heading"><span>GET CUBE HERO</span><small>Android + Windows available</small></div><PlatformDownloads compact /></div>
+          <div className="lp-download-trust lp-entry"><ShieldCheck size={14}/><span>CubeHero on Android, Windows & iOS</span></div>
+          <div className="lp-hero-downloads lp-entry"><div className="lp-hero-downloads-heading"><span>GET CUBE HERO</span><small>Android · Windows · iOS</small></div><PlatformDownloads compact onInstallIOS={() => setShowIOSGuide(true)} />
+            <a className="lp-hero-windows-help" href="#windows-install-help">Windows installer showing a security warning? See the 2-step guide <ArrowDown size={13}/></a>
+          </div>
           <div className="lp-hero-notes lp-entry"><span><CircleCheck size={15}/> No account needed</span><span><CircleCheck size={15}/> Works with a real 3×3 cube</span></div>
         </div>
 
@@ -109,6 +119,33 @@ export default function LandingPage() {
           <div className="lp-art-caption"><span className="lp-caption-stars">✦ ✦ ✦</span><span>THE NEXT SOLVE IS YOURS</span></div>
           <div className="lp-float-card lp-float-speed"><Zap size={18}/><span><strong>BEAT YOUR BEST</strong><small>One solve at a time</small></span></div>
           <div className="lp-float-card lp-float-badge"><Trophy size={20}/><span><strong>HERO JOURNEY</strong><small>30 achievements</small></span></div>
+        </div>
+      </section>
+
+      <section className="lp-windows-help-outer lp-wrap" aria-label="Windows installation help">
+        <div className="lp-windows-help" id="windows-install-help" aria-labelledby="lp-windows-help-title">
+          <div className="lp-windows-help-head">
+            <div>
+              <span className="lp-windows-help-kicker"><Laptop size={15}/> WINDOWS PC / LAPTOP</span>
+              <h3 id="lp-windows-help-title">How to install CubeHero on Windows</h3>
+              <p>Windows may show SmartScreen because this installer is unsigned. If you downloaded it from our official release, verified it, and trust the file, follow these two steps:</p>
+            </div>
+          </div>
+          <div className="lp-windows-help-steps">
+            <article className="lp-windows-help-step">
+              <div className="lp-windows-help-step-heading"><span className="lp-windows-help-step-num">01</span><div><h4>Select “More info”</h4><p>On the Windows warning, click <strong>More info</strong> to see the app details.</p></div></div>
+              <a className="lp-windows-help-image" href="/landing/windows-smartscreen-more-info.png" target="_blank" rel="noopener noreferrer" aria-label="View the first Windows SmartScreen warning screenshot at full size">
+                <img src="/landing/windows-smartscreen-more-info.png" alt="Windows SmartScreen protection window with the More info link visible" width="667" height="624" loading="lazy" decoding="async"/>
+              </a>
+            </article>
+            <article className="lp-windows-help-step">
+              <div className="lp-windows-help-step-heading"><span className="lp-windows-help-step-num">02</span><div><h4>Choose “Run anyway”</h4><p>Check the installer name. If it matches the file you trust, click <strong>Run anyway</strong>.</p></div></div>
+              <a className="lp-windows-help-image" href="/landing/windows-smartscreen-run-anyway.png" target="_blank" rel="noopener noreferrer" aria-label="View the second Windows SmartScreen warning screenshot at full size">
+                <img src="/landing/windows-smartscreen-run-anyway.png" alt="Windows SmartScreen app details with CubeHero setup name and Run anyway button visible" width="663" height="617" loading="lazy" decoding="async"/>
+              </a>
+            </article>
+          </div>
+          <p className="lp-windows-help-footnote"><ShieldCheck size={15}/> Only proceed with installers you trust. Never disable SmartScreen globally. <a href="https://github.com/reojohn/Cube-Hero/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer">Verify the official v1.0.0 release <ArrowUpRight size={13}/></a></p>
         </div>
       </section>
 
@@ -202,12 +239,28 @@ export default function LandingPage() {
       </section>
 
       <section id="download" className="lp-section lp-download-section" aria-labelledby="lp-download-title"><div className="lp-wrap">
-        <div className="lp-download-card"><div className="lp-download-light" aria-hidden="true"/><div className="lp-download-left"><div className="lp-eyebrow"><Smartphone size={15}/> CUBE HERO EVERYWHERE</div><h2 id="lp-download-title">Your next solve<br/>is <span>always within reach.</span></h2><p>Play instantly on the web, download CubeHero for Android, or download the official Windows setup for PC and laptop. iOS is coming later.</p><div className="lp-download-actions"><WebLink className="lp-button lp-button-primary lp-button-large"><Play size={18} fill="currentColor"/> Play on web <ArrowRight size={18}/></WebLink><PlatformDownloads /></div><div className="lp-download-note"><ShieldCheck size={15}/> Android APK and Windows Setup are available. iOS is coming later.</div></div><div className="lp-phone-art" aria-hidden="true"><div className="lp-phone"><div className="lp-phone-bar"/><div className="lp-phone-screen"><img src="/cube-hero-mascot-384.png" alt=""/><span>CUBE HERO</span><strong>YOUR ARENA<br/>AWAITS.</strong><div className="lp-phone-cta">PLAY NOW <ArrowRight size={12}/></div></div></div><div className="lp-phone-orbit lp-phone-orbit-one"/><div className="lp-phone-orbit lp-phone-orbit-two"/></div></div>
+        <div className="lp-download-card"><div className="lp-download-light" aria-hidden="true"/><div className="lp-download-left"><div className="lp-eyebrow"><Smartphone size={15}/> CUBE HERO EVERYWHERE</div><h2 id="lp-download-title">Your next solve<br/>is <span>always within reach.</span></h2><p>Play instantly on the web, download for Android or Windows, or install CubeHero on iPhone and iPad directly from Safari.</p><div className="lp-download-actions"><WebLink className="lp-button lp-button-primary lp-button-large"><Play size={18} fill="currentColor"/> Play on web <ArrowRight size={18}/></WebLink><PlatformDownloads onInstallIOS={() => setShowIOSGuide(true)} /></div><div className="lp-download-note"><ShieldCheck size={15}/> Android APK and Windows Setup download directly. On iOS, tap Install via Safari for the Home Screen guide.</div></div><div className="lp-phone-art" aria-hidden="true"><div className="lp-phone"><div className="lp-phone-bar"/><div className="lp-phone-screen"><img src="/cube-hero-mascot-384.png" alt=""/><span>CUBE HERO</span><strong>YOUR ARENA<br/>AWAITS.</strong><div className="lp-phone-cta">PLAY NOW <ArrowRight size={12}/></div></div></div><div className="lp-phone-orbit lp-phone-orbit-one"/><div className="lp-phone-orbit lp-phone-orbit-two"/></div></div>
       </div></section>
 
       <section className="lp-section lp-wrap lp-faq" id="faq" aria-labelledby="lp-faq-title"><div className="lp-faq-intro"><div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> GOOD TO KNOW</div><h2 id="lp-faq-title">Questions, <span>answered.</span></h2><p>A few things to know before your first solve.</p></div><div className="lp-faq-items">{FAQS.map(({ question, answer }) => <details key={question} className="lp-faq-item"><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>
     </main>
 
+
+    {showIOSGuide && <div className="lp-desktop-guide-backdrop" onClick={() => setShowIOSGuide(false)}>
+      <section className="lp-desktop-guide lp-ios-install-guide" role="dialog" aria-modal="true" aria-labelledby="lp-ios-guide-title" onClick={(event) => event.stopPropagation()}>
+        <button type="button" className="lp-desktop-guide-close" onClick={() => setShowIOSGuide(false)} aria-label="Close iOS installation instructions"><X size={20}/></button>
+        <span className="lp-ios-guide-eyebrow"><Smartphone size={15}/> IPHONE & IPAD · FREE INSTALL</span>
+        <h2 id="lp-ios-guide-title">Add CubeHero to your Home Screen</h2>
+        <p>Apple uses Safari’s <strong>Add to Home Screen</strong> option. CubeHero will open like an app without needing the App Store.</p>
+        <div className="lp-desktop-guide-steps lp-ios-guide-steps">
+          <div><strong><span className="lp-ios-step-index">01</span> Open Safari</strong><span>On your iPhone or iPad, open this CubeHero website in <b>Safari</b>.</span></div>
+          <div><strong><span className="lp-ios-step-index">02</span> Share → Add to Home Screen</strong><span>Tap the <b>Share</b> button (or the page menu → Share), then choose <b>Add to Home Screen</b>.</span></div>
+          <div><strong><span className="lp-ios-step-index">03</span> Add CubeHero</strong><span>Keep <b>Open as Web App</b> on if shown, tap <b>Add</b>, and open CubeHero from your Home Screen.</span></div>
+        </div>
+        <p className="lp-ios-offline-note"><ShieldCheck size={16}/> For offline play, open the installed game once while connected to the internet and allow its files to load. Then test without Wi-Fi or data. Offline storage can be cleared by iOS.</p>
+        <div className="lp-desktop-guide-actions"><button type="button" className="lp-button lp-button-primary" onClick={() => setShowIOSGuide(false)}>Got it <Check size={17}/></button></div>
+      </section>
+    </div>}
 
     <footer className="lp-footer"><div className="lp-wrap"><div className="lp-footer-main"><div><Brand compact/><p>Race. Learn. Level up. Repeat.</p></div><div className="lp-footer-links"><a href="#features">Features</a><a href="#download">Download</a><a href="#faq">FAQ</a><WebLink>Play Cube Hero <ArrowUpRight size={15}/></WebLink></div></div><div className="lp-footer-bottom"><span>© {new Date().getFullYear()} Cube Hero. Built for the love of cubing.</span><span><MousePointer2 size={13}/> MADE FOR CUBERS · POWERED BY PRACTICE</span></div></div></footer>
   </div>

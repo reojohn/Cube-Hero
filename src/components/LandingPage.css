@@ -549,3 +549,20 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
  .lp-windows-help-step-heading p{font-size:12px}
  .lp-windows-help-footnote{font-size:10.5px}
 }
+
+/* CubeHero iOS Home Screen install help: compact, mobile-friendly, no extra sections. */
+.lp-platform-card-ios-ready{cursor:pointer;border-color:rgba(149,160,255,.42)}
+.lp-platform-card-ios-ready:hover{border-color:rgba(177,187,255,.8)}
+.lp-platform-card-ios-ready:focus-visible{outline:2px solid #bdacff;outline-offset:3px}
+.lp-ios-install-guide{max-height:calc(100dvh - 36px);overflow-y:auto;overscroll-behavior:contain}
+.lp-ios-guide-eyebrow{display:inline-flex;align-items:center;gap:8px;color:#c3b0ff;font-size:10px;font-weight:850;letter-spacing:1.1px}
+.lp-ios-install-guide h2{color:#f8f3ff;margin-top:12px!important}
+.lp-ios-install-guide p strong{color:#f2e6ff}
+.lp-ios-guide-steps>div{padding:13px 15px}
+.lp-ios-guide-steps strong{display:flex;align-items:center;gap:10px;color:#eadfff;font-size:13px}
+.lp-ios-guide-steps span:not(.lp-ios-step-index){font-size:12px;line-height:1.65}
+.lp-ios-step-index{width:27px;height:27px;border-radius:9px;background:rgba(126,81,226,.3);border:1px solid rgba(187,152,255,.3);display:grid;place-items:center;font-size:10px;color:#f3e6ff;flex-shrink:0}
+.lp-ios-offline-note{margin-top:14px;display:flex;align-items:flex-start;gap:9px;background:rgba(121,88,209,.12);border:1px solid rgba(176,152,240,.24);padding:12px;border-radius:12px;color:#bdb7d0;font-size:11.5px;line-height:1.55}
+.lp-ios-offline-note svg{color:#a9e4d5;flex:0 0 auto;margin-top:1px}
+.lp-ios-install-guide .lp-desktop-guide-actions{margin-top:17px}
+@media(max-width:520px){.lp-ios-install-guide{padding:22px 17px}.lp-ios-guide-steps>div{padding:12px}.lp-ios-install-guide h2{font-size:23px}.lp-ios-install-guide .lp-desktop-guide-actions .lp-button{min-height:44px}}
