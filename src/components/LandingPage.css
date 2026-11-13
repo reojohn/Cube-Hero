@@ -498,8 +498,8 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
 .lp-platform-card-pc > span:nth-child(2){display:flex;flex-direction:column;min-width:0}
 .lp-platform-card-pc span.lp-desktop-ready-icon{display:grid;place-items:center}
 
-/* Windows installation helper, placed directly AFTER the hero. Compact even at 1440px.
-   Full original screenshots remain available by clicking each thumbnail. */
+/* Windows installation helper, located after the main Download section.
+   Original screenshots are displayed without cropping and can be enlarged. */
 .lp-hero-windows-help{display:inline-flex;gap:6px;align-items:center;margin-top:12px;font-size:11px;line-height:1.5;font-weight:650;color:#c4b0e9;text-decoration:underline;text-decoration-color:rgba(196,176,233,.45);text-underline-offset:3px}
 .lp-hero-windows-help:hover{color:#eee1ff}
 .lp-windows-help-outer{padding-bottom:32px}
@@ -627,4 +627,51 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
   .lp-apple-visual>a{height:250px;padding:5px}
   .lp-apple-visual figcaption{font-size:10px}
   .lp-apple-visuals-macos .lp-apple-visual>a{height:auto;min-height:0}
+}
+
+/* ===== 2026-11: Guides directly beneath the main Download showcase ===== */
+.lp-windows-help-outer{padding-top:18px;padding-bottom:16px}
+.lp-apple-help-outer{padding-top:0;padding-bottom:34px}
+#windows-install-help,
+#ios-install-help,
+#macos-install-help{scroll-margin-top:110px}
+
+/* Windows: move instructional text above each large, uncropped screenshot. */
+.lp-windows-help-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.lp-windows-help-step{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;align-items:start;gap:13px;padding:16px}
+.lp-windows-help-step-heading{align-items:flex-start}
+.lp-windows-help-image{justify-self:center;max-width:480px;width:100%;height:auto;overflow:visible;border-radius:12px;line-height:0}
+.lp-windows-help-image img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;border-radius:11px}
+
+/* Give Apple screenshot artwork enough space to remain legible, not clipped. */
+.lp-apple-help-grid{grid-template-columns:minmax(0,1fr);gap:16px}
+.lp-apple-help-card{padding:20px 24px}
+.lp-apple-visuals-ios{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;row-gap:16px;justify-items:center}
+.lp-apple-visuals-macos{grid-template-columns:1fr;justify-items:center}
+.lp-apple-visual{width:100%;max-width:420px;margin:0 auto;min-width:0}
+.lp-apple-visuals-macos .lp-apple-visual{max-width:920px}
+.lp-apple-visual>a,
+.lp-apple-visuals-macos .lp-apple-visual>a{display:block;width:100%;height:auto;min-height:0;padding:0;overflow:visible;border-radius:13px;line-height:0;background:rgba(6,8,27,.78)}
+.lp-apple-visual img,
+.lp-apple-visuals-macos .lp-apple-visual img{display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain;border-radius:12px}
+.lp-apple-visual figcaption{padding-top:2px;font-size:12px;line-height:1.5}
+
+@media (max-width:720px){
+  .lp-windows-help-outer{padding-top:12px}
+  .lp-windows-help-steps{grid-template-columns:1fr}
+  .lp-windows-help-step{grid-template-columns:minmax(0,1fr);padding:14px}
+  .lp-windows-help-image{width:100%;max-width:480px;justify-self:center}
+  .lp-apple-help-card{padding:15px}
+  .lp-apple-visuals-ios{grid-template-columns:1fr;gap:18px}
+  .lp-apple-visual{max-width:420px}
+}
+@media (max-width:420px){
+  .lp-apple-visual>a,
+  .lp-apple-visuals-macos .lp-apple-visual>a{height:auto;padding:0;min-height:0}
+  .lp-apple-visual img,
+  .lp-apple-visuals-macos .lp-apple-visual img{height:auto;max-height:none;width:100%}
+  .lp-apple-visual figcaption{font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  .lp-windows-help-image,.lp-apple-visual>a{transition:none}
 }

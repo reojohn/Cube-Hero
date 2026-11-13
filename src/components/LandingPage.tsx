@@ -39,15 +39,19 @@ function WebLink({ className = '', children, to = GAME_START_URL }: { className?
 
 
 // The Android APK is staged into the website build; Windows Setup is hosted on GitHub Releases.
-function PlatformDownloads({ compact = false, onInstallIOS }: { compact?: boolean; onInstallIOS: () => void }) {
+// Keep downloads and guide navigation independent so clicking Windows can do both.
+function scrollToInstallGuide(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+function PlatformDownloads({ compact = false }: { compact?: boolean }) {
   return <div className={`lp-download-platforms${compact ? ' lp-download-platforms-hero' : ''}`} aria-label="Get Cube Hero for your device">
     <a className="lp-platform-card lp-platform-card-android" href="/downloads/CubeHero-v1.0.0-android.apk?release=clean-official-20261113" download="CubeHero-v1.0.0-android.apk">
       <span className="lp-platform-icon"><Download size={18}/></span><span><strong>Android</strong><small>Download APK · v1.0.0</small></span>
     </a>
-    <button type="button" className="lp-platform-card lp-platform-card-ios lp-platform-card-ios-ready" onClick={onInstallIOS} aria-haspopup="dialog" title="Install CubeHero on an iPhone or iPad using Safari">
-      <span className="lp-platform-icon"><Smartphone size={18}/></span><span><strong>iPhone / iPad</strong><small>Install via Safari · Free</small></span>
-    </button>
-    <a className="lp-platform-card lp-platform-card-pc lp-platform-card-desktop-ready" href="https://github.com/reojohn/Cube-Hero/releases/download/v1.0.0/CubeHero-v1.0.0-Windows-Setup.exe" title="Download CubeHero for Windows">
+    <a className="lp-platform-card lp-platform-card-ios lp-platform-card-ios-ready" href="#ios-install-help" onClick={(event) => { event.preventDefault(); scrollToInstallGuide('ios-install-help') }} title="See the iPhone and iPad Safari installation instructions">
+      <span className="lp-platform-icon"><Smartphone size={18}/></span><span><strong>iPhone / iPad</strong><small>See installation steps · Free</small></span>
+    </a>
+    <a className="lp-platform-card lp-platform-card-pc lp-platform-card-desktop-ready" href="https://github.com/reojohn/Cube-Hero/releases/download/v1.0.0/CubeHero-v1.0.0-Windows-Setup.exe" target="_blank" rel="noopener noreferrer" onClick={() => scrollToInstallGuide('windows-install-help')} title="Download CubeHero Windows Setup and see the installation guide">
       <span className="lp-platform-icon"><Laptop size={18}/></span><span><strong>PC / Laptop</strong><small>Download Windows Setup</small></span>
       <span className="lp-desktop-ready-icon" aria-hidden="true"><Download size={16}/></span>
     </a>
@@ -56,14 +60,6 @@ function PlatformDownloads({ compact = false, onInstallIOS }: { compact?: boolea
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [showIOSGuide, setShowIOSGuide] = useState(false)
-  useEffect(() => {
-    if (!showIOSGuide) return
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setShowIOSGuide(false) }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [showIOSGuide])
-
   useEffect(() => {
     document.title = 'Cube Hero — Race. Learn. Become a Hero.'
     document.body.classList.add('cube-landing-body')
@@ -105,7 +101,7 @@ export default function LandingPage() {
             <a href="#download" className="lp-button lp-button-secondary lp-button-large"><Smartphone size={19}/> All downloads <ArrowDown size={17}/></a>
           </div>
           <div className="lp-download-trust lp-entry"><ShieldCheck size={14}/><span>CubeHero on Android, Windows & iOS</span></div>
-          <div className="lp-hero-downloads lp-entry"><div className="lp-hero-downloads-heading"><span>GET CUBE HERO</span><small>Android · Windows · iOS</small></div><PlatformDownloads compact onInstallIOS={() => setShowIOSGuide(true)} />
+          <div className="lp-hero-downloads lp-entry"><div className="lp-hero-downloads-heading"><span>GET CUBE HERO</span><small>Android · Windows · iOS</small></div><PlatformDownloads compact />
             <a className="lp-hero-windows-help" href="#windows-install-help">Windows installer showing a security warning? See the 2-step guide <ArrowDown size={13}/></a>
           </div>
           <div className="lp-hero-notes lp-entry"><span><CircleCheck size={15}/> No account needed</span><span><CircleCheck size={15}/> Works with a real 3×3 cube</span></div>
@@ -120,90 +116,6 @@ export default function LandingPage() {
           <div className="lp-art-caption"><span className="lp-caption-stars">✦ ✦ ✦</span><span>THE NEXT SOLVE IS YOURS</span></div>
           <div className="lp-float-card lp-float-speed"><Zap size={18}/><span><strong>BEAT YOUR BEST</strong><small>One solve at a time</small></span></div>
           <div className="lp-float-card lp-float-badge"><Trophy size={20}/><span><strong>HERO JOURNEY</strong><small>30 achievements</small></span></div>
-        </div>
-      </section>
-
-      <section className="lp-windows-help-outer lp-wrap" aria-label="Windows installation help">
-        <div className="lp-windows-help" id="windows-install-help" aria-labelledby="lp-windows-help-title">
-          <div className="lp-windows-help-head">
-            <div>
-              <span className="lp-windows-help-kicker"><Laptop size={15}/> WINDOWS PC / LAPTOP</span>
-              <h3 id="lp-windows-help-title">How to install CubeHero on Windows</h3>
-              <p>Windows may show SmartScreen because this installer is unsigned. If you downloaded it from our official release, verified it, and trust the file, follow these two steps:</p>
-            </div>
-          </div>
-          <div className="lp-windows-help-steps">
-            <article className="lp-windows-help-step">
-              <div className="lp-windows-help-step-heading"><span className="lp-windows-help-step-num">01</span><div><h4>Select “More info”</h4><p>On the Windows warning, click <strong>More info</strong> to see the app details.</p></div></div>
-              <a className="lp-windows-help-image" href="/landing/windows-smartscreen-more-info.png" target="_blank" rel="noopener noreferrer" aria-label="View the first Windows SmartScreen warning screenshot at full size">
-                <img src="/landing/windows-smartscreen-more-info.png" alt="Windows SmartScreen protection window with the More info link visible" width="667" height="624" loading="lazy" decoding="async"/>
-              </a>
-            </article>
-            <article className="lp-windows-help-step">
-              <div className="lp-windows-help-step-heading"><span className="lp-windows-help-step-num">02</span><div><h4>Choose “Run anyway”</h4><p>Check the installer name. If it matches the file you trust, click <strong>Run anyway</strong>.</p></div></div>
-              <a className="lp-windows-help-image" href="/landing/windows-smartscreen-run-anyway.png" target="_blank" rel="noopener noreferrer" aria-label="View the second Windows SmartScreen warning screenshot at full size">
-                <img src="/landing/windows-smartscreen-run-anyway.png" alt="Windows SmartScreen app details with CubeHero setup name and Run anyway button visible" width="663" height="617" loading="lazy" decoding="async"/>
-              </a>
-            </article>
-          </div>
-          <p className="lp-windows-help-footnote"><ShieldCheck size={15}/> Only proceed with installers you trust. Never disable SmartScreen globally. <a href="https://github.com/reojohn/Cube-Hero/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer">Verify the official v1.0.0 release <ArrowUpRight size={13}/></a></p>
-        </div>
-      </section>
-
-      <section className="lp-apple-help-outer lp-wrap" id="apple-install-help" aria-labelledby="lp-apple-help-title">
-        <div className="lp-apple-help">
-          <div className="lp-apple-help-head">
-            <span className="lp-apple-help-kicker"><Smartphone size={15}/> APPLE DEVICES · SAFARI INSTALLATION</span>
-            <h3 id="lp-apple-help-title">Install CubeHero on Apple devices</h3>
-            <p>iPhone, iPad, and Mac use Safari to install CubeHero as a web app. Follow the steps for your device below.</p>
-          </div>
-          <div className="lp-apple-help-grid">
-            <article className="lp-apple-help-card" aria-labelledby="lp-ios-help-title">
-              <div className="lp-apple-help-card-head">
-                <span className="lp-apple-device-label"><Smartphone size={14}/> iOS / iPadOS · iPhone &amp; iPad</span>
-                <h4 id="lp-ios-help-title">Add to Home Screen</h4>
-              </div>
-              <ol className="lp-apple-help-list">
-                <li><span>01</span><p>Open the <strong>CubeHero website in Safari</strong> on your iPhone or iPad.</p></li>
-                <li><span>02</span><p>Tap <strong>Share</strong> (or Page Menu → Share), then select <strong>Add to Home Screen</strong>.</p></li>
-                <li><span>03</span><p>Keep <strong>Open as Web App</strong> enabled if offered, tap <strong>Add</strong>, and launch CubeHero from your Home Screen.</p></li>
-              </ol>
-              <div className="lp-apple-visuals lp-apple-visuals-ios" aria-label="Illustrated Safari installation screenshots for iPhone and iPad">
-                <figure className="lp-apple-visual">
-                  <a href="/landing/cubehero-ios-share-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge iPhone Safari Share button illustration">
-                    <img src="/landing/cubehero-ios-share-step.webp" alt="Illustration of CubeHero open in iPhone Safari with the Share button highlighted" width="941" height="1672" loading="lazy" decoding="async"/>
-                  </a>
-                  <figcaption><strong>Step 1</strong> Tap Safari’s Share button <span>· View larger ↗</span></figcaption>
-                </figure>
-                <figure className="lp-apple-visual">
-                  <a href="/landing/cubehero-ios-add-to-home-screen-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge Add to Home Screen illustration">
-                    <img src="/landing/cubehero-ios-add-to-home-screen-step.webp" alt="Illustration of Safari's Share menu highlighting Add to Home Screen for CubeHero" width="941" height="1672" loading="lazy" decoding="async"/>
-                  </a>
-                  <figcaption><strong>Step 2</strong> Choose Add to Home Screen <span>· View larger ↗</span></figcaption>
-                </figure>
-              </div>
-            </article>
-            <article className="lp-apple-help-card" aria-labelledby="lp-macos-help-title">
-              <div className="lp-apple-help-card-head">
-                <span className="lp-apple-device-label"><Laptop size={14}/> macOS · MacBook &amp; iMac</span>
-                <h4 id="lp-macos-help-title">Add to Dock</h4>
-              </div>
-              <ol className="lp-apple-help-list">
-                <li><span>01</span><p>On <strong>macOS Sonoma 14 or later</strong>, open the CubeHero website in <strong>Safari</strong>.</p></li>
-                <li><span>02</span><p>Choose <strong>File → Add to Dock</strong> in the menu bar (or <strong>Share → Add to Dock</strong>).</p></li>
-                <li><span>03</span><p>Name it <strong>CubeHero</strong>, click <strong>Add</strong>, then open it from the Dock, Applications, or Spotlight.</p></li>
-              </ol>
-              <div className="lp-apple-visuals lp-apple-visuals-macos" aria-label="Illustrated macOS Safari Add to Dock installation screenshot">
-                <figure className="lp-apple-visual">
-                  <a href="/landing/cubehero-macos-add-to-dock-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge Safari File menu Add to Dock illustration">
-                    <img src="/landing/cubehero-macos-add-to-dock-step.webp" alt="Illustration of macOS Safari displaying the File menu with Add to Dock highlighted, over CubeHero's landing page" width="1448" height="1086" loading="lazy" decoding="async"/>
-                  </a>
-                  <figcaption><strong>macOS</strong> File → Add to Dock <span>· View larger ↗</span></figcaption>
-                </figure>
-              </div>
-            </article>
-          </div>
-          <p className="lp-apple-help-footnote"><ShieldCheck size={15}/> Illustrative guides: Safari menus can look different across versions. For offline play, open CubeHero while connected once so its files can load, then test offline. Device storage cleanup may remove cached files.</p>
         </div>
       </section>
 
@@ -297,28 +209,96 @@ export default function LandingPage() {
       </section>
 
       <section id="download" className="lp-section lp-download-section" aria-labelledby="lp-download-title"><div className="lp-wrap">
-        <div className="lp-download-card"><div className="lp-download-light" aria-hidden="true"/><div className="lp-download-left"><div className="lp-eyebrow"><Smartphone size={15}/> CUBE HERO EVERYWHERE</div><h2 id="lp-download-title">Your next solve<br/>is <span>always within reach.</span></h2><p>Play instantly on the web, download for Android or Windows, or install CubeHero on iPhone and iPad directly from Safari.</p><div className="lp-download-actions"><WebLink className="lp-button lp-button-primary lp-button-large"><Play size={18} fill="currentColor"/> Play on web <ArrowRight size={18}/></WebLink><PlatformDownloads onInstallIOS={() => setShowIOSGuide(true)} /></div><div className="lp-download-note"><ShieldCheck size={15}/> Android APK and Windows Setup download directly. On iOS, tap Install via Safari for the Home Screen guide.</div></div><div className="lp-phone-art" aria-hidden="true"><div className="lp-phone"><div className="lp-phone-bar"/><div className="lp-phone-screen"><img src="/cube-hero-mascot-384.png" alt=""/><span>CUBE HERO</span><strong>YOUR ARENA<br/>AWAITS.</strong><div className="lp-phone-cta">PLAY NOW <ArrowRight size={12}/></div></div></div><div className="lp-phone-orbit lp-phone-orbit-one"/><div className="lp-phone-orbit lp-phone-orbit-two"/></div></div>
+        <div className="lp-download-card"><div className="lp-download-light" aria-hidden="true"/><div className="lp-download-left"><div className="lp-eyebrow"><Smartphone size={15}/> CUBE HERO EVERYWHERE</div><h2 id="lp-download-title">Your next solve<br/>is <span>always within reach.</span></h2><p>Play instantly on the web, download for Android or Windows, or install CubeHero on iPhone and iPad directly from Safari.</p><div className="lp-download-actions"><WebLink className="lp-button lp-button-primary lp-button-large"><Play size={18} fill="currentColor"/> Play on web <ArrowRight size={18}/></WebLink><PlatformDownloads /></div><div className="lp-download-note"><ShieldCheck size={15}/> Android APK and Windows Setup download directly. On iPhone or iPad, tap the button above to view the Safari installation steps.</div></div><div className="lp-phone-art" aria-hidden="true"><div className="lp-phone"><div className="lp-phone-bar"/><div className="lp-phone-screen"><img src="/cube-hero-mascot-384.png" alt=""/><span>CUBE HERO</span><strong>YOUR ARENA<br/>AWAITS.</strong><div className="lp-phone-cta">PLAY NOW <ArrowRight size={12}/></div></div></div><div className="lp-phone-orbit lp-phone-orbit-one"/><div className="lp-phone-orbit lp-phone-orbit-two"/></div></div>
       </div></section>
+
+      <section className="lp-windows-help-outer lp-wrap" aria-label="Windows installation help">
+        <div className="lp-windows-help" id="windows-install-help" aria-labelledby="lp-windows-help-title">
+          <div className="lp-windows-help-head">
+            <div>
+              <span className="lp-windows-help-kicker"><Laptop size={15}/> WINDOWS PC / LAPTOP</span>
+              <h3 id="lp-windows-help-title">How to install CubeHero on Windows</h3>
+              <p>Windows may show SmartScreen because this installer is unsigned. If you downloaded it from our official release, verified it, and trust the file, follow these two steps:</p>
+            </div>
+          </div>
+          <div className="lp-windows-help-steps">
+            <article className="lp-windows-help-step">
+              <div className="lp-windows-help-step-heading"><span className="lp-windows-help-step-num">01</span><div><h4>Select “More info”</h4><p>On the Windows warning, click <strong>More info</strong> to see the app details.</p></div></div>
+              <a className="lp-windows-help-image" href="/landing/windows-smartscreen-more-info.png" target="_blank" rel="noopener noreferrer" aria-label="View the first Windows SmartScreen warning screenshot at full size">
+                <img src="/landing/windows-smartscreen-more-info.png" alt="Windows SmartScreen protection window with the More info link visible" width="667" height="624" loading="lazy" decoding="async"/>
+              </a>
+            </article>
+            <article className="lp-windows-help-step">
+              <div className="lp-windows-help-step-heading"><span className="lp-windows-help-step-num">02</span><div><h4>Choose “Run anyway”</h4><p>Check the installer name. If it matches the file you trust, click <strong>Run anyway</strong>.</p></div></div>
+              <a className="lp-windows-help-image" href="/landing/windows-smartscreen-run-anyway.png" target="_blank" rel="noopener noreferrer" aria-label="View the second Windows SmartScreen warning screenshot at full size">
+                <img src="/landing/windows-smartscreen-run-anyway.png" alt="Windows SmartScreen app details with CubeHero setup name and Run anyway button visible" width="663" height="617" loading="lazy" decoding="async"/>
+              </a>
+            </article>
+          </div>
+          <p className="lp-windows-help-footnote"><ShieldCheck size={15}/> Only proceed with installers you trust. Never disable SmartScreen globally. <a href="https://github.com/reojohn/Cube-Hero/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer">Verify the official v1.0.0 release <ArrowUpRight size={13}/></a></p>
+        </div>
+      </section>
+
+      <section className="lp-apple-help-outer lp-wrap" id="apple-install-help" aria-labelledby="lp-apple-help-title">
+        <div className="lp-apple-help">
+          <div className="lp-apple-help-head">
+            <span className="lp-apple-help-kicker"><Smartphone size={15}/> APPLE DEVICES · SAFARI INSTALLATION</span>
+            <h3 id="lp-apple-help-title">Install CubeHero on Apple devices</h3>
+            <p>iPhone, iPad, and Mac use Safari to install CubeHero as a web app. Follow the steps for your device below.</p>
+          </div>
+          <div className="lp-apple-help-grid">
+            <article className="lp-apple-help-card" id="ios-install-help" aria-labelledby="lp-ios-help-title">
+              <div className="lp-apple-help-card-head">
+                <span className="lp-apple-device-label"><Smartphone size={14}/> iOS / iPadOS · iPhone &amp; iPad</span>
+                <h4 id="lp-ios-help-title">Add to Home Screen</h4>
+              </div>
+              <ol className="lp-apple-help-list">
+                <li><span>01</span><p>Open the <strong>CubeHero website in Safari</strong> on your iPhone or iPad.</p></li>
+                <li><span>02</span><p>Tap <strong>Share</strong> (or Page Menu → Share), then select <strong>Add to Home Screen</strong>.</p></li>
+                <li><span>03</span><p>Keep <strong>Open as Web App</strong> enabled if offered, tap <strong>Add</strong>, and launch CubeHero from your Home Screen.</p></li>
+              </ol>
+              <div className="lp-apple-visuals lp-apple-visuals-ios" aria-label="Illustrated Safari installation screenshots for iPhone and iPad">
+                <figure className="lp-apple-visual">
+                  <a href="/landing/cubehero-ios-share-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge iPhone Safari Share button illustration">
+                    <img src="/landing/cubehero-ios-share-step.webp" alt="Illustration of CubeHero open in iPhone Safari with the Share button highlighted" width="941" height="1672" loading="lazy" decoding="async"/>
+                  </a>
+                  <figcaption><strong>Step 1</strong> Tap Safari’s Share button <span>· View larger ↗</span></figcaption>
+                </figure>
+                <figure className="lp-apple-visual">
+                  <a href="/landing/cubehero-ios-add-to-home-screen-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge Add to Home Screen illustration">
+                    <img src="/landing/cubehero-ios-add-to-home-screen-step.webp" alt="Illustration of Safari's Share menu highlighting Add to Home Screen for CubeHero" width="941" height="1672" loading="lazy" decoding="async"/>
+                  </a>
+                  <figcaption><strong>Step 2</strong> Choose Add to Home Screen <span>· View larger ↗</span></figcaption>
+                </figure>
+              </div>
+            </article>
+            <article className="lp-apple-help-card" id="macos-install-help" aria-labelledby="lp-macos-help-title">
+              <div className="lp-apple-help-card-head">
+                <span className="lp-apple-device-label"><Laptop size={14}/> macOS · MacBook &amp; iMac</span>
+                <h4 id="lp-macos-help-title">Add to Dock</h4>
+              </div>
+              <ol className="lp-apple-help-list">
+                <li><span>01</span><p>On <strong>macOS Sonoma 14 or later</strong>, open the CubeHero website in <strong>Safari</strong>.</p></li>
+                <li><span>02</span><p>Choose <strong>File → Add to Dock</strong> in the menu bar (or <strong>Share → Add to Dock</strong>).</p></li>
+                <li><span>03</span><p>Name it <strong>CubeHero</strong>, click <strong>Add</strong>, then open it from the Dock, Applications, or Spotlight.</p></li>
+              </ol>
+              <div className="lp-apple-visuals lp-apple-visuals-macos" aria-label="Illustrated macOS Safari Add to Dock installation screenshot">
+                <figure className="lp-apple-visual">
+                  <a href="/landing/cubehero-macos-add-to-dock-step.webp" target="_blank" rel="noopener noreferrer" aria-label="Enlarge Safari File menu Add to Dock illustration">
+                    <img src="/landing/cubehero-macos-add-to-dock-step.webp" alt="Illustration of macOS Safari displaying the File menu with Add to Dock highlighted, over CubeHero's landing page" width="1448" height="1086" loading="lazy" decoding="async"/>
+                  </a>
+                  <figcaption><strong>macOS</strong> File → Add to Dock <span>· View larger ↗</span></figcaption>
+                </figure>
+              </div>
+            </article>
+          </div>
+          <p className="lp-apple-help-footnote"><ShieldCheck size={15}/> Illustrative guides: Safari menus can look different across versions. For offline play, open CubeHero while connected once so its files can load, then test offline. Device storage cleanup may remove cached files.</p>
+        </div>
+      </section>
 
       <section className="lp-section lp-wrap lp-faq" id="faq" aria-labelledby="lp-faq-title"><div className="lp-faq-intro"><div className="lp-eyebrow"><span className="lp-eyebrow-dot"/> GOOD TO KNOW</div><h2 id="lp-faq-title">Questions, <span>answered.</span></h2><p>A few things to know before your first solve.</p></div><div className="lp-faq-items">{FAQS.map(({ question, answer }) => <details key={question} className="lp-faq-item"><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>
     </main>
 
-
-    {showIOSGuide && <div className="lp-desktop-guide-backdrop" onClick={() => setShowIOSGuide(false)}>
-      <section className="lp-desktop-guide lp-ios-install-guide" role="dialog" aria-modal="true" aria-labelledby="lp-ios-guide-title" onClick={(event) => event.stopPropagation()}>
-        <button type="button" className="lp-desktop-guide-close" onClick={() => setShowIOSGuide(false)} aria-label="Close iOS installation instructions"><X size={20}/></button>
-        <span className="lp-ios-guide-eyebrow"><Smartphone size={15}/> IPHONE & IPAD · FREE INSTALL</span>
-        <h2 id="lp-ios-guide-title">Add CubeHero to your Home Screen</h2>
-        <p>Apple uses Safari’s <strong>Add to Home Screen</strong> option. CubeHero will open like an app without needing the App Store.</p>
-        <div className="lp-desktop-guide-steps lp-ios-guide-steps">
-          <div><strong><span className="lp-ios-step-index">01</span> Open Safari</strong><span>On your iPhone or iPad, open this CubeHero website in <b>Safari</b>.</span></div>
-          <div><strong><span className="lp-ios-step-index">02</span> Share → Add to Home Screen</strong><span>Tap the <b>Share</b> button (or the page menu → Share), then choose <b>Add to Home Screen</b>.</span></div>
-          <div><strong><span className="lp-ios-step-index">03</span> Add CubeHero</strong><span>Keep <b>Open as Web App</b> on if shown, tap <b>Add</b>, and open CubeHero from your Home Screen.</span></div>
-        </div>
-        <p className="lp-ios-offline-note"><ShieldCheck size={16}/> For offline play, open the installed game once while connected to the internet and allow its files to load. Then test without Wi-Fi or data. Offline storage can be cleared by iOS.</p>
-        <div className="lp-desktop-guide-actions"><button type="button" className="lp-button lp-button-primary" onClick={() => setShowIOSGuide(false)}>Got it <Check size={17}/></button></div>
-      </section>
-    </div>}
 
     <footer className="lp-footer"><div className="lp-wrap"><div className="lp-footer-main"><div><Brand compact/><p>Race. Learn. Level up. Repeat.</p></div><div className="lp-footer-links"><a href="#features">Features</a><a href="#download">Download</a><a href="#faq">FAQ</a><WebLink>Play Cube Hero <ArrowUpRight size={15}/></WebLink></div></div><div className="lp-footer-bottom"><span>© {new Date().getFullYear()} Cube Hero. Built for the love of cubing.</span><span><MousePointer2 size={13}/> MADE FOR CUBERS · POWERED BY PRACTICE</span></div></div></footer>
   </div>
