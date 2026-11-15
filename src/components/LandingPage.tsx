@@ -97,13 +97,13 @@ function scrollToInstallGuide(id: string) {
 }
 function PlatformDownloads({ compact = false, onIOSInstall }: { compact?: boolean; onIOSInstall: () => void }) {
   return <div className={`lp-download-platforms${compact ? ' lp-download-platforms-hero' : ''}`} aria-label="Get Cube Hero for your device">
-    <a className="lp-platform-card lp-platform-card-android" href="/downloads/CubeHero-v1.0.0-android.apk?release=clean-official-20261113" download="CubeHero-v1.0.0-android.apk">
+    <a className="lp-platform-card lp-platform-card-android" href="/downloads/CubeHero-v1.0.0-android.apk?release=race-tour-moonkeeper-20261115" download="CubeHero-v1.0.0-android.apk">
       <span className="lp-platform-icon"><Download size={18}/></span><span><strong>Android</strong><small>Download APK · v1.0.0</small></span>
     </a>
     <a className="lp-platform-card lp-platform-card-ios lp-platform-card-ios-ready" href="#ios-install-help" onClick={(event) => { event.preventDefault(); onIOSInstall() }} title="Open the iPhone/iPad install guide with screenshots and scroll to Apple instructions">
       <span className="lp-platform-icon"><Smartphone size={18}/></span><span><strong>iPhone / iPad</strong><small>See installation steps · Free</small></span>
     </a>
-    <a className="lp-platform-card lp-platform-card-pc lp-platform-card-desktop-ready" href="https://github.com/reojohn/Cube-Hero/releases/download/v1.0.0/CubeHero-v1.0.0-Windows-Setup.exe" target="_blank" rel="noopener noreferrer" onClick={() => scrollToInstallGuide('windows-install-help')} title="Download CubeHero Windows Setup and see the installation guide">
+    <a className="lp-platform-card lp-platform-card-pc lp-platform-card-desktop-ready" href="https://github.com/reojohn/Cube-Hero/releases/download/v1.0.0/CubeHero-v1.0.0-Windows-Setup.exe?release=race-tour-moonkeeper-20261115" target="_blank" rel="noopener noreferrer" onClick={() => scrollToInstallGuide('windows-install-help')} title="Download CubeHero Windows Setup and see the installation guide">
       <span className="lp-platform-icon"><Laptop size={18}/></span><span><strong>PC / Laptop</strong><small>Download Windows Setup</small></span>
       <span className="lp-desktop-ready-icon" aria-hidden="true"><Download size={16}/></span>
     </a>
