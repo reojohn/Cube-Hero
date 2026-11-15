@@ -1433,3 +1433,49 @@ button,select {touch-action:manipulation}
   .app-shell .ch-audio-control-row .switch{flex:0 0 36px;margin-left:auto}
 }
 
+
+/* Browser-only route back to the public landing page (not shown in native apps). */
+.app-shell .ch-back-to-landing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #4c406d;
+  border-radius: 9px;
+  background: #211b3680;
+  color: #d8c6ff;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.25;
+  white-space: nowrap;
+  transition: background .18s, border-color .18s, color .18s;
+}
+.app-shell .ch-back-to-landing:hover {
+  background: #332654;
+  border-color: #a987f7;
+  color: #fff;
+}
+.app-shell .ch-back-to-landing:focus-visible {
+  outline: 2px solid #b79aff;
+  outline-offset: 3px;
+}
+.app-shell .ch-back-to-landing .ch-landing-label-short { display: none; }
+@media (max-width: 1180px) {
+  .app-shell .ch-back-to-landing { min-height: 32px; padding-inline: 9px; font-size: 10px; }
+  .app-shell .ch-back-to-landing .ch-landing-label-full { display: none; }
+  .app-shell .ch-back-to-landing .ch-landing-label-short { display: inline; }
+}
+@media (max-width: 540px) {
+  .app-shell .ch-back-to-landing { min-height: 32px; width: 32px; padding: 0; border-radius: 9px; }
+  .app-shell .ch-back-to-landing .ch-landing-label-short { display: none; }
+  .app-shell .ch-back-to-landing svg { width: 17px; height: 17px; }
+  .app-shell .topbar-left { min-width: 0; }
+  .app-shell .topbar-page { min-width: 0; overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .ch-back-to-landing { transition: none; }
+}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import {
-  ArrowRight, ArrowUpRight, BarChart3, BookOpen, BrainCircuit, Check, ChevronDown,
+  ArrowLeft, ArrowRight, ArrowUpRight, BarChart3, BookOpen, BrainCircuit, Check, ChevronDown,
   ChevronRight, CircleHelp, Clock3, Flag, Gauge,
   Home, Layers3, Menu, PanelLeftClose, PanelLeftOpen, RotateCcw, Settings2, ShieldCheck,
   Shuffle, SlidersHorizontal, Sparkles, Timer, Trophy,
@@ -492,6 +492,27 @@ export default function App(){
     window.addEventListener('keydown',onKeyDown)
     return()=>{document.body.style.overflow=previousOverflow;window.removeEventListener('keydown',onKeyDown)}
   },[menuOpen])
+  // The browser landing page is not part of the offline Capacitor / Electron app.
+  // Installed Home Screen PWAs also stay focused on the game experience.
+  const canReturnToLanding = !isNativeApp() && /^https?:$/.test(window.location.protocol)
+    && !window.matchMedia('(display-mode: standalone)').matches
+  const returnToLanding = (event: MouseEvent<HTMLAnchorElement>) => {
+    // Preserve the normal browser behaviour of Ctrl/Cmd-click, Shift-click, etc.
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return
+    event.preventDefault()
+    const leave = () => window.location.assign('/')
+    if (activeRaceRef.current || vsPendingSession) {
+      setConfirmState({
+        title: 'Return to the landing page?',
+        message: 'Your current race will be interrupted. Completed solves and saved progress will remain available.',
+        confirmLabel: 'Back to landing',
+        cancelLabel: 'Stay in CubeHero',
+        tone: 'warning',
+        icon: 'leave',
+        onConfirm: leave,
+      })
+    } else leave()
+  }
   const navigateTo=(to:Page)=>{activeRaceRef.current=false;setVsPendingSession(null);setPage(to);setMenuOpen(false);window.location.hash=`/${to}`;window.scrollTo({top:0,behavior:'instant'})}
   const goTo=(to:Page)=>{
     if(((page==='room'&&to!=='room'&&to!=='results')||(page==='practice'&&to!=='practice')||(page==='solo'&&to!=='solo'))&&activeRaceRef.current){
@@ -580,11 +601,11 @@ export default function App(){
       <nav className="main-nav" aria-label="Main navigation">{NAV.map(({page:p,label,icon:Icon})=><button key={p} className={`nav-item ${page===p||(p==='race'&&['room','results'].includes(page))?'active':''}`} onClick={()=>goTo(p)}><Icon size={20} strokeWidth={1.8}/><span>{label}</span>{p==='race'&&<span className="nav-flare"/>}</button>)}</nav>
       <div className="sidebar-bottom"><button className={`nav-item settings-nav ${page==='settings'?'active':''}`} onClick={()=>goTo('settings')}><Settings2 size={20}/><span>Settings</span></button><div className="guest-profile"><PlayerAvatar className="guest-avatar"/><div><strong title={playerName}>{playerName}</strong><small>Welcome to Cube Hero</small></div><span className="online-dot"/></div></div>
     </aside>
-    <div className="main-wrap"><header className="topbar"><div className="topbar-left"><button type="button" className="landscape-nav-toggle" aria-label={landscapeRailOpen?'Collapse landscape navigation':'Expand landscape navigation'} title={landscapeRailOpen?'Collapse sidebar':'Expand sidebar'} aria-controls="site-sidebar" aria-expanded={!landscapeRailCollapsed} onClick={()=>setLandscapeRailOpen(open=>!open)}>{landscapeRailOpen?<PanelLeftClose size={17} aria-hidden="true"/>:<PanelLeftOpen size={17} aria-hidden="true"/>}<span>{landscapeRailOpen?'Hide menu':'Show menu'}</span></button><button className="mobile-menu" aria-label="Open navigation menu" aria-expanded={menuOpen} aria-controls="site-sidebar" onClick={()=>setMenuOpen(true)}><Menu size={23}/></button><div className="topbar-page"><span>Cube Hero</span><ChevronRight size={14}/><strong>{PATH_LABELS[page]}</strong></div></div><div className="topbar-right"><div className="build-status"><span/> LOCAL RACING <small>· HERO JOURNEY</small></div><span className="topbar-rule"/><span className="cube-topbar-player" title={`Playing as ${playerName}`}><span>{playerName}</span><PlayerAvatar className="topbar-avatar"/></span></div></header>
+    <div className="main-wrap"><header className="topbar"><div className="topbar-left"><button type="button" className="landscape-nav-toggle" aria-label={landscapeRailOpen?'Collapse landscape navigation':'Expand landscape navigation'} title={landscapeRailOpen?'Collapse sidebar':'Expand sidebar'} aria-controls="site-sidebar" aria-expanded={!landscapeRailCollapsed} onClick={()=>setLandscapeRailOpen(open=>!open)}>{landscapeRailOpen?<PanelLeftClose size={17} aria-hidden="true"/>:<PanelLeftOpen size={17} aria-hidden="true"/>}<span>{landscapeRailOpen?'Hide menu':'Show menu'}</span></button><button className="mobile-menu" aria-label="Open navigation menu" aria-expanded={menuOpen} aria-controls="site-sidebar" onClick={()=>setMenuOpen(true)}><Menu size={23}/></button><div className="topbar-page"><span>Cube Hero</span><ChevronRight size={14}/><strong>{PATH_LABELS[page]}</strong></div>{canReturnToLanding&&<a href="/" className="ch-back-to-landing" onClick={returnToLanding} title="Back to CubeHero landing page" aria-label="Back to landing page"><ArrowLeft size={15} aria-hidden="true"/><span className="ch-landing-label-full">Back to Landing Page</span><span className="ch-landing-label-short" aria-hidden="true">Landing</span></a>}</div><div className="topbar-right"><div className="build-status"><span/> LOCAL RACING <small>· HERO JOURNEY</small></div><span className="topbar-rule"/><span className="cube-topbar-player" title={`Playing as ${playerName}`}><span>{playerName}</span><PlayerAvatar className="topbar-avatar"/></span></div></header>
       <main className="main-content" id="main-content">{page==='home'&&<HomePage goTo={goTo} journey={journey} onSetUpRace={()=>{tourAction(0);goTo('race')}}/>} {page==='race'&&<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace} onCustomize={()=>{if(tourStep===1)tourAction(1);else document.querySelector('.race-setup')?.scrollIntoView({behavior:preferences.reducedMotion?'auto':'smooth',block:'start'})}} onTourAction={tourAction} touring={tourStep!==null}/>} {page==='room'&&(session?<RaceRoom key={`${session.id}:${session.records.length}`} session={session} goTo={goTo} onActiveChange={trackRaceActive} onComplete={completeRound} toast={setToastMessage} precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)} onTutorialInspection={()=>{if(tourStep===6)finishTour()}}/>:<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace} onCustomize={()=>{if(tourStep===1)tourAction(1);else document.querySelector('.race-setup')?.scrollIntoView({behavior:preferences.reducedMotion?'auto':'smooth',block:'start'})}} onTourAction={tourAction} touring={tourStep!==null}/>)} {page==='results'&&<>
         {currentTournament&&<section className="journey-results-summary"><div><span className="journey-eyebrow"><Trophy size={15}/> HERO JOURNEY · CHAMPIONSHIP</span><h3>Round {currentTournament.records.length} / 5 · You are #{tournamentPlayer?.place??'—'}</h3><p>{tournamentPlayer?.points??0} points · {currentTournament.records.length===5?'Championship complete!':'Your next race uses a new scramble.'}</p></div><button className="btn btn-primary btn-sm" onClick={()=>{setJourneyTab('tournaments');goTo('journey')}}><Award size={16}/> View standings <ArrowRight size={16}/></button></section>}
         <RaceResults playerName={playerName} session={session} goTo={goTo} nextRound={nextRound} raceAgain={startRace} precision={precision}/></>} {page==='practice'&&<GhostRace precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)} onActiveChange={trackRaceActive}/>} {page==='solo'&&<SoloTimer precision={precision} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive} onRaceClick={()=>goTo('race')}/>} {page==='statistics'&&<RaceStatistics history={history} goTo={goTo} clearHistory={clearHistory} precision={precision}/>} {page==='learn'&&<Academy reducedMotion={preferences.reducedMotion} goToRace={()=>goTo('race')}/>} {page==='journey'&&<HeroJourney playerName={playerName} state={journey} tab={journeyTab} onTabChange={setJourneyTab} initialDifficulty={raceSettings.difficulty} initialPersonality={raceSettings.personality} onStartTournament={startTournament} onResumeTournament={resumeTournament} onGo={goTo} precision={precision}/>} {page==='settings'&&<SettingsPage preferences={preferences} update={setPreferences} reset={reset} playerName={playerName} onPlayerNameChange={value=>{if(setPlayerName(value))setToastMessage(`Player name updated to ${normalizePlayerName(value)}.`)}} onReplayTutorial={()=>{setTourStep(0);goTo('home')}}/>}</main>
-      <footer className="app-footer"><span>© 2026 Cube Hero. Built for the love of cubing. {!isNativeApp()&&<a href="/" className="app-site-link">Visit website ↗</a>}</span><span>Challenge the AI. Outrace your Ghost. Break your limits. <span className="footer-spark">✦</span></span></footer></div>
+      <footer className="app-footer"><span>© 2026 Cube Hero. Built for the love of cubing. {canReturnToLanding&&<a href="/" className="app-site-link" onClick={returnToLanding}>Visit website ↗</a>}</span><span>Challenge the AI. Outrace your Ghost. Break your limits. <span className="footer-spark">✦</span></span></footer></div>
     {/* The HIC-style dock is phone-only; keep the original desktop sidebar and full mobile drawer. */}
     <nav className="cube-mobile-dock" aria-label="Mobile quick navigation">
       {NAV.filter(item=>['home','race','solo','practice','learn'].includes(item.page)).map(({page:p,label,icon:Icon})=>{
