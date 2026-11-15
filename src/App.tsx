@@ -49,6 +49,8 @@ import type { GraphicsQuality } from './lib/graphicsQuality'
 import ConfirmationModal from './components/ConfirmationModal'
 import type { ConfirmationDetails } from './components/ConfirmationModal'
 import GraphicsCubePreview from './components/GraphicsCubePreview'
+import RaceOnboardingTour, { RACE_TOUR_STORAGE_KEY } from './components/RaceOnboardingTour'
+import type { RaceTourStep } from './components/RaceOnboardingTour'
 
 type Page='home'|'race'|'room'|'results'|'practice'|'solo'|'statistics'|'learn'|'journey'|'settings'
 type Preferences={sound:boolean;soundVolume:number;cinematicSounds:boolean;timerSounds:boolean;reducedMotion:boolean;compact:boolean;graphics:GraphicsQuality;precision:'2'|'3';orientation:OrientationPreference}
@@ -142,14 +144,14 @@ function Switch({checked,onChange,label}:{checked:boolean;onChange:(value:boolea
   return <button type="button" role="switch" aria-label={label} aria-checked={checked} className={`switch ${checked?'on':''}`} onClick={()=>onChange(!checked)}><span/></button>
 }
 
-function HomePage({goTo,journey}:{goTo:(page:Page)=>void;journey:JourneyState}){
+function HomePage({goTo,journey,onSetUpRace}:{goTo:(page:Page)=>void;journey:JourneyState;onSetUpRace:()=>void}){
   const progress=levelInfo(journeyMetrics(journey).xp)
   return <div className="page-stack">
     <section className="hero">
       <div className="hero-content"><div className="hero-kicker"><Sparkles size={15}/> YOUR SPEEDCUBING ARENA</div>
         <h1>Race the AI.<br/><span>Improve Your Solves.</span></h1>
         <p>Meet your next cubing rival. Choose your level, train against a realistic AI speedcuber, and push your personal best — one scramble at a time.</p>
-        <div className="hero-actions"><button className="btn btn-primary btn-lg" onClick={()=>goTo('race')}><Flag size={18}/> Set Up a Race <ArrowRight size={17}/></button><button className="btn btn-outline btn-lg" onClick={()=>goTo('solo')}><Timer size={18}/> Solo Timer</button><button className="btn btn-outline btn-lg" onClick={()=>goTo('practice')}><Ghost size={18}/> Race Your Ghost</button></div>
+        <div className="hero-actions"><button className="btn btn-primary btn-lg" data-race-tour="home" onClick={onSetUpRace}><Flag size={18}/> Set Up a Race <ArrowRight size={17}/></button><button className="btn btn-outline btn-lg" onClick={()=>goTo('solo')}><Timer size={18}/> Solo Timer</button><button className="btn btn-outline btn-lg" onClick={()=>goTo('practice')}><Ghost size={18}/> Race Your Ghost</button></div>
         <div className="hero-trust"><span className="hero-trust-dot"/> Designed for speedcubers, by speedcubing enthusiasts</div>
       </div>
       <div className="hero-cube"><div className="cube-backdrop"/><CubeArt/><div className="floating-note note-top"><Zap size={16}/> Level up your speed</div><div className="floating-note note-bottom"><span className="purple-dot"/> YOUR CUBE. YOUR PACE.</div></div>
@@ -180,8 +182,8 @@ function HomePage({goTo,journey}:{goTo:(page:Page)=>void;journey:JourneyState}){
   </div>
 }
 
-function RacePage({settings,update,startRace}:{settings:RaceSettings;update:(v:RaceSettings)=>void;startRace:()=>void}) {
-  const [mechanicsOpen,setMechanicsOpen]=useState(()=>!hasSeenMechanics('ai'))
+function RacePage({settings,update,startRace,onCustomize,onTourAction,touring}:{settings:RaceSettings;update:(v:RaceSettings)=>void;startRace:()=>void;onCustomize:()=>void;onTourAction:(step:RaceTourStep)=>void;touring:boolean}) {
+  const [mechanicsOpen,setMechanicsOpen]=useState(()=>!touring&&!hasSeenMechanics('ai'))
   const closeMechanics=()=>{markMechanicsSeen('ai');setMechanicsOpen(false)}
   // The next AI scramble is solved while the player chooses their opponent.
   useEffect(()=>{aiPrefetch.prewarm()},[])
@@ -197,7 +199,7 @@ function RacePage({settings,update,startRace}:{settings:RaceSettings;update:(v:R
         <h1 id="ch-ai-hero-title">Choose your rivals.<br/><span>Race your limits.</span></h1>
         <p>Pick the speed, personality, and number of AI opponents. Everyone starts with the same scramble — the fastest solve wins.</p>
         <div className="ch-mode-hero-pills"><span><BrainCircuit size={15}/>{getAiCount(settings.aiCount)} AI {getAiCount(settings.aiCount)===1?'rival':'rivals'}</span><span><Gauge size={15}/>Sub-{validDifficulty}</span><span><ShieldCheck size={15}/>Verified CFOP</span></div>
-        <div className="ch-mode-hero-actions"><button type="button" className="btn btn-primary ch-mode-hero-button" onClick={()=>document.querySelector('.race-setup')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}><SlidersHorizontal size={17}/> Customize race <ArrowRight size={17}/></button></div>
+        <div className="ch-mode-hero-actions"><button type="button" className="btn btn-primary ch-mode-hero-button" data-race-tour="customize" onClick={onCustomize}><SlidersHorizontal size={17}/> Customize race <ArrowRight size={17}/></button></div>
       </div>
       <div className="ch-ai-hero-art" aria-hidden="true"><div className="ch-ai-hero-orbit"/><img src={aiHeroCore} alt="" className="ch-ai-hero-illustration ch-ai-hero-core" width={1122} height={1402} loading="eager" decoding="async" draggable={false}/><div className="ch-ai-hero-level"><span>YOUR OPPONENTS</span><strong>{getAiCount(settings.aiCount)} <small>AI {getAiCount(settings.aiCount)===1?'rival':'rivals'}</small></strong></div><div className="ch-ai-hero-float"><Zap size={14}/> LET THE RACE BEGIN</div></div>
     </section>
@@ -211,12 +213,12 @@ function RacePage({settings,update,startRace}:{settings:RaceSettings;update:(v:R
       <div className="select-grid"><label className="field-group"><span className="field-label"><Layers3 size={17}/> Puzzle</span><div className="select-wrap"><select value={settings.puzzle} onChange={e=>change('puzzle',e.target.value as '333')}><option value="333">3×3×3 — Standard</option></select><ChevronDown size={17}/></div></label>
         <label className="field-group"><span className="field-label"><Flag size={17}/> Race length</span><div className="select-wrap"><select value={settings.raceLength} onChange={e=>change('raceLength',e.target.value as RaceLength)}><option value="single">Single Solve</option><option value="ao5">5-Round Session</option><option value="ao12">12-Round Session</option></select><ChevronDown size={17}/></div></label></div>
       <div className="setup-divider"/>
-      <RivalSelect value={validDifficulty} personality={personality} onChange={v=>change('difficulty',v)}/>
+      <RivalSelect value={validDifficulty} personality={personality} onChange={v=>{change('difficulty',v);onTourAction(2)}}/>
       <div className="settings-label personality-heading"><h3>AI Personality <span className="hint-icon" title="Choose how consistently your AI rival solves. Every style works with every Sub level."><CircleHelp size={16}/></span></h3><p>Give your opponent a racing style. Balanced is recommended for regular practice.</p></div>
-      <div className="personality-grid" role="group" aria-label="AI opponent personality">{PERSONALITIES.map(({id,label,hint,art})=><button key={id} type="button" className={`personality-option ch-personality-card ch-personality-${id} ${personality===id?'selected':''}`} onClick={()=>change('personality',id)} aria-pressed={personality===id}><span className="ch-personality-portrait" aria-hidden="true"><img src={art} alt="" width="512" height="512" loading="lazy" decoding="async" draggable={false}/></span><span className="personality-copy"><strong>{label}{id==='balanced'&&<em>DEFAULT</em>}</strong><small>{hint}</small></span>{personality===id&&<span className="personality-check"><Check size={14}/></span>}</button>)}</div>
+      <div className="personality-grid" data-race-tour="personality" role="group" aria-label="AI opponent personality">{PERSONALITIES.map(({id,label,hint,art})=><button key={id} type="button" className={`personality-option ch-personality-card ch-personality-${id} ${personality===id?'selected':''}`} onClick={()=>{change('personality',id);onTourAction(3)}} aria-pressed={personality===id}><span className="ch-personality-portrait" aria-hidden="true"><img src={art} alt="" width="512" height="512" loading="lazy" decoding="async" draggable={false}/></span><span className="personality-copy"><strong>{label}{id==='balanced'&&<em>DEFAULT</em>}</strong><small>{hint}</small></span>{personality===id&&<span className="personality-check"><Check size={14}/></span>}</button>)}</div>
       <section className="multi-ai-picker" aria-label="Number of AI opponents">
         <div className="multi-ai-picker-heading"><div className="multi-ai-icon"><BrainCircuit size={22}/></div><div><span className="multi-ai-eyebrow">RACE LOBBY · NEW</span><h3>How many AIs will race you?</h3><p>Every rival gets the <strong>same scramble</strong>, with their own human-like solve time. All use Sub-{validDifficulty} · {PERSONALITIES.find(x=>x.id===personality)!.label}.</p></div><span className="multi-ai-count"><b>{getAiCount(settings.aiCount)}</b> / {MAX_AI_OPPONENTS} AIs</span></div>
-        <div className="multi-ai-choices" role="group" aria-label="Choose between one and ten AI opponents">{Array.from({length:MAX_AI_OPPONENTS},(_,i)=>i+1).map(count=><button key={count} type="button" aria-label={`${count} AI opponent${count===1?'':'s'}`} aria-pressed={getAiCount(settings.aiCount)===count} onClick={()=>change('aiCount',count)} className={`multi-ai-choice ${getAiCount(settings.aiCount)===count?'active':''}`}><span>{count}</span>{getAiCount(settings.aiCount)===count&&<Check size={13}/>}</button>)}</div>
+        <div className="multi-ai-choices" data-race-tour="count" role="group" aria-label="Choose between one and ten AI opponents">{Array.from({length:MAX_AI_OPPONENTS},(_,i)=>i+1).map(count=><button key={count} type="button" aria-label={`${count} AI opponent${count===1?'':'s'}`} aria-pressed={getAiCount(settings.aiCount)===count} onClick={()=>{change('aiCount',count);onTourAction(4)}} className={`multi-ai-choice ${getAiCount(settings.aiCount)===count?'active':''}`}><span>{count}</span>{getAiCount(settings.aiCount)===count&&<Check size={13}/>}</button>)}</div>
         <div className="multi-ai-picker-foot"><span>{getAiCount(settings.aiCount)===1?'Classic head-to-head race':`${getAiCount(settings.aiCount)+1}-cuber tournament • 1 player + ${getAiCount(settings.aiCount)} AI rivals`}</span><span>Choose 1 for the original race layout</span></div>
       </section>
       <div className="opponent-summary"><div className="opponent-symbol"><BrainCircuit size={20}/></div><div><div className="opponent-title">{chosenRival.name} (Sub-{validDifficulty}) · {PERSONALITIES.find(x=>x.id===personality)!.label} {getAiCount(settings.aiCount)===1?'AI Rival':`${getAiCount(settings.aiCount)} AI Rivals`} <span className="ai-dot"/></div><p>{chosenRival.title} · Typical average <strong>~{formatTime(aiExpectedMeanMs(validDifficulty,personality))}s</strong><span className="personality-summary-description"> · {PERSONALITY_DESCRIPTIONS[personality]}</span></p></div><LabelBadge subtle>SELECTED</LabelBadge></div>
@@ -227,13 +229,13 @@ function RacePage({settings,update,startRace}:{settings:RaceSettings;update:(v:R
         <div className="option-card"><div className="option-icon"><BarChart3 size={18}/></div><div className="option-info"><strong>Solve Breakdown</strong><span>Actual solve move timeline</span></div><Switch checked={settings.breakdown} onChange={v=>change('breakdown',v)} label="Show solve breakdown"/></div></div>
       <div className="setup-divider"/>
       <div className="setup-footnote"><ShieldCheck size={17}/><span>The AI now computes a verified CFOP solution (Cross → 4 F2L pairs → OLL → PLL). Moves are genuine; your rival’s timing and pauses are simulated.</span></div>
-      <button className="btn btn-primary btn-lg btn-full" onClick={startRace}><Flag size={18}/> Start Race <ArrowRight size={18}/></button>
+      <button className="btn btn-primary btn-lg btn-full" data-race-tour="start" onClick={startRace}><Flag size={18}/> Start Race <ArrowRight size={18}/></button>
     </Surface>
     <div className="small-center-note"><Sparkles size={14}/> Your preferences are saved in this browser.</div>
   </div>
 }
 
-function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{preferences:Preferences;update:(p:Preferences)=>void;reset:()=>void;playerName:string;onPlayerNameChange:(name:string)=>void}){
+function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange,onReplayTutorial}:{preferences:Preferences;update:(p:Preferences)=>void;reset:()=>void;playerName:string;onPlayerNameChange:(name:string)=>void;onReplayTutorial:()=>void}){
   const recommendedGraphics=defaultGraphicsPreference()
   const [draftName,setDraftName]=useState(playerName)
   const [nameSaved,setNameSaved]=useState(false)
@@ -279,6 +281,7 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
       </form>
     </Surface>
     <Surface className="settings-surface"><div className="settings-section-head"><span className="settings-header-icon"><SlidersHorizontal size={20}/></span><div><h3>Experience</h3><p>Adjust how your arena behaves.</p></div></div>
+      <div className="settings-row"><div><strong>Race AI interactive tutorial</strong><p>Replay the first-time walkthrough with highlighted buttons and step-by-step guidance.</p></div><button type="button" className="btn btn-outline btn-sm" onClick={onReplayTutorial}><Sparkles size={16}/> Replay tutorial</button></div>
       <div className="settings-row"><div><strong>Interface animations</strong><p>Reduce decorative movement for accessibility.</p></div><Switch checked={preferences.reducedMotion} onChange={v=>change('reducedMotion',v)} label="Reduce animations"/></div>
       <div className="settings-row"><div><strong>Compact layout</strong><p>Fit more cards into the available screen space.</p></div><Switch checked={preferences.compact} onChange={v=>change('compact',v)} label="Compact layout"/></div>
       <div className="settings-row"><div><strong>Game sound effects</strong><p>Sounds for VS intros, inspection, racing, and personal bests. Enabled by default on new installs.</p></div><Switch checked={preferences.sound} onChange={v=>change('sound',v)} label="Enable game sound effects"/></div>
@@ -349,6 +352,10 @@ function SettingsPage({preferences,update,reset,playerName,onPlayerNameChange}:{
 export default function App(){
   const {name:playerName,setName:setPlayerName}=useLocalPlayer()
   const [page,setPage]=useState<Page>(getCurrentPage)
+  const [tourStep,setTourStep]=useState<RaceTourStep|null>(()=>{
+    try{return localStorage.getItem(RACE_TOUR_STORAGE_KEY) ? null : getCurrentPage()==='home'?0:null}
+    catch{return getCurrentPage()==='home'?0:null}
+  })
   const [menuOpen,setMenuOpen]=useState(false)
   // Landscape-only compact desktop rail. Portrait drawers and full desktop navigation are separate.
   const [landscapeRailOpen,setLandscapeRailOpen]=useState(true)
@@ -368,6 +375,15 @@ export default function App(){
   const [raceSettings,setRaceSettings]=useSavedState('cube-hero-race-settings-v1',initialRace)
   const [preferences,setPreferences]=useSavedState('cube-hero-preferences-v1',initialPreferences)
   const [confirmState,setConfirmState]=useState<ConfirmIntent|null>(null)
+  // The tour is optional and has its own storage key; it never changes saved racing settings.
+  const finishTour=useCallback(()=>{
+    setTourStep(null)
+    try{localStorage.setItem(RACE_TOUR_STORAGE_KEY,'done')}catch{/* local storage may be unavailable */}
+  },[])
+  const tourAction=useCallback((expected:RaceTourStep)=>{
+    if(expected===6)return // The inspection action completes the tour separately.
+    setTourStep(current=>current===expected ? ((expected+1) as RaceTourStep):current)
+  },[])
   useEffect(()=>{
     if (isNativeApp()) void requestOrientationPreference(orientationPreference(preferences.orientation))
     // Apply the saved preference only once at native launch; subsequent changes use the Settings button.
@@ -444,6 +460,14 @@ export default function App(){
   },[levelUp,achievementNotice,achievementQueue])
   useEffect(()=>{try{if(session)localStorage.setItem('cube-hero-session-v2',JSON.stringify(session));else localStorage.removeItem('cube-hero-session-v2')}catch{/* storage unavailable */}},[session])
   useEffect(()=>{const handleHash=()=>{setVsPendingSession(null);setPage(getCurrentPage());setMenuOpen(false)};window.addEventListener('hashchange',handleHash);return()=>window.removeEventListener('hashchange',handleHash)},[])
+  useEffect(()=>{
+    if(page!=='home'||tourStep!==null)return
+    try{if(!localStorage.getItem(RACE_TOUR_STORAGE_KEY))setTourStep(0)}catch{/* unavailable storage: avoid looping */}
+  },[page,tourStep])
+  // Going Back during the VS intro returns to the highlighted Start Race button.
+  useEffect(()=>{
+    if(tourStep===6&&page==='race'&&!vsPendingSession)setTourStep(5)
+  },[tourStep,page,vsPendingSession])
   // Results screen is idle: prepare the next verified scramble without doing
   // expensive CFOP work during the live race.
   useEffect(()=>{if(page==='journey'||page==='results')aiPrefetch.prewarm()},[page])
@@ -491,6 +515,7 @@ export default function App(){
   useEffect(()=>listenForNativeBack(()=>nativeBackAction.current()),[])
   const startRace=()=>{
     if(vsPendingSession)return
+    tourAction(5)
     unlockGameAudio()
     const prepared:RaceSession={id:newId(),settings:{...raceSettings,aiCount:getAiCount(raceSettings.aiCount),difficulty:isDifficulty(raceSettings.difficulty)?raceSettings.difficulty:'15'},records:[]}
     // No session is saved, no CFOP work starts, and no inspection timer runs during VS.
@@ -556,9 +581,9 @@ export default function App(){
       <div className="sidebar-bottom"><button className={`nav-item settings-nav ${page==='settings'?'active':''}`} onClick={()=>goTo('settings')}><Settings2 size={20}/><span>Settings</span></button><div className="guest-profile"><PlayerAvatar className="guest-avatar"/><div><strong title={playerName}>{playerName}</strong><small>Welcome to Cube Hero</small></div><span className="online-dot"/></div></div>
     </aside>
     <div className="main-wrap"><header className="topbar"><div className="topbar-left"><button type="button" className="landscape-nav-toggle" aria-label={landscapeRailOpen?'Collapse landscape navigation':'Expand landscape navigation'} title={landscapeRailOpen?'Collapse sidebar':'Expand sidebar'} aria-controls="site-sidebar" aria-expanded={!landscapeRailCollapsed} onClick={()=>setLandscapeRailOpen(open=>!open)}>{landscapeRailOpen?<PanelLeftClose size={17} aria-hidden="true"/>:<PanelLeftOpen size={17} aria-hidden="true"/>}<span>{landscapeRailOpen?'Hide menu':'Show menu'}</span></button><button className="mobile-menu" aria-label="Open navigation menu" aria-expanded={menuOpen} aria-controls="site-sidebar" onClick={()=>setMenuOpen(true)}><Menu size={23}/></button><div className="topbar-page"><span>Cube Hero</span><ChevronRight size={14}/><strong>{PATH_LABELS[page]}</strong></div></div><div className="topbar-right"><div className="build-status"><span/> LOCAL RACING <small>· HERO JOURNEY</small></div><span className="topbar-rule"/><span className="cube-topbar-player" title={`Playing as ${playerName}`}><span>{playerName}</span><PlayerAvatar className="topbar-avatar"/></span></div></header>
-      <main className="main-content" id="main-content">{page==='home'&&<HomePage goTo={goTo} journey={journey}/>} {page==='race'&&<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>} {page==='room'&&(session?<RaceRoom key={`${session.id}:${session.records.length}`} session={session} goTo={goTo} onActiveChange={trackRaceActive} onComplete={completeRound} toast={setToastMessage} precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)}/>:<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace}/>)} {page==='results'&&<>
+      <main className="main-content" id="main-content">{page==='home'&&<HomePage goTo={goTo} journey={journey} onSetUpRace={()=>{tourAction(0);goTo('race')}}/>} {page==='race'&&<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace} onCustomize={()=>{if(tourStep===1)tourAction(1);else document.querySelector('.race-setup')?.scrollIntoView({behavior:preferences.reducedMotion?'auto':'smooth',block:'start'})}} onTourAction={tourAction} touring={tourStep!==null}/>} {page==='room'&&(session?<RaceRoom key={`${session.id}:${session.records.length}`} session={session} goTo={goTo} onActiveChange={trackRaceActive} onComplete={completeRound} toast={setToastMessage} precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)} onTutorialInspection={()=>{if(tourStep===6)finishTour()}}/>:<RacePage settings={raceSettings} update={setRaceSettings} startRace={startRace} onCustomize={()=>{if(tourStep===1)tourAction(1);else document.querySelector('.race-setup')?.scrollIntoView({behavior:preferences.reducedMotion?'auto':'smooth',block:'start'})}} onTourAction={tourAction} touring={tourStep!==null}/>)} {page==='results'&&<>
         {currentTournament&&<section className="journey-results-summary"><div><span className="journey-eyebrow"><Trophy size={15}/> HERO JOURNEY · CHAMPIONSHIP</span><h3>Round {currentTournament.records.length} / 5 · You are #{tournamentPlayer?.place??'—'}</h3><p>{tournamentPlayer?.points??0} points · {currentTournament.records.length===5?'Championship complete!':'Your next race uses a new scramble.'}</p></div><button className="btn btn-primary btn-sm" onClick={()=>{setJourneyTab('tournaments');goTo('journey')}}><Award size={16}/> View standings <ArrowRight size={16}/></button></section>}
-        <RaceResults playerName={playerName} session={session} goTo={goTo} nextRound={nextRound} raceAgain={startRace} precision={precision}/></>} {page==='practice'&&<GhostRace precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)} onActiveChange={trackRaceActive}/>} {page==='solo'&&<SoloTimer precision={precision} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive} onRaceClick={()=>goTo('race')}/>} {page==='statistics'&&<RaceStatistics history={history} goTo={goTo} clearHistory={clearHistory} precision={precision}/>} {page==='learn'&&<Academy reducedMotion={preferences.reducedMotion} goToRace={()=>goTo('race')}/>} {page==='journey'&&<HeroJourney playerName={playerName} state={journey} tab={journeyTab} onTabChange={setJourneyTab} initialDifficulty={raceSettings.difficulty} initialPersonality={raceSettings.personality} onStartTournament={startTournament} onResumeTournament={resumeTournament} onGo={goTo} precision={precision}/>} {page==='settings'&&<SettingsPage preferences={preferences} update={setPreferences} reset={reset} playerName={playerName} onPlayerNameChange={value=>{if(setPlayerName(value))setToastMessage(`Player name updated to ${normalizePlayerName(value)}.`)}}/>}</main>
+        <RaceResults playerName={playerName} session={session} goTo={goTo} nextRound={nextRound} raceAgain={startRace} precision={precision}/></>} {page==='practice'&&<GhostRace precision={precision} sound={preferences.sound} reducedMotion={preferences.reducedMotion} graphics={graphicsQuality(preferences.graphics)} onActiveChange={trackRaceActive}/>} {page==='solo'&&<SoloTimer precision={precision} reducedMotion={preferences.reducedMotion} onActiveChange={trackRaceActive} onRaceClick={()=>goTo('race')}/>} {page==='statistics'&&<RaceStatistics history={history} goTo={goTo} clearHistory={clearHistory} precision={precision}/>} {page==='learn'&&<Academy reducedMotion={preferences.reducedMotion} goToRace={()=>goTo('race')}/>} {page==='journey'&&<HeroJourney playerName={playerName} state={journey} tab={journeyTab} onTabChange={setJourneyTab} initialDifficulty={raceSettings.difficulty} initialPersonality={raceSettings.personality} onStartTournament={startTournament} onResumeTournament={resumeTournament} onGo={goTo} precision={precision}/>} {page==='settings'&&<SettingsPage preferences={preferences} update={setPreferences} reset={reset} playerName={playerName} onPlayerNameChange={value=>{if(setPlayerName(value))setToastMessage(`Player name updated to ${normalizePlayerName(value)}.`)}} onReplayTutorial={()=>{setTourStep(0);goTo('home')}}/>}</main>
       <footer className="app-footer"><span>© 2026 Cube Hero. Built for the love of cubing. {!isNativeApp()&&<a href="/" className="app-site-link">Visit website ↗</a>}</span><span>Challenge the AI. Outrace your Ghost. Break your limits. <span className="footer-spark">✦</span></span></footer></div>
     {/* The HIC-style dock is phone-only; keep the original desktop sidebar and full mobile drawer. */}
     <nav className="cube-mobile-dock" aria-label="Mobile quick navigation">
@@ -580,6 +605,7 @@ export default function App(){
         <Menu size={20} strokeWidth={1.85} aria-hidden="true"/><span>More</span>
       </button>
     </nav>
+    {tourStep!==null&&!vsPendingSession&&<RaceOnboardingTour step={tourStep} page={page} onSkip={finishTour} reducedMotion={preferences.reducedMotion}/>}
     {confirmState&&<ConfirmationModal {...confirmState} onCancel={()=>setConfirmState(null)} onConfirm={()=>{setConfirmState(null);confirmState.onConfirm()}}/>}
     {toastMessage&&<div className="toast" role="status"><CheckCircle2 size={17}/>{toastMessage}</div>}
     {achievementNotice&&!levelUp&&<AchievementToast key={achievementNotice.id} achievement={achievementNotice}
@@ -592,7 +618,7 @@ export default function App(){
       settings={vsPendingSession.settings}
       reducedMotion={preferences.reducedMotion}
       onEnterArena={enterVsRace}
-      onBack={()=>setVsPendingSession(null)}
+      onBack={()=>{setVsPendingSession(null);setTourStep(current=>current===6?5:current)}}
     />}
   </div>
 }

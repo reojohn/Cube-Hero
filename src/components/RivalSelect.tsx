@@ -70,7 +70,7 @@ export default function RivalSelect({value,personality,onChange}:{value:Difficul
         <div className="rival-division-filter" role="group" aria-label="Filter rival divisions">
           {(['All',...RIVAL_DIVISIONS] as const).map(t=><button type="button" key={t} aria-pressed={division===t} className={division===t?'active':''} onClick={()=>setDivision(t)}>{t==='All'?'All 55':t}</button>)}
         </div>
-        <div className="rival-roster-scroll" tabIndex={0} aria-label="Scrollable AI rival roster"><div className="rival-roster-grid">
+        <div className="rival-roster-scroll" data-race-tour="rival" tabIndex={0} aria-label="Scrollable AI rival roster"><div className="rival-roster-grid">
           {rivals.map(rival=><RivalRosterCard key={rival.difficulty} rival={rival} active={rival.difficulty===value} onSelect={onSelect}/>)}
         </div>{rivals.length===0&&<div className="rival-roster-empty">No rival found. Try a name or a Sub level between 6 and 60.</div>}</div>
         <div className="rival-quick-picks"><span>QUICK PICKS</span><div role="group" aria-label="Popular rival shortcuts">{FAVORITES.map(difficulty=><button type="button" key={difficulty} aria-pressed={value===difficulty} className={value===difficulty?'active':''} onClick={()=>{setDivision('All');setQuery('');onChange(difficulty)}}>{getRival(difficulty).name}<small>Sub-{difficulty}</small></button>)}</div></div>

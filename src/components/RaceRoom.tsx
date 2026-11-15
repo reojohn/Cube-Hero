@@ -21,7 +21,7 @@ import type { GraphicsQuality } from '../lib/graphicsQuality'
 
 type Stage='scramble'|'ready'|'inspection'|'running'|'waiting'
 type HoldSource = 'keyboard' | 'pointer'
-type Props={session:RaceSession;goTo:(page:'race'|'room'|'results'|'settings')=>void;onComplete:(record:RaceRecord)=>void;toast:(message:string)=>void;precision:2|3;sound:boolean;reducedMotion:boolean;graphics:GraphicsQuality;onActiveChange:(value:boolean)=>void}
+type Props={session:RaceSession;goTo:(page:'race'|'room'|'results'|'settings')=>void;onComplete:(record:RaceRecord)=>void;toast:(message:string)=>void;precision:2|3;sound:boolean;reducedMotion:boolean;graphics:GraphicsQuality;onActiveChange:(value:boolean)=>void;onTutorialInspection?:()=>void}
 const msNow=()=>performance.now()
 
 type BeginnerMove = {
@@ -117,6 +117,7 @@ function InspectReadyButton({
             type="button"
       disabled={!ready}
       className="btn btn-primary btn-sm"
+      data-race-tour="inspect"
       style={ready?{
         position:'relative',zIndex:1,
         border:'2px solid #dfb5ff',
@@ -137,7 +138,7 @@ function InspectReadyButton({
   </span>
 }
 
-export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,reducedMotion,graphics,onActiveChange}:Props){
+export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,reducedMotion,graphics,onActiveChange,onTutorialInspection}:Props){
   const [stage,setStage]=useState<Stage>('scramble')
   // Explicitly open the inspection dialog on the Inspect click, independently of the timer render.
   const [inspectionModalOpen,setInspectionModalOpen]=useState(false)
@@ -455,7 +456,7 @@ export default function RaceRoom({session,goTo,onComplete,toast,precision,sound,
             ready={Boolean(plan && solverStatus==='ready')}
             pulseAllowed={!reducedMotion&&!systemReducedMotion}
             inspection={session.settings.inspection}
-            onClick={session.settings.inspection?startInspection:markReady}
+            onClick={()=>{if(plan && solverStatus==='ready'){onTutorialInspection?.();session.settings.inspection?startInspection():markReady()}}}
           />
         </div>
         {plan && solverStatus==='ready' && (reducedMotion || systemReducedMotion) && <p className="inspect-motion-note" role="status">
