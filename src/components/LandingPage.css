@@ -791,3 +791,22 @@ body.cube-landing-body{margin:0;min-width:320px;background:#080916;color:#f9f7ff
 @media(prefers-reduced-motion:reduce){
   .lp-ios-modal-illustrated .lp-apple-visual>a{transition:none}
 }
+
+/* Original CubeHero promotional PNG, centered beneath the four feature cards. */
+.lp-feature-promo{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  margin:clamp(38px,4.5vw,64px) auto 0;
+  padding:0;
+}
+.lp-feature-promo img{
+  display:block;
+  width:min(100%,750px);
+  height:auto;
+  object-fit:contain;
+}
+@media(max-width:520px){
+  .lp-feature-promo{margin-top:26px}
+}

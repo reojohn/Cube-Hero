@@ -211,6 +211,16 @@ export default function LandingPage() {
             </article>
           )}
         </div>
+        <figure className="lp-feature-promo">
+          <img
+            src="/landing/cubehero-speedcubing-more-exciting.png"
+            alt="CubeHero: Make speedcubing more exciting. Race AI, challenge your ghost, use the solo timer, learn CFOP, and progress through Hero Journey."
+            width={1122}
+            height={1402}
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
       </section>
 
       <section className="lp-split-wrap" id="how-it-works" aria-labelledby="lp-how-title">
